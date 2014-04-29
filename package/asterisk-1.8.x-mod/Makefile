@@ -22,6 +22,9 @@ PKG_SOURCE:=asterisk-$(PKG_VERSION)-mod.tar.gz
 
 PKG_BUILD_DIR=$(BUILD_DIR)/asterisk-$(PKG_VERSION)
 
+#TARGET_CFLAGS += -ggdb3
+#RSTRIP:=true
+
 include $(INCLUDE_DIR)/ltqtapi.mk
 include $(INCLUDE_DIR)/package.mk
 
@@ -44,7 +47,7 @@ define Package/asterisk18-mod
 $(call Package/asterisk18-mod/Default)
   TITLE:=Complete open source PBX, v1.8x
   MENU:=1
-  DEPENDS:= +natalie-dect-h +PACKAGE_bcmkernel:bcmkernel +PACKAGE_bcmopen:bcmopen +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
+  DEPENDS:= +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
 endef
 
 define Package/asterisk18-mod/description
@@ -395,6 +398,9 @@ define Build/Configure
 endef
 
 define Build/Compile
+	make -C "$(PKG_BUILD_DIR)"  menuselect/menuselect
+	make -C "$(PKG_BUILD_DIR)"  menuselect-tree
+	(cd $(PKG_BUILD_DIR); ./menuselect/menuselect --enable DONT_OPTIMIZE --enable DEBUG_THREADS)
 	$(MAKE) -C "$(PKG_BUILD_DIR)" \
 		include/asterisk/version.h \
 		include/asterisk/buildopts.h defaults.h \
@@ -769,3 +775,4 @@ $(eval $(call Buildasterisk18-modModuleTemplate,res_clioriginate,Calls via CLI,O
 $(eval $(call Buildasterisk18-modModuleTemplate,app_mixmonitor,Record a call and mix the audio,record a call and mix the audio during the recording))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_playtones,Playtones application,play a tone list))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_record,Record sound file,to record a sound file))
+$(eval $(call Buildasterisk18-modModuleTemplate,app_confbridge,Conference bridge application))
