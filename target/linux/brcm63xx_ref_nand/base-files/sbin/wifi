@@ -13,7 +13,6 @@ exec >/dev/null 2>&1
 
 local _enWifi=0
 local _enWps=0
-local _rstDnsMsq=0
 local _vno=0
 local _cno=0
 local acsifs=""
@@ -171,56 +170,7 @@ create_vif() {
 			nvram set wl_guestmgr_ifname="$iface"
 			nvram set wl_guestmgr_cfgno="$vif"
 		}
-		# check if dnsmasq restart needed
-		for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
-			if [ "$ifc" == "$iface" ]; then
-				uci del_list dhcp.@dnsmasq[0].interface="$iface"
-				uci commit dhcp
-				_rstDnsMsq=$(($_rstDnsMsq + 1))
-				break
-			fi
-		done
 		_cno=$(($_cno + 1))
-	fi
-}
-
-remove_wlifs_from_dnsmasq_bind_list() {
-	local ifc
-	for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
-		case "$ifc" in
-			wl*)
-				uci del_list dhcp.@dnsmasq[0].interface="$ifc"
-				uci commit dhcp
-				_rstDnsMsq=$(($_rstDnsMsq + 1))
-			;;
-		esac
-	done
-}
-
-dnsmasq_bind_check() {
-	local iface="$1"
-	local network="$2"
-	local dnsmasq="0"
-	local bridged="0"
-	local dhcpnet="0"
-	local dhcpat="$(uci -q get dhcp.$network)"
-	local dhcpignr="$(uci -q get dhcp.$network.ignore)"
-	local nwldcrd="$(uci -q get dhcp.@dnsmasq[0].nonwildcard)"
-	local found="0"
-
-	if [ "$(uci get network.$network.type)" == "bridge" ]; then
-		bridged="1"
-	fi
-	if [ -n "$dhcpat" ] && [ "$dhcpignr" != "1" ]; then
-		dhcpnet="1"
-	fi
-	if [ "$bridged" == "0" ] && [ "$dhcpnet" == "1" ] && [ "$nwldcrd" == "1" ]; then
-		dnsmasq="1"
-	fi
-	if [ "$dnsmasq" == "1" ] ; then
-		uci add_list dhcp.@dnsmasq[0].interface="$iface"
-		uci commit dhcp
-		_rstDnsMsq=$(($_rstDnsMsq + 1))
 	fi
 }
 
@@ -532,9 +482,6 @@ set_wifi_iface() {
 			wlctl -i $iface bss up
 		fi
 
-		# check if dnsmasq should bind to this interface
-		dnsmasq_bind_check $iface $network
-
 		_vno=$(($_vno + 1))
 	fi
 }
@@ -596,6 +543,9 @@ set_wifi_device() {
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
 	wlctl -i $device wnm 0x103
 
+	# Disable DHD PKTC
+	dhdctl -i $device pktc 0
+
 	# WDS Settings
 	wlctl -i $device wds none
 	wlctl -i $device wdswsec 0
@@ -611,14 +561,12 @@ set_wifi_device() {
 	wlctl -i $device mpc 0
 	wlctl -i $device infra 1
 	wlctl -i $device closed 0
-	wlctl -i $device radar 1
+	wlctl -i $device radar 0
 
 	wlctl -i $device country "${country:-EU/13}"
 	wlctl -i $device band "${band:-b}"
 
 	# regulatory and spectrum management settings
-	wlctl -i $device regulatory 0
-	wlctl -i $device spect 1
 	case "$doth" in
 		1)
 			wlctl -i $device regulatory 0
@@ -632,10 +580,10 @@ set_wifi_device() {
 			wlctl -i $device regulatory 1
 			wlctl -i $device spect 0
 		;;
-#		0)
-#			wlctl -i $device regulatory 0
-#			wlctl -i $device spect 0
-#		;;
+		*)
+			wlctl -i $device regulatory 0
+			wlctl -i $device spect 0
+		;;
 	esac
 
 	# set HW bandwidth and mode
@@ -741,13 +689,6 @@ set_wifi_device() {
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			nvram set "$device"_acs_lowband_least_rssi="-75"
 			wlctl -i $device chanim_mode 2
-
-			# temporary autochannel method
-			wlctl -i $device csscantimer "${scantimer:-15}"
-			wlctl -i $device up
-			wlctl -i $device autochannel 1
-			wlctl -i $device chanspec $(wlctl -i $device autochannel | awk '{print$1}')
-			wlctl -i $device down
 		;;
 		*)
 			wlctl -i $device chanspec $channel
@@ -799,10 +740,9 @@ set_wifi_device() {
 
 	wlctl -i $device down
 	wlctl -i $device up
-	wlctl -i $device radarthrs 0x6ae 0x30 0x6a8 0x30 0x6a4 0x30 0x6aa 0x30 0x6aa 0x30 0x6a4 0x30
 }
 
-generate_wireless_config() {
+wifi_detect() {
 	local wls="wl0 wl1"
 	local bands band bwidth country hwmode pcid
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
@@ -859,6 +799,7 @@ config wifi-device '$wl'
 	option rxchainps_pps '10'
 	option rifs '0'
 	option rifs_advert '0'
+	option doth '0'
 
 config wifi-iface
 	option device '$wl'
@@ -899,14 +840,6 @@ handle_wep() {
 	esac
 }
 
-# restart dnsmasq if necessary
-restart_dnsmasq() {
-	if [ $_rstDnsMsq -gt 0 ] && [ -f /var/run/dnsmasq.pid ]; then
-		kill -9 $(ps | grep dnsmasq | grep /etc/init.d | awk '{print$1}') 2>/dev/null
-		/etc/init.d/dnsmasq restart
-	fi
-}
-
 # Run all hook functions $2...$N for each config entry $1
 run_hooks() {
 	local arg="$1"; shift
@@ -930,13 +863,67 @@ bringup_sta() {
 	done
 }
 
+wifi_updown() {
+	local action="$1"
+	local wdev="$2"
+
+	set_tp_id
+
+	# disable wireless device
+	config_foreach set_wifi_down wifi-device $wdev
+	run_hooks wifi-device $DISABLE_HOOKS
+
+	[ "$action" == "disable" ] && return
+
+	# enable wireless device
+	handle_wep "init"
+	config_foreach set_wifi_device wifi-device $wdev
+	handle_wep "set"
+	nvram set wlmngr=done
+
+	if [ $_enWifi -gt 0 ]; then
+		ledctl eco off
+	else
+		ledctl eco on
+		exit
+	fi
+
+	# map all interfaces to corresponding networks by nvram parameters
+	map_networks
+
+	# start anyfi daemons
+	run_hooks wifi-device $ENABLE_HOOKS
+
+	# start related daemons
+	if [ -n "$acsifs" ]; then
+		acsd
+		for acsif in $acsifs; do
+			acs_cli -i $acsif mode 1
+		done
+	fi
+	eapd
+	nas
+	[ $_enWps -gt 0 ] && wps_monitor &
+
+	bringup_sta
+}
+
+wifi_reload_legacy() {
+	wifi_updown "disable" "$1"
+	wifi_updown "enable" "$1"
+}
+
+wifi_reload() {
+	ubus call network reload
+	wifi_reload_legacy
+}
+
 case "$1" in
 	disable|enable)
 		[ -z "$2" ] && exit
 		local wif="$2"
 		local wdev="${wif:0:3}"
 		local nif="$(echo $wif | sed 's/\./_/g')"
-#		wlctl -i $wdev down
 		if [ "$1" == "disable" ]; then
 			nvram set "$nif"_bss_enabled=0
 			wlctl -i $wif bss down
@@ -944,9 +931,6 @@ case "$1" in
 			nvram set "$nif"_bss_enabled=1
 			wlctl -i $wif bss up
 		fi
-#		if [ "$(uci -q get wireless.$wdev.radio)" != "off" ]; then
-#			wlctl -i $wdev up
-#		fi
 		exit
 	;;
 esac
@@ -963,13 +947,6 @@ rm -f /tmp/wps_monitor.pid
 # remove all QR code images
 rm -f /www/luci-static/resources/icons/wqr_*
 
-# remove guestMgr interface tag
-nvram set wl_guestmgr_ifname=""
-nvram set wl_guestmgr_cfgno=""
-
-# remove wireless interfaces from dnsmasq bind interface list
-remove_wlifs_from_dnsmasq_bind_list
-
 # clean NVRAM parameters and set debug mode
 sed -i '/option/ d' /etc/config/broadcom
 nvram set init=1
@@ -978,46 +955,10 @@ nvram set debug=0
 config_load wireless
 
 case "$1" in
-	detect)
-		generate_wireless_config
-	;;
-	down)
-		config_foreach set_wifi_down wifi-device $2
-		run_hooks wifi-device $DISABLE_HOOKS
-		restart_dnsmasq
-	;;
-	*)
-		set_tp_id
-		config_foreach set_wifi_down wifi-device $2
-		run_hooks wifi-device $DISABLE_HOOKS
-		handle_wep "init"
-		config_foreach set_wifi_device wifi-device $2
-		handle_wep "set"
-		restart_dnsmasq
-
-		if [ $_enWifi -gt 0 ]; then
-			ledctl eco off
-		else
-			ledctl eco on
-			nvram set wlmngr=done
-			exit
-		fi
-
-		# map all interfaces to corresponding networks by nvram parameters
-		map_networks
-
-		# start anyfi daemons
-		run_hooks wifi-device $ENABLE_HOOKS
-
-		# start related daemons
-		[ -n "$acsifs" ] && acsd
-		eapd
-		nas
-		[ $_enWps -gt 0 ] && wps_monitor &
-
-		bringup_sta
-	;;
+	detect) wifi_detect ;;
+	down) wifi_updown "disable" "$2" ;;
+	reload) wifi_reload "$2" ;;
+	reload_legacy) wifi_reload_legacy "$2" ;;
+	*) ubus call network reload; wifi_updown "enable" "$2";;
 esac
-
-nvram set wlmngr=done
 
