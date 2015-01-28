@@ -47,7 +47,7 @@ endef
 
 define Image/Prepare
 	$(STAGING_DIR_HOST)/bin/lzma e -d22 -lp2 -lc1 $(KDIR)/vmlinux.bcm $(KDIR)/vmlinux.lzma
-	$(STAGING_DIR_HOST)/bin/imagetag_nand -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
+	$(STAGING_DIR_HOST)/bin/imagetag_nand -L -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY) -l $(KERNEL_ENTRY)
 
 	dd if=/dev/zero of=$(KDIR)/file128k.tmp bs=1k count=128
 
@@ -66,7 +66,7 @@ define Image/Prepare
 	echo "/vmlinux.lz"    >> $(KDIR)/sortlist
 
 	#add the files that should not be compressed
-	echo -i "/IOP3"       >> $(KDIR)/nocomprlist
+	echo -e "/IOP3"       >  $(KDIR)/nocomprlist
 	echo -e "/cferam.000" >> $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
 	touch $(TARGET_DIR)/IOP3
