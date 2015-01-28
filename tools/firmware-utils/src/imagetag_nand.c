@@ -150,7 +150,7 @@ size_t getlen(FILE *fp)
 	return retval;
 }
 
-int write_kernel_header(const char* kernel, const char* bin, const uint32_t loadaddr, const uint32_t entry) {
+int write_kernel_header(const char* kernel, const char* bin, const uint32_t loadaddr, const uint32_t entry, int endian) {
 	struct kernelhdr khdr;
 	size_t kernellen;
 	FILE  *kernelfile = NULL, *binfile = NULL;
@@ -170,9 +170,9 @@ int write_kernel_header(const char* kernel, const char* bin, const uint32_t load
 	kernellen = getlen(kernelfile);
 
 	/* Build the kernel header */
-	khdr.loadaddr	= htonl(loadaddr);
-	khdr.entry	= htonl(entry);
-	khdr.lzmalen	= htonl(kernellen);
+	khdr.loadaddr	= endian ? loadaddr : htonl(loadaddr);
+	khdr.entry	= endian ? entry : htonl(entry);
+	khdr.lzmalen	= endian ? kernellen : htonl(kernellen);
 
 	/* Write the kernel header */
 	fwrite(&khdr, sizeof(khdr), 1, binfile);
@@ -353,7 +353,7 @@ int main(int argc, char **argv)
 	}
 	
 	if (wkh && entry && kernel && bin && loadaddr) {
-		return write_kernel_header(kernel, bin, loadaddr, entry);
+		return write_kernel_header(kernel, bin, loadaddr, entry, endian);
 	}
 
 
