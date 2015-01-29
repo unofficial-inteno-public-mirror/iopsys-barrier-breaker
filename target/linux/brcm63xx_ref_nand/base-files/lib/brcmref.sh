@@ -23,6 +23,16 @@ bcm_dsl_annex() {
 
 brcm_insmod() {
 	echo Loading brcm modules
+	test -e /lib/modules/3.4.11-rt19/extra/bcm_log.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_log.ko
+	test -e /lib/modules/3.4.11-rt19/extra/bdmf.ko         && insmod /lib/modules/3.4.11-rt19/extra/bdmf.ko bdmf_chrdev_major=215 
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa_gpl.ko     && insmod /lib/modules/3.4.11-rt19/extra/rdpa_gpl.ko
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa.ko         && insmod /lib/modules/3.4.11-rt19/extra/rdpa.ko sysinit=1
+	ifconfig eth0 down &> /dev/null
+	cat /dev/rgs_logger &
+	bdmf_shell -c init | while read a b ; do echo $b ; done > /var/bdmf_sh_id
+	alias bs="bdmf_shell -c `cat /var/bdmf_sh_id` -cmd "
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa_mw.ko && insmod /lib/modules/3.4.11-rt19/extra/rdpa_mw.ko
+
         test -e /lib/modules/3.4.11-rt19/extra/chipinfo.ko     && insmod /lib/modules/3.4.11-rt19/extra/chipinfo.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko  && insmod /lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko
         test -e /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko   && insmod /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko
@@ -30,6 +40,7 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/pktflow.ko      && insmod /lib/modules/3.4.11-rt19/extra/pktflow.ko
 	test -e /lib/modules/3.4.11-rt19/extra/pktcmf.ko       && insmod /lib/modules/3.4.11-rt19/extra/pktcmf.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmfap.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmfap.ko
+	test -e /lib/modules/3.4.11-rt19/extra/pktrunner.ko    && insmod /lib/modules/3.4.11-rt19/extra/pktrunner.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko    && insmod /lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
 	test -e /lib/modules/3.4.11-rt19/extra/adsldd.ko       && insmod /lib/modules/3.4.11-rt19/extra/adsldd.ko
 	test -e /lib/modules/3.4.11-rt19/extra/i2c_bcm6xxx.ko  && insmod /lib/modules/3.4.11-rt19/extra/i2c_bcm6xxx.ko
@@ -44,8 +55,8 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/wlemf.ko        && insmod /lib/modules/3.4.11-rt19/extra/wlemf.ko
 	test -e /lib/modules/3.4.11-rt19/extra/dhd.ko          && insmod /lib/modules/3.4.11-rt19/extra/dhd.ko  firmware_path=/etc/wlan/dhd mfg_firmware_path=/etc/wlan/dhd/mfg
 	test -e /lib/modules/3.4.11-rt19/extra/wl.ko           && insmod /lib/modules/3.4.11-rt19/extra/wl.ko
-	test -e /lib/modules/3.4.11-rt19/extra/dect.ko         && insmod /lib/modules/3.4.11-rt19/extra/dect.ko
-	test -e /lib/modules/3.4.11-rt19/extra/dectshim.ko     && insmod /lib/modules/3.4.11-rt19/extra/dectshim.ko
+#	test -e /lib/modules/3.4.11-rt19/extra/dect.ko         && insmod /lib/modules/3.4.11-rt19/extra/dect.ko
+#	test -e /lib/modules/3.4.11-rt19/extra/dectshim.ko     && insmod /lib/modules/3.4.11-rt19/extra/dectshim.ko
 	test -e /lib/modules/3.4.11-rt19/extra/pcmshim.ko      && insmod /lib/modules/3.4.11-rt19/extra/pcmshim.ko
 	test -e /lib/modules/3.4.11-rt19/extra/endpointdd.ko   && insmod /lib/modules/3.4.11-rt19/extra/endpointdd.ko
 	test -e /lib/modules/3.4.11-rt19/extra/p8021ag.ko      && insmod /lib/modules/3.4.11-rt19/extra/p8021ag.ko
@@ -53,6 +64,12 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
 	test -e /lib/modules/3.4.11-rt19/rng-core.ko           && insmod /lib/modules/3.4.11-rt19/rng-core.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmtrng.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmtrng.ko
+
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa_cmd_tm.ko  && insmod /lib/modules/3.4.11-rt19/extra/rdpa_cmd_tm.ko
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa_cmd_spdsvc.ko && insmod /lib/modules/3.4.11-rt19/extra/rdpa_cmd_spdsvc.ko
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa_cmd_ds_wan_udp_filter.ko && insmod /lib/modules/3.4.11-rt19/extra/rdpa_cmd_ds_wan_udp_filter.ko
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa_cmd_drv.ko && insmod /lib/modules/3.4.11-rt19/extra/rdpa_cmd_drv.ko 
+
 	echo brcm modules loaded
 }
 
@@ -95,12 +112,16 @@ mknod /dev/hwrandom c 10 183
 mknod /dev/ptm c 128 1
 mkdir /dev/pts/ 
 mknod /dev/pts/0 c 136 0 
-mknod /dev/pts/1 c 136 1 nod /dev/ubi_ctrl c 10 63
+mknod /dev/pts/1 c 136 1
+
+#DPI
+mknod /dev/detector c 190 0
 
 # Create Broadcom specific devices                                                                            
 mknod /dev/dect c 197 0
 mknod /dev/dectdbg c 197 1
 mknod /dev/dectshim c 198 0
+mknod /dev/fbond c 204 0
 mknod /dev/bcmatm0 c 205 0
 mknod /dev/brcmboard c 206 0
 mknod /dev/bcmvdsl0 c 207 0
@@ -111,8 +132,10 @@ mknod /dev/bcmaal20 c 210 0
 mknod /dev/bcmles0 c 211 0
 mknod /dev/bcm c 212 0
 mknod /dev/bounce c 213 0
-mknod /dev/pcmshim0 c 217 0
 mknod /dev/pmon c 214 0
+mknod /dev/bdmf_shell c 215 0
+mknod /dev/rgs_logger c 216 0
+mknod /dev/pcmshim0 c 217 0
 mknod /dev/ac97 c 222 0
 mknod /dev/slac c 223 0
 mknod /dev/bcmprof c 224 0
@@ -120,10 +143,11 @@ mknod /dev/si3215 c 225 0
 mknod /dev/bcmatmb0 c 226 0
 mknod /dev/p8021ag0 c 227 0
 mknod /dev/bcmxtmcfg0 c 228 0
+mknod /dev/bcmomcipm c 231 0
 mknod /dev/pktcmf c 232 0
 mknod /dev/spu c 233 0
 mknod /dev/bcmmoca0 c 234 0
-mknod /dev/bcmmoca10 c 234 1
+mknod /dev/bcmmoca1 c 234 1
 mknod /dev/bcm_user_ploam c 235 0
 mknod /dev/bcm_omci c 236 0
 mknod /dev/bcm_ploam c 237 0
@@ -136,12 +160,15 @@ mknod /dev/ingqos c 243 0
 mknod /dev/bpm c 244 0
 mknod /dev/bcmarl c 245 0
 mknod /dev/chipinfo c 246 0
-mknod /dev/bcmepon c 247 0
+mknod /dev/epon_stack_shell c 247 0
 mknod /dev/bcm_user_tod c 248 0
 mknod /dev/gmac c 249 0
 mknod /dev/tms c 250 0
+mknod /dev/bcmrdpa c 251 0
+mknod /dev/pktrunner c 252 0
+mknod /dev/otp c 253 0
 mknod /dev/ext_bonding c 255 0
-
+mknod /dev/buzzz c 253 0
 mknod /dev/capi20 c 68 0
 mknod /dev/isdninfo c 45 255
 mknod /dev/ippp0 c 45 128
