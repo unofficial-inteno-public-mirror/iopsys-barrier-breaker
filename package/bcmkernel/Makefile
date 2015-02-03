@@ -12,10 +12,12 @@ PKG_VERSION:=4.16
 PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.02A
+
+PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=3ddbf4c3b8023ff95a384c01e7a04f8a4c45b83a
+PKG_SOURCE_VERSION:=f020f54384b0dc4f832e49c0780f8731f8b9b1c5
+PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 
 # update this based on the Broadcom SDK version, 4.16L.02 -> 41602
@@ -240,7 +242,7 @@ define Package/bcmkernel/install
 	ln -s /usr/lib/libssl.so.1.0.0 $(1)/usr/lib/libssl.so.0.9.7
 
 
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/*	$(1)/usr/lib/
+	$(CP) --remove-destination $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/*	$(1)/usr/lib/
 
 	rm -rf $(1)/usr/lib/modules
 	rm -rf $(1)/usr/lib/private
