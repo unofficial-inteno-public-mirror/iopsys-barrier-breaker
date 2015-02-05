@@ -252,16 +252,7 @@ mknod /dev/sdh3 b 8 115
 mknod /dev/sdh4 b 8 116
 }
 
-id_upgrade_reconfig() {
-
-}
-
-check_num_mac_address() {
-}
-
 brcm_env
-id_upgrade_reconfig
 bcm_dsl_annex
-check_num_mac_address
 brcm_insmod
 
