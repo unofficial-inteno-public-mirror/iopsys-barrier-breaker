@@ -26,11 +26,8 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_log.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_log.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bdmf.ko         && insmod /lib/modules/3.4.11-rt19/extra/bdmf.ko bdmf_chrdev_major=215 
 	test -e /lib/modules/3.4.11-rt19/extra/rdpa_gpl.ko     && insmod /lib/modules/3.4.11-rt19/extra/rdpa_gpl.ko
-	test -e /lib/modules/3.4.11-rt19/extra/rdpa.ko         && insmod /lib/modules/3.4.11-rt19/extra/rdpa.ko sysinit=1
-	ifconfig eth0 down &> /dev/null
-	cat /dev/rgs_logger &
-	bdmf_shell -c init | while read a b ; do echo $b ; done > /var/bdmf_sh_id
-	alias bs="bdmf_shell -c `cat /var/bdmf_sh_id` -cmd "
+	test -e /lib/modules/3.4.11-rt19/extra/rdpa.ko         && insmod /lib/modules/3.4.11-rt19/extra/rdpa.ko
+	test -e /etc/rdpa_init.sh && /etc/rdpa_init.sh
 	test -e /lib/modules/3.4.11-rt19/extra/rdpa_mw.ko && insmod /lib/modules/3.4.11-rt19/extra/rdpa_mw.ko
 
         test -e /lib/modules/3.4.11-rt19/extra/chipinfo.ko     && insmod /lib/modules/3.4.11-rt19/extra/chipinfo.ko
