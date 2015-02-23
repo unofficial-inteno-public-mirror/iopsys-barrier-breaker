@@ -2,6 +2,7 @@
 
 local netcon=0
 local tvcon=0
+local wanip=0
 
 test_connection() {
 	local addr="$1"
@@ -10,16 +11,28 @@ test_connection() {
 	local ping6dev="$(ip -f inet6 r | grep default | awk '{print$5}')"
 
 	if [ -n "$addr" ]; then
-		ping -q -w 1 -c 1 $addr >/dev/null 2>&1 && return 0
+		ping -q -w 5 -c 1 $addr >/dev/null 2>&1 && return 0
 	elif [ -n "$defroute" ]; then
-		ping -q -w 1 -c 1 $defroute >/dev/null 2>&1 && return 0
+		ping -q -w 5 -c 1 $defroute >/dev/null 2>&1 && return 0
 		for nmsrv in $(grep nameserver /var/resolv.conf.auto | awk '{print$2}'); do
-			ping -q -w 1 -c 1 $nmsrv >/dev/null 2>&1 && return 0
+			ping -q -w 5 -c 1 $nmsrv >/dev/null 2>&1 && return 0
 		done
 	elif [ -n "$def6route" ] && [ -n "$ping6dev" ]; then
-		ndisc6 -1 $def6route $ping6dev >/dev/null 2>&1 && return 0
+		ndisc6 -w 5 -1 $def6route $ping6dev >/dev/null 2>&1 && return 0
 	fi
 	return 1
+}
+
+wan_have_ip() {
+    local port=$(uci get -q layer2_interface_ethernet.Wan.ifname)
+    local addr=$(ip a show dev $port | grep "inet "| awk '{print $2}')
+
+    if [ -n "$addr" ]
+    then
+	wanip=1
+	ledctl wan on
+    fi
+    # dont set wan here status is set from hotplug, only set when ip is detected.
 }
 
 wantest() {
@@ -50,11 +63,13 @@ iptvtest() {
 
 for tm in 1 3 5 7
 do
-	if [[ $netcon -eq 1 && $tvcon -eq 1 ]]; then
+	if [[ $netcon -eq 1 && $tvcon -eq 1 && $wanip -eq 1 ]]; then
 		break
 	else
+		[ $wanip -eq 0 ] && wan_have_ip
 		[ $netcon -eq 0 ] && wantest
 		[ $tvcon -eq 0 ] && iptvtest
+
 		sleep $tm
 	fi
 done
