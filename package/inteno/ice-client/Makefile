@@ -15,14 +15,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=3.0.0
-PKG_RELEASE:=RC10
+BASE_PKG_VERSION:=3.2.0
+PKG_RELEASE:=RC1
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=144544934fece0158aac9d5622eaf5c37a7a9f6a
+PKG_SOURCE_VERSION:=1f95ce3d1eff1b2403a2357d0fa45063e56ff5e2
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -69,7 +69,7 @@ endef
 #define Build/Prepare
 #	rm -rf $(PKG_BUILD_DIR)
 #	ln -s /home/erik/Desktop/ice-client $(PKG_BUILD_DIR)
-#	ln -s /home/erik/Desktop/checkCompilation/iopsys-client $(PKG_BUILD_DIR)
+##	ln -s /home/erik/Desktop/checkCompilation/iopsys-client $(PKG_BUILD_DIR)
 #endef
 
 ###########################--DEVELOPMENT--################################
@@ -162,7 +162,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 	  /bin/sleep 3
@@ -177,7 +177,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 	  /bin/sleep 3
@@ -197,7 +197,7 @@ define Package/ice-client-camerawatch/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		/bin/echo "system moduleAdd file=camerawatch.so.1.0.1" > /tmp/cfin
+		/bin/echo "system moduleAdd file=camerawatch.so.1.0.1" package="ice-client-camerawatch" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -220,7 +220,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=guestMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -235,7 +235,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=guestMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -254,7 +254,7 @@ define Package/ice-client-guest/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		/bin/echo "system moduleAdd file=guestService.so.1.0.1" > /tmp/cfin
+		/bin/echo "system moduleAdd file=guestService.so.1.0.1" package="ice-client-guest" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -277,7 +277,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -292,7 +292,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -311,7 +311,7 @@ define Package/ice-client-openvpn/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		/bin/echo "system moduleAdd file=ovpnService.so.1.0.1" > /tmp/cfin
+		/bin/echo "system moduleAdd file=ovpnService.so.1.0.1" package="ice-client-openvpn" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -334,7 +334,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -349,7 +349,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -368,7 +368,7 @@ define Package/ice-client-anyfi/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		/bin/echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
+		/bin/echo "system moduleAdd file=anyfiService.so.1.0.1" package="ice-client-anyfi" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -391,7 +391,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=netroundsMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -406,7 +406,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=netroundsMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -425,7 +425,7 @@ define Package/ice-client-netrounds/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		/bin/echo "system moduleAdd file=netroundsService.so.1.0.1" > /tmp/cfin
+		/bin/echo "system moduleAdd file=netroundsService.so.1.0.1" package="ice-client-netrounds" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -448,7 +448,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=log" > /tmp/cfin
 	  /bin/sleep 3
@@ -463,7 +463,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=log" > /tmp/cfin
 	  /bin/sleep 3
@@ -482,7 +482,7 @@ define Package/ice-client-logreader/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=logService.so.1.0.1" package="ice-client-logreader" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -506,7 +506,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
 	  /bin/sleep 2
@@ -521,7 +521,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
 	  /bin/sleep 2
@@ -545,7 +545,7 @@ define Package/ice-client-fileme/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=filemeService.so.1.0.1" package="ice-client-fileme" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -568,7 +568,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=example" > /tmp/cfin
 	fi
@@ -582,7 +582,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=example" > /tmp/cfin
 	fi
@@ -600,7 +600,7 @@ define Package/ice-client-example/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=exampleService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=exampleService.so.1.0.1" package="ice-client-example" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -623,7 +623,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=iperfMgr" > /tmp/cfin
 	fi
@@ -637,7 +637,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=iperfMgr" > /tmp/cfin
 	fi
@@ -655,7 +655,7 @@ define Package/ice-client-iperf/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=iperfService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=iperfService.so.1.0.1" package="ice-client-iperf" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -678,7 +678,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rshellMgr" > /tmp/cfin
 	fi
@@ -692,7 +692,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rshellMgr" > /tmp/cfin
 	fi
@@ -710,7 +710,7 @@ define Package/ice-client-rshell/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=rshellService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=rshellService.so.1.0.1" package="ice-client-rshell" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -733,7 +733,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rework" > /tmp/cfin
 	fi
@@ -747,7 +747,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rework" > /tmp/cfin
 	fi
@@ -767,7 +767,7 @@ define Package/ice-client-rework/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=reworkService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=reworkService.so.1.0.1" package="ice-client-rework" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -790,7 +790,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=sip" > /tmp/cfin
 	fi
@@ -804,7 +804,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=sip" > /tmp/cfin
 	fi
@@ -822,7 +822,7 @@ define Package/ice-client-sip/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=sipService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=sipService.so.1.0.1" package="ice-client-sip" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -845,7 +845,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=monitor" > /tmp/cfin
 	fi
@@ -859,7 +859,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=monitor" > /tmp/cfin
 	fi
@@ -877,7 +877,7 @@ define Package/ice-client-monitor/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		echo "system moduleAdd file=monitorService.so.1.0.1" > /tmp/cfin
+		echo "system moduleAdd file=monitorService.so.1.0.1" package="ice-client-monitor" > /tmp/cfin
 	fi
 fi
 exit 0

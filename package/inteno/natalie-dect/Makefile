@@ -14,7 +14,7 @@ PKG_RELEASE:=1
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:natalie-dect-11.19
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE_VERSION:=be87bd5de4566e0d055727ef7403ca61f0f5ef50
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -23,7 +23,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 
 
-BCM_KERNEL_VERSION=`cat $(TOPDIR)/package/bcmkernel/Makefile | grep BCM_KERNEL_VERSION:= | awk -F":=" '{print $$$$2}'`
+BCM_KERNEL_VERSION=`cat $(BUILD_DIR)/bcmkernel/bcm963xx/kernel/linux-*/include/config/kernel.release`
 
 export BUILD_DIR
 export BCM_KERNEL_VERSION
@@ -34,6 +34,7 @@ define Package/natalie-dect
   CATEGORY:=Base system
   TITLE:=Dect stack
   URL:=
+  DEPENDS:=+bcmkernel
 endef
 
 define Package/natalie-dect/description

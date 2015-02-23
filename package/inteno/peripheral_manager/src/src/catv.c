@@ -13,14 +13,16 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
-#include "i2c.h"
-#include "catv.h"
-#include "log.h"
-
 #include "libubus.h"
 #include <uci_config.h>
 #include <uci.h>
 #include "ucix.h"
+
+
+#include "i2c.h"
+#include "catv.h"
+#include "log.h"
+
 
 struct catv_handler
 {
@@ -34,7 +36,7 @@ static struct catv_handler *pcatv;
 static int catv_get_type(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,32);
 
@@ -72,8 +74,7 @@ static int catv_get_type_method(struct ubus_context *ubus_ctx, struct ubus_objec
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if (catv_get_type(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_type(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -104,8 +105,7 @@ static int catv_get_partnum_method(struct ubus_context *ubus_ctx, struct ubus_ob
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if (catv_get_partnum(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_partnum(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -136,8 +136,7 @@ static int catv_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_obj
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_vendor(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_vendor(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -167,8 +166,7 @@ static int catv_get_vendor_partnum_method(struct ubus_context *ubus_ctx, struct 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_vendor_partnum(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_vendor_partnum(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -199,8 +197,7 @@ static int catv_get_date_method(struct ubus_context *ubus_ctx, struct ubus_objec
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_date(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_date(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -232,8 +229,7 @@ static int catv_get_revision_method(struct ubus_context *ubus_ctx, struct ubus_o
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_revision(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_revision(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -264,8 +260,7 @@ static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_obj
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_serial(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_serial(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -275,7 +270,7 @@ static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_obj
 static int catv_get_interface(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
 
@@ -310,8 +305,7 @@ static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_interface(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_interface(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -321,7 +315,7 @@ static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_
 static int catv_get_bandwidth(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,82);
 
@@ -359,8 +353,7 @@ static int catv_get_bandwidth_method(struct ubus_context *ubus_ctx, struct ubus_
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_bandwidth(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_bandwidth(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -391,8 +384,7 @@ static int catv_get_wavelength_method(struct ubus_context *ubus_ctx, struct ubus
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_wavelength(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_wavelength(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -422,8 +414,7 @@ static int catv_get_responsivity_method(struct ubus_context *ubus_ctx, struct ub
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_responsivity(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_responsivity(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -453,8 +444,7 @@ static int catv_get_minoutput_method(struct ubus_context *ubus_ctx, struct ubus_
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_minoutput(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_minoutput(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -487,8 +477,7 @@ static int catv_get_maxoptical_method(struct ubus_context *ubus_ctx, struct ubus
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_maxoptical(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_maxoptical(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -522,8 +511,7 @@ static int catv_get_minoptical_method(struct ubus_context *ubus_ctx, struct ubus
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_minoptical(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_minoptical(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -571,8 +559,7 @@ static int catv_get_templimit_method(struct ubus_context *ubus_ctx, struct ubus_
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_templimit(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_templimit(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -622,8 +609,7 @@ static int catv_get_vcclimit_method(struct ubus_context *ubus_ctx, struct ubus_o
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_vcclimit(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_vcclimit(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -679,8 +665,7 @@ static int catv_get_vpdlimit_method(struct ubus_context *ubus_ctx, struct ubus_o
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_vpdlimit(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_vpdlimit(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -733,8 +718,7 @@ static int catv_get_rflimit_method(struct ubus_context *ubus_ctx, struct ubus_ob
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_rflimit(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_rflimit(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -767,8 +751,7 @@ static int catv_get_firmware_method(struct ubus_context *ubus_ctx, struct ubus_o
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_firmware(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_firmware(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -802,8 +785,7 @@ static int catv_get_temp_method(struct ubus_context *ubus_ctx, struct ubus_objec
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_temp(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_temp(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -837,8 +819,7 @@ static int catv_get_vcc_method(struct ubus_context *ubus_ctx, struct ubus_object
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_vcc(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_vcc(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -876,8 +857,7 @@ static int catv_get_vpd_method(struct ubus_context *ubus_ctx, struct ubus_object
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_vpd(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_vpd(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -911,8 +891,7 @@ static int catv_get_rf_method(struct ubus_context *ubus_ctx, struct ubus_object 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_rf(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_rf(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -1058,8 +1037,7 @@ static int catv_set_enable_method(struct ubus_context *ubus_ctx, struct ubus_obj
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_status(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_status(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -1075,8 +1053,7 @@ static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_obj
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_status(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_status(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -1188,8 +1165,7 @@ static int catv_get_alarm_method(struct ubus_context *ubus_ctx, struct ubus_obje
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
-    if(catv_get_alarm(&b))
-        return UBUS_STATUS_NO_DATA;
+    catv_get_alarm(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -1224,7 +1200,7 @@ static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *o
         ucix_add_option(pcatv->ctx, "catv", "catv", "filter", "3");
 
 
-    ucix_save(pcatv->ctx);
+    ucix_save(pcatv->ctx,"/etc/config");
     ucix_commit(pcatv->ctx, "catv");
 
     blobmsg_add_string(&b, "Saved", "/etc/config/catv");
@@ -1270,9 +1246,6 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     ret += catv_get_rf(&b);
     ret += catv_get_status(&b);
     ret += catv_get_alarm(&b);
-
-    if (ret)
-        return UBUS_STATUS_NO_DATA;
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -1335,13 +1308,13 @@ static void catv_config_open(struct catv_handler *h)
     /* open config file */
 again:
 
-    h->ctx = ucix_init_path("/etc/config", "catv");
+    h->ctx = ucix_init_path("/etc/config", "catv", 0);
 
     if (NULL == h->ctx) {
         int fd;
 
         syslog(LOG_INFO,"CATV config file not found /etc/config/catv\n");
-        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC);
+        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC, 0644);
         close(fd);
         if (loop++ < 10)
             goto again;
@@ -1350,8 +1323,7 @@ again:
 
 static void catv_config_read(struct catv_handler *h)
 {
-    char *s;
-    int res;
+    const char *s;
 
     /* set set filter */
 again:
@@ -1364,7 +1336,7 @@ again:
         ucix_add_section(h->ctx,"catv","catv", "service");
         ucix_add_option(h->ctx,"catv", "catv", "enable","no");
         ucix_add_option(h->ctx,"catv", "catv", "filter","3");
-        ucix_save(h->ctx);
+        ucix_save(h->ctx,"/etc/config");
         ucix_commit(h->ctx,"catv");
         goto again;
     }
@@ -1380,16 +1352,27 @@ again:
 
 }
 
-struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
+struct catv_handler * catv_init(struct uci_context *uci_ctx, const char *i2c_bus,int a0_addr,int a2_addr)
 {
     struct catv_handler *h;
-
-    printf("%s:\n",__func__);
+    const char *p;
 
     h = malloc( sizeof(struct catv_handler) );
 
     if (!h)
         return NULL;
+
+    p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
+    if (p == 0) {
+        syslog(LOG_INFO, "%s: Missing Hardware identifier in configuration. I2C is not started\n",__func__);
+        return NULL;
+    }
+
+    /* only run on EG300 hardware */
+    if ( strcasecmp("EG300", p)){
+        free(h);
+        return NULL;
+    }
 
     h->i2c_a0 = i2c_open_dev(i2c_bus, a0_addr,
                              I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
