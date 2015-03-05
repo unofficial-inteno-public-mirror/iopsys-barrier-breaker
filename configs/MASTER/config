@@ -1725,6 +1725,19 @@ CONFIG_PACKAGE_lighttpd-mod-webdav=y
 # CONFIG_PACKAGE_tinyproxy is not set
 # CONFIG_PACKAGE_uhttpd is not set
 # CONFIG_PACKAGE_uhttpd_debug is not set
+CONFIG_PACKAGE_alljoyn=y
+CONFIG_PACKAGE_alljoyn-about=y
+CONFIG_PACKAGE_alljoyn-c=y
+CONFIG_PACKAGE_alljoyn-config=y
+CONFIG_PACKAGE_alljoyn-config-samples=y
+CONFIG_PACKAGE_alljoyn-controlpanel=y
+CONFIG_PACKAGE_alljoyn-controlpanel-samples=y
+# CONFIG_PACKAGE_alljoyn-non-gw-config is not set
+CONFIG_PACKAGE_alljoyn-notification=y
+CONFIG_PACKAGE_alljoyn-notification-samples=y
+CONFIG_PACKAGE_alljoyn-sample_apps=y
+CONFIG_PACKAGE_alljoyn-samples=y
+CONFIG_PACKAGE_alljoyn-services_common=y
 # CONFIG_PACKAGE_anyfi is not set
 # CONFIG_PACKAGE_atm-diagnostics is not set
 # CONFIG_PACKAGE_atm-tools is not set
