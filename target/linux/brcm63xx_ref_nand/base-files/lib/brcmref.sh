@@ -64,7 +64,7 @@ brcm_env() {
 	mknod /var/fuse c 10 229
 	chmod a+rw /var/fuse
 	mkdir -p /var/log /var/run /var/state/dhcp /var/ppp /var/udhcpd /var/zebra /var/siproxd /var/cache /var/tmp /var/samba /var/samba/share /var/samba/homes /var/samba/private /var/samba/locks
-
+        dd if=/dev/zero of=/data/scratchpad bs=1k count=8 
 # Create FIFO devices
 
 mknod /dev/initctl p
