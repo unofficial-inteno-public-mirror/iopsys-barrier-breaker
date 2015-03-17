@@ -112,7 +112,7 @@ string Wireless::getChannels(int freq) {
 	else
 		wl = WL.radio5g;
 
-	return readCommandOutput("wlctl -i %s channels", wl.c_str());
+	return strCmd("wlctl -i %s channels", wl.c_str());
 }
 
 void Wireless::setChannel(int freq, int ch) {
@@ -126,11 +126,11 @@ void Wireless::setChannel(int freq, int ch) {
 		WL.channel5g = ch;
 	}
 
-	runCommand("uci set wireless.%s.channel=%d", wl.c_str(), ch);
-	runCommand("uci commit wireless", wl.c_str());
-	runCommand("wlctl -i %s down", wl.c_str());
-	runCommand("wlctl -i %s channel %d", wl.c_str(), ch);
-	runCommand("wlctl -i %s up", wl.c_str());
+	runCmd("uci set wireless.%s.channel=%d", wl.c_str(), ch);
+	runCmd("uci commit wireless", wl.c_str());
+	runCmd("wlctl -i %s down", wl.c_str());
+	runCmd("wlctl -i %s channel %d", wl.c_str(), ch);
+	runCmd("wlctl -i %s up", wl.c_str());
 }
 
 void Wireless::setSsid(string ssid) {
@@ -150,9 +150,9 @@ void Wireless::setSsid(string ssid) {
 	}
 	ucommit(s);
 
-	runCommand("sed -i \"s/_ssid=.*/_ssid=%s/g\" /etc/config/broadcom", ssid.c_str());
-	runCommand("killall -9 nas; nas");
-	runCommand("killall -SIGTERM wps_monitor; wps_monitor &");
+	runCmd("sed -i \"s/_ssid=.*/_ssid=%s/g\" /etc/config/broadcom", ssid.c_str());
+	runCmd("killall -9 nas; nas");
+	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
 }
 
 void Wireless::setKey(string key) {
@@ -171,30 +171,30 @@ void Wireless::setKey(string key) {
 		}
 	}
 
-	runCommand("sed -i \"s/_wpa_psk=.*/_wpa_psk=%s/g\" /etc/config/broadcom", key.c_str());
-	runCommand("killall -9 nas; nas");
-	runCommand("killall -SIGTERM wps_monitor; wps_monitor &");
+	runCmd("sed -i \"s/_wpa_psk=.*/_wpa_psk=%s/g\" /etc/config/broadcom", key.c_str());
+	runCmd("killall -9 nas; nas");
+	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
 }
 
 void WPS::activate(int status) {
 	if (status) {
-		if (readCommandOutput("pidof wps_monitor") == "") {
-			runCommand("wps_monitor &");
+		if (strCmd("pidof wps_monitor") == "") {
+			runCmd("wps_monitor &");
 			usleep(100000);
 		}
-		runCommand("killall -SIGUSR2 wps_monitor");
+		runCmd("killall -SIGUSR2 wps_monitor");
 	} else
-		runCommand("killall -SIGTERM wps_monitor");
+		runCmd("killall -SIGTERM wps_monitor");
 }
 
 void WPS::changeStatus() {
 	if (Wps.enable) {
-		runCommand("sed -i \"s/wps_pbc '0'/wps_pbc '1'/g\" /etc/config/wireless");
-		runCommand("sed -i \"s/wps_mode 'disabled'/wps_mode 'enabled'/g\" /etc/config/broadcom");
+		runCmd("sed -i \"s/wps_pbc '0'/wps_pbc '1'/g\" /etc/config/wireless");
+		runCmd("sed -i \"s/wps_mode 'disabled'/wps_mode 'enabled'/g\" /etc/config/broadcom");
 	} else {
-		runCommand("sed -i \"s/wps_pbc '1'/wps_pbc '0'/g\" /etc/config/wireless");
-		runCommand("sed -i \"s/wps_mode 'enabled'/wps_mode 'disabled'/g\" /etc/config/broadcom");
-		runCommand("killall -SIGTERM wps_monitor");
+		runCmd("sed -i \"s/wps_pbc '1'/wps_pbc '0'/g\" /etc/config/wireless");
+		runCmd("sed -i \"s/wps_mode 'enabled'/wps_mode 'disabled'/g\" /etc/config/broadcom");
+		runCmd("killall -SIGTERM wps_monitor");
 	}
 }
 

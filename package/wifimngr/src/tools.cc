@@ -13,7 +13,7 @@ extern "C"
 #include <sstream>
 
 void
-runCommand(const char *pFmt, ...)
+runCmd(const char *pFmt, ...)
 {
 	va_list ap;
 	char cmd[256] = {0};
@@ -35,7 +35,7 @@ runCommand(const char *pFmt, ...)
 }
 
 string
-readCommandOutput(const char *pFmt, ...)
+strCmd(const char *pFmt, ...)
 {
 	va_list ap;
 	char cmd[256] = {0};
@@ -63,6 +63,7 @@ readCommandOutput(const char *pFmt, ...)
 		}
 	}
 	pclose(pipe);
+	result.erase(result.find_last_not_of("\n")+1);
 	return result;
 }
 

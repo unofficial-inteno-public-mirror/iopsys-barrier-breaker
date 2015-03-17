@@ -27,8 +27,8 @@ class MySessionPortListener : public SessionPortListener {
             return false;
         }
 
-//        std::cout << "Accepting JoinSessionRequest from " << joiner << " (opts.proximity= " << opts.proximity
-//                << ", opts.traffic=" << opts.traffic << ", opts.transports=" << opts.transports << ")." << std::endl;
+        cout << "Accepting JoinSessionRequest from " << joiner << " (opts.proximity= " << opts.proximity
+                << ", opts.traffic=" << opts.traffic << ", opts.transports=" << opts.transports << ")." << endl;
         return true;
     }
     void SessionJoined(SessionPort sessionPort, SessionId id, const char* joiner)
@@ -160,16 +160,16 @@ int main(int argc, char** argv)
 
     uint8_t appId[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
     status = aboutData.SetAppId(appId, 16);
-    status = aboutData.SetDeviceName("CG300");
-    status = aboutData.SetDeviceId("CG300A-WU21UD");
-    status = aboutData.SetAppName("Inteno Wireless");
+    status = aboutData.SetDeviceName(strCmd("db get hw.board.hardware").c_str());
+    status = aboutData.SetDeviceId(strCmd("db get hw.board.BaseMacAddr").c_str());
+    status = aboutData.SetAppName("WiFi Manager");
     status = aboutData.SetManufacturer("Inteno");
-    status = aboutData.SetModelNumber("123456");
-    status = aboutData.SetDescription("Inteno Wireless Settings");
-    status = aboutData.SetDateOfManufacture("2015-03-16");
-    status = aboutData.SetSoftwareVersion("3.2.6");
-    status = aboutData.SetHardwareVersion("1.2.3");
-    status = aboutData.SetSupportUrl("http://www.alljoyn.org");
+    status = aboutData.SetModelNumber(strCmd("db get hw.board.routerModel | cut -d'-' -f 2").c_str());
+    status = aboutData.SetDescription("Manage WiFi");
+    status = aboutData.SetDateOfManufacture(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$4}'").c_str());
+    status = aboutData.SetSoftwareVersion(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$3}'").c_str());
+    status = aboutData.SetHardwareVersion(strCmd("db get hw.board.hardwareVersion").c_str());
+    status = aboutData.SetSupportUrl("http://www.iopsys.eu");
     if (!aboutData.IsValid()) {
         printf("failed to setup about data.\n");
     }
