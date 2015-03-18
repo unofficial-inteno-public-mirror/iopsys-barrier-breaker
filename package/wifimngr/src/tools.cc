@@ -189,14 +189,18 @@ ugeti(struct uci_section *s, char *opt)
 void
 uset(struct uci_section *s, char *opt, const char *value)
 {
-	uciGetPtr(s->package->path, s->e.name, opt, (value)?(value):(""));
+	int found = string(s->package->path).find_last_of('/');
+	const char *path = string(s->package->path).substr(found+1).c_str();
+	uciGetPtr(path, s->e.name, opt, (value)?(value):(""));
 	uci_set(uci_ctx, &ptr);
 }
 
 void
 ucommit(struct uci_section *s)
 {
-	if(uciGetPtr(s->package->path, NULL, NULL, NULL))
+	int found = string(s->package->path).find_last_of('/');
+	const char *path = string(s->package->path).substr(found+1).c_str();
+	if(uciGetPtr(path, NULL, NULL, NULL))
 		return;
 	uci_commit(uci_ctx, &ptr.p, false);
 }

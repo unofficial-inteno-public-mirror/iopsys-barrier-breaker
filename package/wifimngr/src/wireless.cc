@@ -118,16 +118,19 @@ string Wireless::getChannels(int freq) {
 void Wireless::setChannel(int freq, int ch) {
 	string wl;
 
+	char channel[3];
+	snprintf(channel, 3, "%d", ch);
+
 	if (freq == 5) {
-		wl = WL.radio2g;
-		WL.channel2g = ch;
-	} else {
 		wl = WL.radio5g;
 		WL.channel5g = ch;
+	} else {
+		wl = WL.radio2g;
+		WL.channel2g = ch;
 	}
 
-	runCmd("uci set wireless.%s.channel=%d", wl.c_str(), ch);
-	runCmd("uci commit wireless", wl.c_str());
+	uciSet("wireless", wl.c_str(), "channel", channel);
+	uciCommit("wireless");
 	runCmd("wlctl -i %s down", wl.c_str());
 	runCmd("wlctl -i %s channel %d", wl.c_str(), ch);
 	runCmd("wlctl -i %s up", wl.c_str());
@@ -170,6 +173,7 @@ void Wireless::setKey(string key) {
 			uset(s, "key", key.c_str());
 		}
 	}
+	ucommit(s);
 
 	runCmd("sed -i \"s/_wpa_psk=.*/_wpa_psk=%s/g\" /etc/config/broadcom", key.c_str());
 	runCmd("killall -9 nas; nas");
@@ -188,13 +192,27 @@ void WPS::activate(int status) {
 }
 
 void WPS::changeStatus() {
+	struct uci_element *e;
+	struct uci_section *s;
+
+	char wps[2];
+	snprintf(wps, 2, "%d", Wps.enable);
+
+	uci_foreach_element(&uci_wireless->sections, e) {
+		s = uci_to_section(e);
+		if (!strcmp(s->type, "wifi-iface")) {
+			uset(s, "wps_pbc", wps);
+		}
+	}
+	ucommit(s);
+
 	if (Wps.enable) {
-		runCmd("sed -i \"s/wps_pbc '0'/wps_pbc '1'/g\" /etc/config/wireless");
 		runCmd("sed -i \"s/wps_mode 'disabled'/wps_mode 'enabled'/g\" /etc/config/broadcom");
+		if (strCmd("pidof wps_monitor") == "")
+			runCmd("wps_monitor &");
 	} else {
-		runCmd("sed -i \"s/wps_pbc '1'/wps_pbc '0'/g\" /etc/config/wireless");
 		runCmd("sed -i \"s/wps_mode 'enabled'/wps_mode 'disabled'/g\" /etc/config/broadcom");
-		runCmd("killall -SIGTERM wps_monitor");
+		runCmd("killall -SIGTERM wps_monitor 2>/dev/null");
 	}
 }
 

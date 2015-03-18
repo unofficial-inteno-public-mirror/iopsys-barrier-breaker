@@ -5,9 +5,6 @@
 #include <string>
 using namespace std;
 
-#define	MAX_WDEV 2
-#define	MAX_WIFC 2
-
 class Wireless {
 	public:
 	string ssid, encryption, key;
@@ -46,6 +43,9 @@ class WPS {
 };
 
 #endif
+
+#define	MAX_WDEV 2
+#define	MAX_WIFC 2
 
 #include <uci.h>
 struct uci_package *init_package(const char *config);
