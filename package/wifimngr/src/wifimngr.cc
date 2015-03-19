@@ -9,6 +9,10 @@
 
 #include "wifi.h"
 
+extern "C" {
+#include "common.h"
+}
+
 using namespace ajn;
 
 static volatile sig_atomic_t s_interrupt = false;
@@ -27,8 +31,8 @@ class MySessionPortListener : public SessionPortListener {
             return false;
         }
 
-        cout << "Accepting JoinSessionRequest from " << joiner << " (opts.proximity= " << opts.proximity
-                << ", opts.traffic=" << opts.traffic << ", opts.transports=" << opts.transports << ")." << endl;
+//        cout << "Accepting JoinSessionRequest from " << joiner << " (opts.proximity= " << opts.proximity
+//                << ", opts.traffic=" << opts.traffic << ", opts.transports=" << opts.transports << ")." << endl;
         return true;
     }
     void SessionJoined(SessionPort sessionPort, SessionId id, const char* joiner)
@@ -86,7 +90,7 @@ class WirelessBusObject : public BusObject {
 int main(int argc, char** argv)
 {
     /* Install SIGINT handler so Ctrl + C deallocates memory properly */
-    signal(SIGINT, SigIntHandler);
+    //signal(SIGINT, SigIntHandler);
 
     populateWireless();
 
@@ -190,12 +194,7 @@ int main(int argc, char** argv)
         printf("AboutObj Announce failed (%s)\n", QCC_StatusText(status));
     }
 
-    /* Perform the service asynchronously until the user signals for an exit. */
-    if (ER_OK == status) {
-        while (s_interrupt == false) {
-            usleep(100000);
-        }
-    }
+    ubus_listener();
 
     return 0;
 }
