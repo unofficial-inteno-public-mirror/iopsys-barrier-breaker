@@ -2445,7 +2445,7 @@ CONFIG_PACKAGE_blkid=y
 # CONFIG_PACKAGE_sfdisk is not set
 CONFIG_PACKAGE_swap-utils=y
 # CONFIG_PACKAGE_wipefs is not set
-CONFIG_PACKAGE_ami=y
+# CONFIG_PACKAGE_ami is not set
 CONFIG_PACKAGE_brcminfo=y
 # CONFIG_PACKAGE_bzip2 is not set
 # CONFIG_PACKAGE_cal is not set
