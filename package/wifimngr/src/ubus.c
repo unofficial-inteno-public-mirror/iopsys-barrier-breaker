@@ -22,6 +22,8 @@ json_parse_and_get(const char *str, char *var)
 		return NULL;
 	}
 
+	memset(result, 0, 24);
+
 	json_object_object_foreach(obj, key, val) {
 		if(!strcmp(key, var)) {
 			switch (json_object_get_type(val)) {
@@ -56,13 +58,12 @@ receive_event(struct ubus_context *ctx, struct ubus_event_handler *ev, const cha
 	const char *sta;
 
 	str = blobmsg_format_json(msg, true);
-	fprintf(stdout, "I got %s event %s\n", type, str);
 
 	if(!strcmp(type, "wps")) {
 		if(sta = json_parse_and_get(str, "status"))
-			fprintf(stdout, "%s status is %s\n", type, sta);
+			wps_event("status", sta);
 		else if (sta = json_parse_and_get(str, "sta"))
-			fprintf(stdout, "%s connected sta is %s\n", type, sta);
+			wps_event("sta", sta);
 	}
 
 	free(str);

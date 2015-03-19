@@ -1,3 +1,9 @@
+#include <qcc/Debug.h>
+#include <qcc/Log.h>
+#include <qcc/Mutex.h>
+#include <qcc/String.h>
+#include <qcc/StringUtil.h>
+
 #include <alljoyn/BusAttachment.h>
 #include <alljoyn/BusListener.h>
 #include <alljoyn/BusObject.h>
@@ -13,13 +19,36 @@ extern "C" {
 #include "common.h"
 }
 
+#define ArraySize(a)  (sizeof(a) / sizeof(a[0]))
+
+using namespace qcc;
 using namespace ajn;
 
-static volatile sig_atomic_t s_interrupt = false;
-
-static void SigIntHandler(int sig) {
-    s_interrupt = true;
-}
+static const char* wirelessInterfaceXML =
+	"<node>"
+		"<interface name='org.allseen.WiFi'>"
+			"<property name='Version' type='i' access='read'/>"
+			"<property name='Enable' type='i' access='readwrite'/>"
+			"<property name='Ssid' type='s' access='readwrite'/>"
+			"<property name='Key' type='s' access='readwrite'/>"
+			"<property name='Channel2g' type='i' access='readwrite'/>"
+			"<property name='Channel5g' type='i' access='readwrite'/>"
+			"<method name='GetChannels'>"
+				"<arg name='freq' type='i' direction='in'/>"
+				"<arg name='channels' type='ai' direction='out'/>"
+			"</method>"
+		"</interface>"
+		"<interface name='org.allseen.WPS'>"
+			"<property name='Version' type='q' access='read'/>"
+			"<property name='Enable' type='q' access='readwrite'/>"
+			"<method name='WpsPushButton'>"
+				"<arg name='active' type='q' direction='in'/>"
+			"</method>"
+			"<signal name='WpsResponse' sessionless='true'>"
+				"<arg name='respCode' type='q'/>"
+			"</signal>"
+		"</interface>"
+	"</node>";
 
 static SessionPort ASSIGNED_SESSION_PORT = 900;
 
@@ -43,8 +72,40 @@ class MySessionPortListener : public SessionPortListener {
 
 class WirelessBusObject : public BusObject {
   public:
-    WirelessBusObject(BusAttachment& bus, const char* path)
-        : BusObject(path) {
+    WirelessBusObject(BusAttachment& bus, const char* path);
+    void GetChannels(const InterfaceDescription::Member* member, Message& msg);
+    void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
+
+    /* experimental */
+//    void signalWPS(int respcode)
+//    {
+//	const InterfaceDescription* bus_ifc = bus->GetInterface("org.allseen.WPS");
+//	const InterfaceDescription::Member* wpsResponse = (bus_ifc ? bus_ifc->GetMember("WpsResponse") : NULL);
+
+//	MsgArg args[3];
+//	args[0].Set("s", "org.allseen.WPS");
+//	MsgArg str("{sv}", "respCode", respcode);
+//	args[1].Set("a{sv}", 1, &str);
+//	args[2].Set("as", 0, NULL);
+//	QStatus status = Signal(NULL, 0, *wpsResponse, args, ArraySize(args), 0, 0);
+//        if (status != ER_OK) {
+//            printf("Failed to create Signal.\n");
+//        }
+//    }
+
+  //private:
+    String ssid, key;
+    int32_t enableWifi, enableWps;
+    int32_t channel2g, channel5g;
+    SessionId id;
+    bool stop;
+    Mutex lock;
+
+    QStatus Get(const char* ifcName, const char* propName, MsgArg& val);
+    QStatus Set(const char* ifcName, const char* propName, MsgArg& val);
+};
+
+WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusObject(path) {
         const InterfaceDescription* wireless_iface = bus.GetInterface("org.allseen.WiFi");
         if (wireless_iface == NULL) {
             printf("The interfaceDescription pointer for org.allseen.WiFi was NULL when it should not have been.\n");
@@ -65,36 +126,143 @@ class WirelessBusObject : public BusObject {
 	    { wps_iface->GetMember("WpsPushButton"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::WpsPushButton) }
         };
         AddMethodHandlers(methodEntries, sizeof(methodEntries) / sizeof(methodEntries[0]));
-    }
+}
 
-    void GetChannels(const InterfaceDescription::Member* member, Message& msg) {
-        printf("GetChannels method called: %s", msg->GetArg(0)->v_string.str);
-        const MsgArg* arg((msg->GetArg(0)));
+void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, Message& msg) {
+        printf("GetChannels method called: %d\n", msg->GetArg(0)->v_int32);
+	MsgArg arg[1];
+	int32_t chn[2];
+	chn[0] = 36;
+	chn[1] = 40;
+	arg[0].Set("ai", ArraySize(chn), chn);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
-            printf("Failed to created MethodReply.\n");
+            printf("Failed to create MethodReply.\n");
         }
-    }
+}
 
-    void WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
+//void WirelessBusObject::GetClientList(const InterfaceDescription::Member* member, Message& msg) {
+//        printf("GetClients method called: %d\n", msg->GetArg(0)->v_int32);
+//	MsgArg arg[1];
+//	MsgArg cln[2];
+//	cln[0].Set("(ss)", "sukru-VPCSA3Z9E", "f0:bf:97:df:22:5d");
+//	cln[1].Set("(ss)", "android-50a4b0640d579ec7", "98:0c:82:01:92:1d");
+//	arg[0].Set("a(ss)", ArraySize(cln), cln);
+//        QStatus status = MethodReply(msg, arg, 1);
+//        if (status != ER_OK) {
+//            printf("Failed to create MethodReply.\n");
+//        }
+//}
+
+void WirelessBusObject::WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
         printf("WpsPushButton method called: %s", msg->GetArg(0)->v_string.str);
         const MsgArg* arg((msg->GetArg(0)));
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
-            printf("Failed to created MethodReply.\n");
+            printf("Failed to create MethodReply.\n");
         }
-    }
-};
+}
 
-/** Main entry point */
+QStatus WirelessBusObject::Get(const char* ifcName, const char* propName, MsgArg& val)
+{
+    QStatus status = ER_BUS_NO_SUCH_PROPERTY;
+    if (strcmp(ifcName, "org.allseen.WiFi") == 0) {
+        lock.Lock();
+        if (strcmp(propName, "Enable") == 0) {
+            val.Set("i", enableWifi);
+            status = ER_OK;
+            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, enableWifi, GetPath());
+        } else if (strcmp(propName, "Ssid") == 0) {
+            val.Set("s", ssid.c_str());
+            status = ER_OK;
+            QCC_SyncPrintf("Get property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
+        } else if (strcmp(propName, "Key") == 0) {
+            val.Set("s", key.c_str());
+            status = ER_OK;
+            QCC_SyncPrintf("Get property %s (%s) at %s\n", propName, key.c_str(), GetPath());
+        } else if (strcmp(propName, "Channel2g") == 0) {
+            val.Set("i", channel2g);
+            status = ER_OK;
+            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, channel2g, GetPath());
+        } else if (strcmp(propName, "Channel5g") == 0) {
+            val.Set("i", channel5g);
+            status = ER_OK;
+            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, channel5g, GetPath());
+        }
+        lock.Unlock();
+    } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
+        lock.Lock();
+        if (strcmp(propName, "Enable") == 0) {
+            val.Set("q", enableWps);
+            status = ER_OK;
+            QCC_SyncPrintf("Get property %s (%u) at %s\n", propName, enableWps, GetPath());
+        }
+        lock.Unlock();
+    }
+    return status;
+}
+
+QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg& val)
+{
+    QStatus status = ER_BUS_NO_SUCH_PROPERTY;
+    if (strcmp(ifcName, "org.allseen.WiFi") == 0) {
+        lock.Lock();
+        if (strcmp(propName, "Enable") == 0) {
+            val.Get("i", &enableWifi);
+            EmitPropChanged(ifcName, propName, val, id);
+            status = ER_OK;
+            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, enableWifi, GetPath());
+        } else if (strcmp(propName, "Ssid") == 0) {
+            const char* s;
+            val.Get("s", &s);
+            ssid = s;
+            EmitPropChanged(ifcName, propName, val, id);
+            status = ER_OK;
+            QCC_SyncPrintf("Set property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
+        } else if (strcmp(propName, "Key") == 0) {
+            const char* s;
+            val.Get("s", &s);
+            key = s;
+            EmitPropChanged(ifcName, propName, val, id);
+            status = ER_OK;
+            QCC_SyncPrintf("Set property %s (%s) at %s\n", propName, key.c_str(), GetPath());
+        } else if (strcmp(propName, "Channel2g") == 0) {
+            val.Get("i", &channel2g);
+            EmitPropChanged(ifcName, propName, val, id);
+            status = ER_OK;
+            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, channel2g, GetPath());
+        } else if (strcmp(propName, "Channel5g") == 0) {
+            val.Get("i", &channel5g);
+            EmitPropChanged(ifcName, propName, val, id);
+            status = ER_OK;
+            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, channel5g, GetPath());
+        }
+        lock.Unlock();
+    } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
+        lock.Lock();
+        if (strcmp(propName, "Enable") == 0) {
+            val.Get("q", &enableWps);
+            EmitPropChanged(ifcName, propName, val, id);
+            status = ER_OK;
+            QCC_SyncPrintf("Set property %s (%u) at %s\n", propName, enableWps, GetPath());
+        }
+        lock.Unlock();
+    }
+    return status;
+}
+
+
+void wps_event(const char *key, const char *val)
+{
+	fprintf(stdout, "WPS %s event %s\n", key, val);
+}
+
 int main(int argc, char** argv)
 {
-    /* Install SIGINT handler so Ctrl + C deallocates memory properly */
-    //signal(SIGINT, SigIntHandler);
-
     populateWireless();
 
     QStatus status;
+    string advName = "org.alljoyn.alljoyn_wireless";
 
     BusAttachment bus("Wireless", true);
 
@@ -114,37 +282,25 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    const char* wirelessInterfaceXML =
-	"<node>"
-		"<interface name='org.allseen.WiFi'>" 
-			"<property name='Version' type='q' access='read'/>"
-			"<property name='Enable' type='i' access='readwrite'/>" 
-			"<property name='Ssid' type='s' access='readwrite'/>" 
-			"<property name='Key' type='s' access='readwrite'/>" 
-			"<property name='Channel2g' type='i' access='readwrite'/>" 
-			"<property name='Channel5g' type='i' access='readwrite'/>" 
-			"<method name='GetChannels'>" 
-				"<arg name='freq' type='q' direction='in'/>" 
-				"<arg name='channels' type='s' direction='out'/>" 
-			"</method>" 
-			"<annotation name='org.alljoyn.Bus.Secure' value='true'/>"
-		"</interface>"
-		"<interface name='org.allseen.WPS'>"
-			"<property name='Version' type='q' access='read'/>"
-			"<property name='Enable' type='q' access='readwrite'/>"
-			"<method name='WpsPushButton'>" 
-				"<arg name='active' type='q' direction='in'/>"
-			"</method>"  
-			"<signal name='WpsResponse' sessionless='true'>" 
-				"<arg name='respCode' type='q'/>" 
-			"</signal>"
-			"<annotation name='org.alljoyn.Bus.Secure' value='true'/>"
-		"</interface>"
-	"</node>";
-
     status = bus.CreateInterfacesFromXml(wirelessInterfaceXML);
 
+    /* Request well-known name */
+    status = bus.RequestName(advName.c_str(), DBUS_NAME_FLAG_DO_NOT_QUEUE);
+    if (ER_OK == status) {
+        printf("RequestName('%s') succeeded.\n", advName.c_str());
+    } else {
+        printf("RequestName('%s') failed (status=%s).\n", advName.c_str(), QCC_StatusText(status));
+    }
+    /*-------------------------------*/
+
     WirelessBusObject wirelessBusObject(bus, "/org/alljoyn/wireless");
+
+    wirelessBusObject.ssid = "Inteno-D8C2";
+    wirelessBusObject.key = "A3EAD5511B";
+    wirelessBusObject.enableWifi = 1;
+    wirelessBusObject.enableWps = 1;
+    wirelessBusObject.channel2g = 0;
+    wirelessBusObject.channel5g = 0;
 
     bus.RegisterBusObject(wirelessBusObject);
 
@@ -159,40 +315,49 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    // Setup the about data
-    AboutData aboutData("en");
-
-    uint8_t appId[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-    status = aboutData.SetAppId(appId, 16);
-    status = aboutData.SetDeviceName(strCmd("db get hw.board.hardware").c_str());
-    status = aboutData.SetDeviceId(strCmd("db get hw.board.BaseMacAddr").c_str());
-    status = aboutData.SetAppName("WiFi Manager");
-    status = aboutData.SetManufacturer("Inteno");
-    status = aboutData.SetModelNumber(strCmd("db get hw.board.routerModel | cut -d'-' -f 2").c_str());
-    status = aboutData.SetDescription("Manage WiFi");
-    status = aboutData.SetDateOfManufacture(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$4}'").c_str());
-    status = aboutData.SetSoftwareVersion(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$3}'").c_str());
-    status = aboutData.SetHardwareVersion(strCmd("db get hw.board.hardwareVersion").c_str());
-    status = aboutData.SetSupportUrl("http://www.iopsys.eu");
-    if (!aboutData.IsValid()) {
-        printf("failed to setup about data.\n");
-    }
-
-    AboutIcon icon;
-    status = icon.SetUrl("wp-content/uploads/2014/09/iopsys_logo_CMYK_invert_circle.png", "http://www.iopsys.eu");
-    if (ER_OK != status) {
-        printf("Failed to setup the AboutIcon.\n");
-    }
-    AboutIconObj aboutIconObj(bus, icon);
-
-    // Announce about signal
-    AboutObj aboutObj(bus, BusObject::ANNOUNCED);
-    status = aboutObj.Announce(ASSIGNED_SESSION_PORT, aboutData);
+    /* Advertise well-known name */
+    status = bus.AdvertiseName(advName.c_str(), TRANSPORT_ANY);
     if (ER_OK == status) {
-        printf("AboutObj Announce Succeeded.\n");
+        printf("Advertisement of the service name '%s' succeeded.\n", advName.c_str());
     } else {
-        printf("AboutObj Announce failed (%s)\n", QCC_StatusText(status));
+        printf("Failed to advertise name '%s' (%s).\n", advName.c_str(), QCC_StatusText(status));
     }
+    /*-------------------------------*/
+
+//    // Setup the about data
+//    AboutData aboutData("en");
+
+//    uint8_t appId[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+//    status = aboutData.SetAppId(appId, 16);
+//    status = aboutData.SetDeviceName(strCmd("db get hw.board.hardware").c_str());
+//    status = aboutData.SetDeviceId(strCmd("db get hw.board.BaseMacAddr").c_str());
+//    status = aboutData.SetAppName("WiFi Manager");
+//    status = aboutData.SetManufacturer("Inteno");
+//    status = aboutData.SetModelNumber(strCmd("db get hw.board.routerModel | cut -d'-' -f 2").c_str());
+//    status = aboutData.SetDescription("Manage WiFi");
+//    status = aboutData.SetDateOfManufacture(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$4}'").c_str());
+//    status = aboutData.SetSoftwareVersion(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$3}'").c_str());
+//    status = aboutData.SetHardwareVersion(strCmd("db get hw.board.hardwareVersion").c_str());
+//    status = aboutData.SetSupportUrl("http://www.iopsys.eu");
+//    if (!aboutData.IsValid()) {
+//        printf("failed to setup about data.\n");
+//    }
+
+//    AboutIcon icon;
+//    status = icon.SetUrl("wp-content/uploads/2014/09/iopsys_logo_CMYK_invert_circle.png", "http://www.iopsys.eu");
+//    if (ER_OK != status) {
+//        printf("Failed to setup the AboutIcon.\n");
+//    }
+//    AboutIconObj aboutIconObj(bus, icon);
+
+//    // Announce about signal
+//    AboutObj aboutObj(bus, BusObject::ANNOUNCED);
+//    status = aboutObj.Announce(ASSIGNED_SESSION_PORT, aboutData);
+//    if (ER_OK == status) {
+//        printf("AboutObj Announce Succeeded.\n");
+//    } else {
+//        printf("AboutObj Announce failed (%s)\n", QCC_StatusText(status));
+//    }
 
     ubus_listener();
 
