@@ -140,6 +140,7 @@ void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, 
 
 void WirelessBusObject::WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
         printf("WpsPushButton method called: %d\n", msg->GetArg(0)->v_int32);
+	QStatus status = MethodReply(msg, NULL, 1);
 }
 
 QStatus WirelessBusObject::SendWpsSignal(int respcode) {
