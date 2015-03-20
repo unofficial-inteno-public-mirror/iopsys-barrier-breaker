@@ -49,6 +49,7 @@ static const char* wirelessInterfaceXML =
 			"</signal>"
 		"</interface>"
 		"<interface name='org.allseen.Clients'>"
+			"<property name='Version' type='i' access='read'/>"
 			"<method name='GetClients'>"
 				"<arg name='clients' type='a(iss)' direction='out'/>"
 			"</method>"
