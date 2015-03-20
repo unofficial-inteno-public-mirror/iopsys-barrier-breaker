@@ -39,13 +39,13 @@ static const char* wirelessInterfaceXML =
 			"</method>"
 		"</interface>"
 		"<interface name='org.allseen.WPS'>"
-			"<property name='Version' type='q' access='read'/>"
-			"<property name='Enable' type='q' access='readwrite'/>"
+			"<property name='Version' type='i' access='read'/>"
+			"<property name='Enable' type='i' access='readwrite'/>"
 			"<method name='WpsPushButton'>"
-				"<arg name='active' type='q' direction='in'/>"
+				"<arg name='active' type='i' direction='in'/>"
 			"</method>"
 			"<signal name='WpsResponse' sessionless='true'>"
-				"<arg name='respCode' type='q'/>"
+				"<arg name='respCode' type='i'/>"
 			"</signal>"
 		"</interface>"
 	"</node>";
@@ -76,23 +76,6 @@ class WirelessBusObject : public BusObject {
     void GetChannels(const InterfaceDescription::Member* member, Message& msg);
     void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
 
-    /* experimental */
-//    void signalWPS(int respcode)
-//    {
-//	const InterfaceDescription* bus_ifc = bus->GetInterface("org.allseen.WPS");
-//	const InterfaceDescription::Member* wpsResponse = (bus_ifc ? bus_ifc->GetMember("WpsResponse") : NULL);
-
-//	MsgArg args[3];
-//	args[0].Set("s", "org.allseen.WPS");
-//	MsgArg str("{sv}", "respCode", respcode);
-//	args[1].Set("a{sv}", 1, &str);
-//	args[2].Set("as", 0, NULL);
-//	QStatus status = Signal(NULL, 0, *wpsResponse, args, ArraySize(args), 0, 0);
-//        if (status != ER_OK) {
-//            printf("Failed to create Signal.\n");
-//        }
-//    }
-
   //private:
     String ssid, key;
     int32_t enableWifi, enableWps;
@@ -103,6 +86,7 @@ class WirelessBusObject : public BusObject {
 
     QStatus Get(const char* ifcName, const char* propName, MsgArg& val);
     QStatus Set(const char* ifcName, const char* propName, MsgArg& val);
+    QStatus SendWpsSignal(int respcode);
 };
 
 WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusObject(path) {
@@ -155,12 +139,24 @@ void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, 
 //}
 
 void WirelessBusObject::WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
-        printf("WpsPushButton method called: %s", msg->GetArg(0)->v_string.str);
-        const MsgArg* arg((msg->GetArg(0)));
-        QStatus status = MethodReply(msg, arg, 1);
+        printf("WpsPushButton method called: %d\n", msg->GetArg(0)->v_int32);
+}
+
+QStatus WirelessBusObject::SendWpsSignal(int respcode) {
+	const InterfaceDescription* bus_ifc = bus->GetInterface("org.allseen.WPS");
+	const InterfaceDescription::Member* wpsResponse = (bus_ifc ? bus_ifc->GetMember("WpsResponse") : NULL);
+	uint8_t flags = ALLJOYN_FLAG_SESSIONLESS;
+
+	assert(wpsResponse);
+
+        MsgArg arg("i", respcode);
+        QStatus status = Signal(NULL, 0, *wpsResponse, &arg, 1, 0, flags);
+
+
         if (status != ER_OK) {
-            printf("Failed to create MethodReply.\n");
+            printf("Failed to create Signal.\n");
         }
+	return status;
 }
 
 QStatus WirelessBusObject::Get(const char* ifcName, const char* propName, MsgArg& val)
@@ -193,9 +189,9 @@ QStatus WirelessBusObject::Get(const char* ifcName, const char* propName, MsgArg
     } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
         lock.Lock();
         if (strcmp(propName, "Enable") == 0) {
-            val.Set("q", enableWps);
+            val.Set("i", enableWps);
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%u) at %s\n", propName, enableWps, GetPath());
+            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, enableWps, GetPath());
         }
         lock.Unlock();
     }
@@ -241,10 +237,10 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
     } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
         lock.Lock();
         if (strcmp(propName, "Enable") == 0) {
-            val.Get("q", &enableWps);
+            val.Get("i", &enableWps);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%u) at %s\n", propName, enableWps, GetPath());
+            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, enableWps, GetPath());
         }
         lock.Unlock();
     }
