@@ -48,6 +48,11 @@ static const char* wirelessInterfaceXML =
 				"<arg name='respCode' type='i'/>"
 			"</signal>"
 		"</interface>"
+		"<interface name='org.allseen.Clients'>"
+			"<method name='GetClients'>"
+				"<arg name='clients' type='a(iss)' direction='out'/>"
+			"</method>"
+		"</interface>"
 	"</node>";
 
 static SessionPort ASSIGNED_SESSION_PORT = 900;
@@ -75,6 +80,7 @@ class WirelessBusObject : public BusObject {
     WirelessBusObject(BusAttachment& bus, const char* path);
     void GetChannels(const InterfaceDescription::Member* member, Message& msg);
     void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
+    void GetClients(const InterfaceDescription::Member* member, Message& msg);
 
   //private:
     String ssid, key;
@@ -104,10 +110,18 @@ WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusOb
         }
         AddInterface(*wps_iface, ANNOUNCED);
 
+        const InterfaceDescription* client_iface = bus.GetInterface("org.allseen.Clients");
+        if (client_iface == NULL) {
+            printf("The interfaceDescription pointer for org.allseen.Clients was NULL when it should not have been.\n");
+            return;
+        }
+        AddInterface(*client_iface, ANNOUNCED);
+
         /* Register the method handlers with the object */
         const MethodEntry methodEntries[] = {
             { wireless_iface->GetMember("GetChannels"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::GetChannels) },
-	    { wps_iface->GetMember("WpsPushButton"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::WpsPushButton) }
+	    { wps_iface->GetMember("WpsPushButton"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::WpsPushButton) },
+	    { client_iface->GetMember("GetClients"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::GetClients) }
         };
         AddMethodHandlers(methodEntries, sizeof(methodEntries) / sizeof(methodEntries[0]));
 }
@@ -125,18 +139,19 @@ void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, 
         }
 }
 
-//void WirelessBusObject::GetClientList(const InterfaceDescription::Member* member, Message& msg) {
-//        printf("GetClients method called: %d\n", msg->GetArg(0)->v_int32);
-//	MsgArg arg[1];
-//	MsgArg cln[2];
-//	cln[0].Set("(ss)", "sukru-VPCSA3Z9E", "f0:bf:97:df:22:5d");
-//	cln[1].Set("(ss)", "android-50a4b0640d579ec7", "98:0c:82:01:92:1d");
-//	arg[0].Set("a(ss)", ArraySize(cln), cln);
-//        QStatus status = MethodReply(msg, arg, 1);
-//        if (status != ER_OK) {
-//            printf("Failed to create MethodReply.\n");
-//        }
-//}
+void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, Message& msg) {
+	printf("GetClients method called\n");
+	MsgArg arg[1];
+	MsgArg cln[3];
+	cln[0].Set("(iss)", 1, "sukru-VPCSA3Z9E", "f0:bf:97:df:22:5d");
+	cln[1].Set("(iss)", 2, "android-50a4b0640d579ec7", "98:0c:82:01:92:1d");
+	cln[2].Set("(iss)", 0, "android-2a33f7439634d574", "5c:0a:5b:42:2a:b4");
+	arg[0].Set("a(iss)", ArraySize(cln), cln);
+        QStatus status = MethodReply(msg, arg, 1);
+        if (status != ER_OK) {
+            printf("Failed to create MethodReply.\n");
+        }
+}
 
 void WirelessBusObject::WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
         printf("WpsPushButton method called: %d\n", msg->GetArg(0)->v_int32);
@@ -248,10 +263,17 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
     return status;
 }
 
+WirelessBusObject *MyBus;
 
 void wps_event(const char *key, const char *val)
 {
-	fprintf(stdout, "WPS %s event %s\n", key, val);
+	int respcode = 2;
+	if(!strcmp(val, "timeout"))
+		respcode = 0;
+	else if (!strcmp(key, "sta"))
+		respcode = 1;
+
+	MyBus->SendWpsSignal(respcode);
 }
 
 int main(int argc, char** argv)
@@ -292,8 +314,10 @@ int main(int argc, char** argv)
 
     WirelessBusObject wirelessBusObject(bus, "/org/alljoyn/wireless");
 
-    wirelessBusObject.ssid = "Inteno-D8C2";
-    wirelessBusObject.key = "A3EAD5511B";
+    MyBus = &wirelessBusObject;
+
+    wirelessBusObject.ssid = strCmd("nvram get wl0_ssid").c_str();
+    wirelessBusObject.key = strCmd("nvram get wl0_wpa_psk").c_str();
     wirelessBusObject.enableWifi = 1;
     wirelessBusObject.enableWps = 1;
     wirelessBusObject.channel2g = 0;
