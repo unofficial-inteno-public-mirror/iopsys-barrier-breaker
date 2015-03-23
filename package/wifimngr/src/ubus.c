@@ -80,6 +80,9 @@ get_clients(Client *client)
 			fgets(result, sizeof(result), in);
 		pclose(in);
 
+		if(strlen(result) < 64)
+			continue;
+
 		if(!strcmp(json_parse_and_get(result, "wireless"), "1"))
 			client[cno].conntype = 2;
 		else if(!strcmp(json_parse_and_get(result, "connected"), "1"))
