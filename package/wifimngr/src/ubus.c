@@ -125,7 +125,7 @@ ubus_listener()
 	ctx = ubus_connect(ubus_socket);
 	if (!ctx) {
 		fprintf(stderr, "Failed to connect to ubus\n");
-		return 1;
+		return;
 	}
 
 	ubus_add_uloop(ctx);

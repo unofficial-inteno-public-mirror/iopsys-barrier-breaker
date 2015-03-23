@@ -16,7 +16,7 @@
 #include "wifi.h"
 
 extern "C" {
-#include "common.h"
+	#include "common.h"
 }
 
 #define ArraySize(a)  (sizeof(a) / sizeof(a[0]))
@@ -81,6 +81,11 @@ class MySessionPortListener : public SessionPortListener {
 class WirelessBusObject : public BusObject {
   public:
     WirelessBusObject(BusAttachment& bus, const char* path);
+
+    QStatus Get(const char* ifcName, const char* propName, MsgArg& val);
+    QStatus Set(const char* ifcName, const char* propName, MsgArg& val);
+    QStatus SendWpsSignal(int respcode);
+
     void GetChannels(const InterfaceDescription::Member* member, Message& msg);
     void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
     void GetClients(const InterfaceDescription::Member* member, Message& msg);
@@ -92,17 +97,12 @@ class WirelessBusObject : public BusObject {
     void changeWpsStatus(void);
     void wpsPushButton(int status);
 
-  //private:
     String ssid, encryption, key, radio2g, radio5g;
     int32_t enableWifi, enableWps;
     int32_t channel2g, channel5g;
     SessionId id;
     bool stop;
     Mutex lock;
-
-    QStatus Get(const char* ifcName, const char* propName, MsgArg& val);
-    QStatus Set(const char* ifcName, const char* propName, MsgArg& val);
-    QStatus SendWpsSignal(int respcode);
 };
 
 WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusObject(path) {
@@ -162,7 +162,7 @@ void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, 
 	arg[0].Set("ai", ArraySize(chn), chn);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
-            printf("Failed to create MethodReply.\n");
+            printf("Failed to create MethodReply for GetChannels.\n");
         }
 }
 
@@ -182,13 +182,16 @@ void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, M
 	arg[0].Set("a(iss)", ArraySize(cln), cln);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
-            printf("Failed to create MethodReply.\n");
+            printf("Failed to create MethodReply for GetClients.\n");
         }
 }
 
 void WirelessBusObject::WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
         printf("WpsPushButton method called: %d\n", msg->GetArg(0)->v_int32);
 	QStatus status = MethodReply(msg, NULL, 1);
+        if (status != ER_OK) {
+            printf("Failed to create MethodReply for WpsPushButton.\n");
+        }
 	wpsPushButton(msg->GetArg(0)->v_int32);
 }
 
@@ -204,7 +207,7 @@ QStatus WirelessBusObject::SendWpsSignal(int respcode) {
 
 
         if (status != ER_OK) {
-            printf("Failed to create Signal.\n");
+            printf("Failed to create SendWpsSignal.\n");
         }
 	return status;
 }

@@ -1,10 +1,10 @@
 extern "C"
 {
-#include <string.h>
-#include <stdarg.h>
-#include <stdlib.h>
+	#include <string.h>
+	#include <stdarg.h>
+	#include <stdlib.h>
 
-#include "common.h"
+	#include "common.h"
 }
 
 #include "wifi.h"
@@ -87,27 +87,27 @@ toStr(int num)
 
 extern "C"
 {
-void 
-removeNewline(char *buf)
-{
-	int len;
-	len = strlen(buf) - 1;
-	if (buf[len] == '\n') 
-		buf[len] = 0;
-}
-}
-
-void
-dotToUnderscore(char *buf)
-{
-	int i = 0;
-
-	while (buf[i]) {
-		if (buf[i] == '.')
-			buf[i] = '_';
-		i++;
+	void
+	removeNewline(char *buf)
+	{
+		int len;
+		len = strlen(buf) - 1;
+		if (buf[len] == '\n')
+			buf[len] = 0;
 	}
-	buf[i] = '\0';
+
+	void
+	dotToUnderscore(char *buf)
+	{
+		int i = 0;
+
+		while (buf[i]) {
+			if (buf[i] == '.')
+				buf[i] = '_';
+			i++;
+		}
+		buf[i] = '\0';
+	}
 }
 
 static struct uci_context *uci_ctx;
@@ -175,7 +175,7 @@ uciCommit(const char *p)
 }
 
 const char *
-ugets(struct uci_section *s, char *opt)
+ugets(struct uci_section *s, const char *opt)
 {
 	const char *value = NULL;
 	value = uci_lookup_option_string(uci_ctx, s, opt);
@@ -183,7 +183,7 @@ ugets(struct uci_section *s, char *opt)
 }
 
 int
-ugeti(struct uci_section *s, char *opt)
+ugeti(struct uci_section *s, const char *opt)
 {
 	const char *value = NULL;
 	int ret = 0;
@@ -192,7 +192,7 @@ ugeti(struct uci_section *s, char *opt)
 }
 
 void
-uset(struct uci_section *s, char *opt, const char *value)
+uset(struct uci_section *s, const char *opt, const char *value)
 {
 	int found = string(s->package->path).find_last_of('/');
 	const char *path = string(s->package->path).substr(found+1).c_str();

@@ -49,9 +49,9 @@ using namespace std;
 
 #include <uci.h>
 struct uci_package *init_package(const char *config);
-const char * ugets(struct uci_section *s, char *opt);
-int ugeti(struct uci_section *s, char *opt);
-void uset(struct uci_section *s, char *opt, const char *value);
+const char * ugets(struct uci_section *s, const char *opt);
+int ugeti(struct uci_section *s, const char *opt);
+void uset(struct uci_section *s, const char *opt, const char *value);
 void ucommit(struct uci_section *s);
 const char* uciGet(const char *p, const char *s, const char *o);
 void uciSet(const char *p, const char *s, const char *o, const char *t);
