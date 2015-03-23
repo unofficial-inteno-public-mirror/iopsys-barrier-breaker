@@ -108,9 +108,9 @@ WPS Wps;
 string Wireless::getChannels(int freq) {
 	string wl;
 	if (freq == 5)
-		wl = WL.radio2g;
-	else
 		wl = WL.radio5g;
+	else
+		wl = WL.radio2g;
 
 	return strCmd("wlctl -i %s channels", wl.c_str());
 }

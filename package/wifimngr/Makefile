@@ -18,7 +18,7 @@ LDFLAGS+= \
 
 define Package/wifimngr
   CATEGORY:=Network
-  DEPENDS:=+libuci +libpthread +libstdcpp +librt +alljoyn
+  DEPENDS:=+libuci +libpthread +libstdcpp +librt +alljoyn +ubus
   TITLE:=wireless controller
 endef
 

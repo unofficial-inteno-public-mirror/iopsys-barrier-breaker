@@ -15,7 +15,7 @@ const char*
 json_parse_and_get(const char *str, char *var)
 {
 	json_object *obj;
-	char result[24];
+	char result[128];
 	
 	obj = json_tokener_parse(str);
 	if (is_error(obj) || json_object_get_type(obj) != json_type_object) {
@@ -49,6 +49,51 @@ json_parse_and_get(const char *str, char *var)
 		return strdup(result);
 	else
 		return NULL;
+}
+
+void
+get_clients(Client *client)
+{
+	FILE *leases;
+	char line[256];
+	char leaseno[24];
+	char macaddr[24];
+	char ipaddr[24];
+	char hostname[128];
+	char hwaddr[24];
+	FILE *in;
+	char cmnd[256];
+	char result[2048];
+	int cno = 0;
+
+	if(!(leases = fopen("/var/dhcp.leases", "r")))
+		return;
+
+	while(fgets(line, sizeof(line), leases) != NULL)
+	{
+		removeNewline(line);
+		if (sscanf(line, "%s %s %s %s %s", leaseno, macaddr, ipaddr, hostname, hwaddr) != 5)
+			break;
+
+		sprintf(cmnd, "ubus -S call router host \"{ \\\"ipaddr\\\" : \\\"%s\\\" }\"", ipaddr);
+		if ((in = popen(cmnd, "r")))
+			fgets(result, sizeof(result), in);
+		pclose(in);
+
+		if(!strcmp(json_parse_and_get(result, "wireless"), "1"))
+			client[cno].conntype = 2;
+		else if(!strcmp(json_parse_and_get(result, "connected"), "1"))
+			client[cno].conntype = 1;
+		else
+			client[cno].conntype = 0;
+
+		strcpy(client[cno].hostname, hostname);
+		strcpy(client[cno].macaddr, macaddr);
+
+		cno++;
+	}
+
+	fclose(leases);
 }
 
 static void

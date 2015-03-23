@@ -3,6 +3,8 @@ extern "C"
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+
+#include "common.h"
 }
 
 #include "wifi.h"
@@ -83,6 +85,8 @@ toStr(int num)
 	return result.str();
 }
 
+extern "C"
+{
 void 
 removeNewline(char *buf)
 {
@@ -90,6 +94,7 @@ removeNewline(char *buf)
 	len = strlen(buf) - 1;
 	if (buf[len] == '\n') 
 		buf[len] = 0;
+}
 }
 
 void

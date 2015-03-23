@@ -5,16 +5,16 @@
 #include <string>
 using namespace std;
 
-class Wireless {
-	public:
-	string ssid, encryption, key;
-	string radio2g, radio5g;
-	int enable, channel2g, channel5g;
-	string getChannels (int);
-	void setChannel (int,int);
-	void setSsid (string);
-	void setKey (string);
-};
+//class Wireless {
+//	public:
+//	string ssid, encryption, key;
+//	string radio2g, radio5g;
+//	int enable, channel2g, channel5g;
+//	string getChannels (int);
+//	void setChannel (int,int);
+//	void setSsid (string);
+//	void setKey (string);
+//};
 
 //class WirelessRadio {
 //	public:
@@ -35,12 +35,12 @@ class Wireless {
 //	string getMacFilterList (void);
 //};
 
-class WPS {
-	public:
-	int enable;
-	void activate (int);
-	void changeStatus ();
-};
+//class WPS {
+//	public:
+//	int enable;
+//	void activate (int);
+//	void changeStatus ();
+//};
 
 #endif
 
@@ -59,4 +59,4 @@ void uciCommit(const char *p);
 void runCmd(const char *pFmt, ...);
 string strCmd(const char *pFmt, ...);
 string toStr(int num);
-void populateWireless(void);
+//void populateWireless(void);

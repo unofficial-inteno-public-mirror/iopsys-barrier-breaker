@@ -24,6 +24,8 @@ extern "C" {
 using namespace qcc;
 using namespace ajn;
 
+static struct uci_package *uci_wireless;
+
 static const char* wirelessInterfaceXML =
 	"<node>"
 		"<interface name='org.allseen.WiFi'>"
@@ -83,8 +85,15 @@ class WirelessBusObject : public BusObject {
     void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
     void GetClients(const InterfaceDescription::Member* member, Message& msg);
 
+    void setChannel(int freq);
+    void setSsid();
+    void setKey();
+    void changeWifiStatus(void);
+    void changeWpsStatus(void);
+    void wpsPushButton(int status);
+
   //private:
-    String ssid, key;
+    String ssid, encryption, key, radio2g, radio5g;
     int32_t enableWifi, enableWps;
     int32_t channel2g, channel5g;
     SessionId id;
@@ -129,10 +138,27 @@ WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusOb
 
 void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, Message& msg) {
         printf("GetChannels method called: %d\n", msg->GetArg(0)->v_int32);
+	int freq = msg->GetArg(0)->v_int32;
+	int32_t chn[24];
+	String wl;
+	string channels;
+	char *token;
+	char chbuf[128];
+	int i = 0;
+
+	(freq == 5)?(wl = radio5g):(wl = radio2g);
+	channels = strCmd("wlctl -i %s channels", wl.c_str());
+	snprintf(chbuf, 128, "%s", channels.c_str());
+
+	token = strtok(chbuf, " ");
+	while (token != NULL)
+	{
+		chn[i] = atoi(token);
+		token = strtok (NULL, " ");
+		i++;
+	}
+
 	MsgArg arg[1];
-	int32_t chn[2];
-	chn[0] = 36;
-	chn[1] = 40;
 	arg[0].Set("ai", ArraySize(chn), chn);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
@@ -142,11 +168,17 @@ void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, 
 
 void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, Message& msg) {
 	printf("GetClients method called\n");
+	Client clients[128];
+	MsgArg cln[128];
+	int i = 0;
+
+	get_clients(clients);
+	while(strlen(clients[i].macaddr) > 16) {
+		cln[i].Set("(iss)", clients[i].conntype, clients[i].hostname, clients[i].macaddr);
+		i++;
+	}
+
 	MsgArg arg[1];
-	MsgArg cln[3];
-	cln[0].Set("(iss)", 1, "sukru-VPCSA3Z9E", "f0:bf:97:df:22:5d");
-	cln[1].Set("(iss)", 2, "android-50a4b0640d579ec7", "98:0c:82:01:92:1d");
-	cln[2].Set("(iss)", 0, "android-2a33f7439634d574", "5c:0a:5b:42:2a:b4");
 	arg[0].Set("a(iss)", ArraySize(cln), cln);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
@@ -157,6 +189,7 @@ void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, M
 void WirelessBusObject::WpsPushButton(const InterfaceDescription::Member* member, Message& msg) {
         printf("WpsPushButton method called: %d\n", msg->GetArg(0)->v_int32);
 	QStatus status = MethodReply(msg, NULL, 1);
+	wpsPushButton(msg->GetArg(0)->v_int32);
 }
 
 QStatus WirelessBusObject::SendWpsSignal(int respcode) {
@@ -225,6 +258,7 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
             QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, enableWifi, GetPath());
+	    changeWifiStatus();
         } else if (strcmp(propName, "Ssid") == 0) {
             const char* s;
             val.Get("s", &s);
@@ -232,6 +266,7 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
             QCC_SyncPrintf("Set property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
+	    setSsid();
         } else if (strcmp(propName, "Key") == 0) {
             const char* s;
             val.Get("s", &s);
@@ -239,16 +274,19 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
             QCC_SyncPrintf("Set property %s (%s) at %s\n", propName, key.c_str(), GetPath());
+	    setKey();
         } else if (strcmp(propName, "Channel2g") == 0) {
             val.Get("i", &channel2g);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
             QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, channel2g, GetPath());
+	    setChannel(2);
         } else if (strcmp(propName, "Channel5g") == 0) {
             val.Get("i", &channel5g);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
             QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, channel5g, GetPath());
+	    setChannel(5);
         }
         lock.Unlock();
     } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
@@ -258,11 +296,132 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
             QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, enableWps, GetPath());
+	    changeWpsStatus();
         }
         lock.Unlock();
     }
     return status;
 }
+
+void WirelessBusObject::setChannel(int freq) {
+	String wl;
+	int ch;
+	char channel[3];
+
+	if (freq == 5) {
+		wl = radio5g;
+		ch = channel5g;
+	} else {
+		wl = radio2g;
+		ch = channel2g;
+	}
+
+	snprintf(channel, 3, "%d", ch);
+
+	uciSet("wireless", wl.c_str(), "channel", channel);
+	uciCommit("wireless");
+	runCmd("wlctl -i %s down", wl.c_str());
+	runCmd("wlctl -i %s channel %d", wl.c_str(), ch);
+	runCmd("wlctl -i %s up", wl.c_str());
+}
+
+void WirelessBusObject::setSsid() {
+	struct uci_element *e;
+	struct uci_section *s;
+
+	uci_foreach_element(&uci_wireless->sections, e) {
+		s = uci_to_section(e);
+		if (!strcmp(s->type, "wifi-iface")) {
+			uset(s, "ssid", ssid.c_str());
+		}
+	}
+	ucommit(s);
+
+	runCmd("sed -i \"s/_ssid=.*/_ssid=%s/g\" /etc/config/broadcom", ssid.c_str());
+	runCmd("killall -9 nas; nas");
+	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
+}
+
+void WirelessBusObject::setKey() {
+	struct uci_element *e;
+	struct uci_section *s;
+
+	uci_foreach_element(&uci_wireless->sections, e) {
+		s = uci_to_section(e);
+		if (!strcmp(s->type, "wifi-iface")) {
+			uset(s, "key", key.c_str());
+		}
+	}
+	ucommit(s);
+
+	runCmd("sed -i \"s/_wpa_psk=.*/_wpa_psk=%s/g\" /etc/config/broadcom", key.c_str());
+	runCmd("killall -9 nas; nas");
+	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
+}
+
+void WirelessBusObject::changeWifiStatus() {
+	struct uci_element *e;
+	struct uci_section *s;
+
+	uci_foreach_element(&uci_wireless->sections, e) {
+		s = uci_to_section(e);
+		if (!strcmp(s->type, "wifi-iface")) {
+			uset(s, "disabled", enableWifi?"0":"1");
+		}
+	}
+	ucommit(s);
+
+	string vifs;
+	char vifsbuf[32];
+	char *token;
+
+	vifs = strCmd("nvram show | grep vifs | cut -d'=' -f2 | tr '\n' ' '");
+	snprintf(vifsbuf, 32, "%s", vifs.c_str());
+
+	token = strtok(vifsbuf, " ");
+	while (token != NULL)
+	{
+		runCmd("wifi %s %s", enableWifi?"enable":"disable", token);
+		token = strtok (NULL, " ");
+	}
+}
+
+void WirelessBusObject::changeWpsStatus() {
+	struct uci_element *e;
+	struct uci_section *s;
+
+	char wps[2];
+	snprintf(wps, 2, "%d", enableWps);
+
+	uci_foreach_element(&uci_wireless->sections, e) {
+		s = uci_to_section(e);
+		if (!strcmp(s->type, "wifi-iface")) {
+			uset(s, "wps_pbc", wps);
+		}
+	}
+	ucommit(s);
+
+	if (enableWps) {
+		runCmd("sed -i \"s/wps_mode 'disabled'/wps_mode 'enabled'/g\" /etc/config/broadcom");
+		if (strCmd("pidof wps_monitor") == "")
+			runCmd("wps_monitor &");
+	} else {
+		runCmd("sed -i \"s/wps_mode 'enabled'/wps_mode 'disabled'/g\" /etc/config/broadcom");
+		runCmd("killall -SIGTERM wps_monitor 2>/dev/null");
+	}
+}
+
+void WirelessBusObject::wpsPushButton(int status) {
+	if (status) {
+		if (strCmd("pidof wps_monitor") == "") {
+			runCmd("wps_monitor &");
+			usleep(100000);
+		}
+		runCmd("killall -SIGUSR2 wps_monitor");
+	} else
+		runCmd("killall -SIGTERM wps_monitor");
+}
+
 
 WirelessBusObject *MyBus;
 
@@ -277,12 +436,54 @@ void wps_event(const char *key, const char *val)
 	MyBus->SendWpsSignal(respcode);
 }
 
+static void
+populateWireless()
+{
+	struct uci_element *e;
+	struct uci_section *s;
+	String channel, chanspec;
+
+	if(!(uci_wireless = init_package("wireless")))
+		return;
+
+	MyBus->enableWps = 0;
+	MyBus->channel2g = 0;
+	MyBus->channel5g = -1;
+
+	uci_foreach_element(&uci_wireless->sections, e) {
+		s = uci_to_section(e);
+		if (!strcmp(s->type, "wifi-device")) {
+			if(!strcmp(ugets(s, "band"), "a")) {
+				MyBus->radio5g = s->e.name;
+				chanspec = ugets(s, "channel");
+				channel = chanspec.substr(0, chanspec.find('/'));
+				if (!strcmp(channel.c_str(), "auto"))
+					MyBus->channel5g = 0;
+				else
+					MyBus->channel5g = ugeti(s, "channel");
+			} else {
+				MyBus->radio2g = s->e.name;
+				chanspec = ugets(s, "channel");
+				channel = chanspec.substr(0, chanspec.find('/'));
+				if (channel == "auto")
+					MyBus->channel2g = 0;
+				else
+					MyBus->channel2g = ugeti(s, "channel");
+			}
+		} else if (!strcmp(s->type, "wifi-iface")) {
+			MyBus->ssid = ugets(s, "ssid");
+			MyBus->encryption = ugets(s, "encryption");
+			MyBus->key = ugets(s, "key");
+			if (ugeti(s, "wps_pbc") == 1)
+				MyBus->enableWps = 1;
+		}
+	}
+}
+
 int main(int argc, char** argv)
 {
-    populateWireless();
-
     QStatus status;
-    string advName = "org.alljoyn.alljoyn_wireless";
+    String advName = "org.alljoyn.alljoyn_wireless";
 
     BusAttachment bus("Wireless", true);
 
@@ -317,12 +518,7 @@ int main(int argc, char** argv)
 
     MyBus = &wirelessBusObject;
 
-    wirelessBusObject.ssid = strCmd("nvram get wl0_ssid").c_str();
-    wirelessBusObject.key = strCmd("nvram get wl0_wpa_psk").c_str();
-    wirelessBusObject.enableWifi = 1;
-    wirelessBusObject.enableWps = 1;
-    wirelessBusObject.channel2g = 0;
-    wirelessBusObject.channel5g = 0;
+    populateWireless();
 
     bus.RegisterBusObject(wirelessBusObject);
 
