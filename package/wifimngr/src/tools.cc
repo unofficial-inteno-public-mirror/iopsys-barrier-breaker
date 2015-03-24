@@ -14,6 +14,31 @@ extern "C"
 #include <iterator>
 #include <sstream>
 
+extern "C"
+{
+	void
+	removeNewline(char *buf)
+	{
+		int len;
+		len = strlen(buf) - 1;
+		if (buf[len] == '\n')
+			buf[len] = 0;
+	}
+
+	void
+	dotToUnderscore(char *buf)
+	{
+		int i = 0;
+
+		while (buf[i]) {
+			if (buf[i] == '.')
+				buf[i] = '_';
+			i++;
+		}
+		buf[i] = '\0';
+	}
+}
+
 void
 runCmd(const char *pFmt, ...)
 {
@@ -34,6 +59,37 @@ runCmd(const char *pFmt, ...)
 	system(cmd);
 
 	va_end(ap);
+}
+
+const char*
+chrCmd(const char *pFmt, ...)
+{
+	va_list ap;
+	char cmd[256] = {0};
+	int len=0, maxLen;
+
+	maxLen = sizeof(cmd);
+
+	va_start(ap, pFmt);
+
+	if (len < maxLen)
+	{
+		maxLen -= len;
+		vsnprintf(&cmd[len], maxLen, pFmt, ap);
+	}
+
+	va_end(ap);
+
+	FILE *pipe;
+	char buffer[128];
+	if ((pipe = popen(cmd, "r")))
+		fgets(buffer, sizeof(buffer), pipe);
+	pclose(pipe);
+
+	if (strlen(buffer))
+		return strdup(buffer);
+	else
+		return NULL;
 }
 
 string
@@ -83,31 +139,6 @@ toStr(int num)
 	ostringstream result;
 	result << num;
 	return result.str();
-}
-
-extern "C"
-{
-	void
-	removeNewline(char *buf)
-	{
-		int len;
-		len = strlen(buf) - 1;
-		if (buf[len] == '\n')
-			buf[len] = 0;
-	}
-
-	void
-	dotToUnderscore(char *buf)
-	{
-		int i = 0;
-
-		while (buf[i]) {
-			if (buf[i] == '.')
-				buf[i] = '_';
-			i++;
-		}
-		buf[i] = '\0';
-	}
 }
 
 static struct uci_context *uci_ctx;

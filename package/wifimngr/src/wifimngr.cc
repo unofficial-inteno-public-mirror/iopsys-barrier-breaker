@@ -172,7 +172,7 @@ void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, M
 	MsgArg cln[128];
 	int i = 0;
 
-	get_clients(clients);
+	json_parse_clients(clients);
 	while(strlen(clients[i].macaddr) > 16) {
 		cln[i].Set("(iss)", clients[i].conntype, clients[i].hostname, clients[i].macaddr);
 		i++;

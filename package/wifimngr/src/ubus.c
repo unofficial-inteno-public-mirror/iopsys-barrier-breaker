@@ -11,46 +11,6 @@ static struct ubus_context *ctx;
 static struct ubus_event_handler event_listener;
 static struct blob_buf b;
 
-const char*
-json_parse_and_get(const char *str, char *var)
-{
-	json_object *obj;
-	char result[128];
-	
-	obj = json_tokener_parse(str);
-	if (is_error(obj) || json_object_get_type(obj) != json_type_object) {
-		return NULL;
-	}
-
-	memset(result, 0, 24);
-
-	json_object_object_foreach(obj, key, val) {
-		if(!strcmp(key, var)) {
-			switch (json_object_get_type(val)) {
-			case json_type_object:
-				break;
-			case json_type_array:
-				break;
-			case json_type_string:
-				sprintf(result, "%s", json_object_get_string(val));
-				break;
-			case json_type_boolean:
-				sprintf(result, "%d", json_object_get_boolean(val));
-				break;
-			case json_type_int:
-				sprintf(result, "%d", json_object_get_int(val));
-				break;
-			default:
-				break;
-			}
-		}
-	}
-	if (strlen(result))
-		return strdup(result);
-	else
-		return NULL;
-}
-
 void
 get_clients(Client *client)
 {

@@ -18,12 +18,12 @@ LDFLAGS+= \
 
 define Package/wifimngr
   CATEGORY:=Network
-  DEPENDS:=+libuci +libpthread +libstdcpp +librt +alljoyn +ubus
-  TITLE:=wireless controller
+  DEPENDS:=+libpthread +libstdcpp +librt +libjson +alljoyn +ubus +libuci
+  TITLE:=WiFi Manager
 endef
 
 define Package/wifimngr/description
-	wifimngr controls wireless driver
+	wifimngr manages wireless driver
 endef
 
 define Build/Prepare
