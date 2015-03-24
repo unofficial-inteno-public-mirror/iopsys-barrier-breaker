@@ -33,6 +33,7 @@ static const char* wirelessInterfaceXML =
 			"<property name='Enable' type='i' access='readwrite'/>"
 			"<property name='Ssid' type='s' access='readwrite'/>"
 			"<property name='Key' type='s' access='readwrite'/>"
+			"<property name='EnableWps' type='i' access='readwrite'/>"
 			"<property name='Channel2g' type='i' access='readwrite'/>"
 			"<property name='Channel5g' type='i' access='readwrite'/>"
 			"<method name='GetChannels'>"
@@ -42,7 +43,6 @@ static const char* wirelessInterfaceXML =
 		"</interface>"
 		"<interface name='org.allseen.WPS'>"
 			"<property name='Version' type='i' access='read'/>"
-			"<property name='Enable' type='i' access='readwrite'/>"
 			"<method name='WpsPushButton'>"
 				"<arg name='active' type='i' direction='in'/>"
 			"</method>"
@@ -98,8 +98,8 @@ class WirelessBusObject : public BusObject {
     void wpsPushButton(int status);
 
     String ssid, encryption, key, radio2g, radio5g;
-    int32_t enableWifi, enableWps;
-    int32_t channel2g, channel5g;
+    int enableWifi, enableWps;
+    int channel2g, channel5g;
     SessionId id;
     bool stop;
     Mutex lock;
@@ -220,33 +220,37 @@ QStatus WirelessBusObject::Get(const char* ifcName, const char* propName, MsgArg
         if (strcmp(propName, "Enable") == 0) {
             val.Set("i", enableWifi);
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, enableWifi, GetPath());
+            QCC_SyncPrintf("WiFi Get property %s (%d) at %s\n", propName, enableWifi, GetPath());
         } else if (strcmp(propName, "Ssid") == 0) {
             val.Set("s", ssid.c_str());
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
+            QCC_SyncPrintf("WiFi Get property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
         } else if (strcmp(propName, "Key") == 0) {
             val.Set("s", key.c_str());
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%s) at %s\n", propName, key.c_str(), GetPath());
+            QCC_SyncPrintf("WiFi Get property %s (%s) at %s\n", propName, key.c_str(), GetPath());
         } else if (strcmp(propName, "Channel2g") == 0) {
             val.Set("i", channel2g);
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, channel2g, GetPath());
+            QCC_SyncPrintf("WiFi Get property %s (%d) at %s\n", propName, channel2g, GetPath());
         } else if (strcmp(propName, "Channel5g") == 0) {
             val.Set("i", channel5g);
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, channel5g, GetPath());
-        }
-        lock.Unlock();
-    } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
-        lock.Lock();
-        if (strcmp(propName, "Enable") == 0) {
+            QCC_SyncPrintf("WiFi Get property %s (%d) at %s\n", propName, channel5g, GetPath());
+        } else if (strcmp(propName, "EnableWps") == 0) {
             val.Set("i", enableWps);
             status = ER_OK;
-            QCC_SyncPrintf("Get property %s (%d) at %s\n", propName, enableWps, GetPath());
+            QCC_SyncPrintf("WiFi Get property %s (%d) at %s\n", propName, enableWps, GetPath());
         }
         lock.Unlock();
+//    } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
+//        lock.Lock();
+//        if (strcmp(propName, "Enable") == 0) {
+//            val.Set("i", enableWps);
+//            status = ER_OK;
+//            QCC_SyncPrintf("WPS Get property %s (%d) at %s\n", propName, enableWps, GetPath());
+//        }
+//        lock.Unlock();
     }
     return status;
 }
@@ -260,7 +264,7 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             val.Get("i", &enableWifi);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, enableWifi, GetPath());
+            QCC_SyncPrintf("WiFi Set property %s (%d) at %s\n", propName, enableWifi, GetPath());
 	    changeWifiStatus();
         } else if (strcmp(propName, "Ssid") == 0) {
             const char* s;
@@ -268,7 +272,7 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             ssid = s;
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
+            QCC_SyncPrintf("WiFi Set property %s (%s) at %s\n", propName, ssid.c_str(), GetPath());
 	    setSsid();
         } else if (strcmp(propName, "Key") == 0) {
             const char* s;
@@ -276,32 +280,38 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
             key = s;
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%s) at %s\n", propName, key.c_str(), GetPath());
+            QCC_SyncPrintf("WiFi Set property %s (%s) at %s\n", propName, key.c_str(), GetPath());
 	    setKey();
         } else if (strcmp(propName, "Channel2g") == 0) {
             val.Get("i", &channel2g);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, channel2g, GetPath());
+            QCC_SyncPrintf("WiFi Set property %s (%d) at %s\n", propName, channel2g, GetPath());
 	    setChannel(2);
         } else if (strcmp(propName, "Channel5g") == 0) {
             val.Get("i", &channel5g);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, channel5g, GetPath());
+            QCC_SyncPrintf("WiFi Set property %s (%d) at %s\n", propName, channel5g, GetPath());
 	    setChannel(5);
-        }
-        lock.Unlock();
-    } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
-        lock.Lock();
-        if (strcmp(propName, "Enable") == 0) {
+        } else if (strcmp(propName, "EnableWps") == 0) {
             val.Get("i", &enableWps);
             EmitPropChanged(ifcName, propName, val, id);
             status = ER_OK;
-            QCC_SyncPrintf("Set property %s (%d) at %s\n", propName, enableWps, GetPath());
+            QCC_SyncPrintf("WiFi Set property %s (%d) at %s\n", propName, enableWps, GetPath());
 	    changeWpsStatus();
         }
         lock.Unlock();
+//    } else if (strcmp(ifcName, "org.allseen.WPS") == 0) {
+//        lock.Lock();
+//        if (strcmp(propName, "Enable") == 0) {
+//            val.Get("i", &enableWps);
+//            EmitPropChanged(ifcName, propName, val, id);
+//            status = ER_OK;
+//            QCC_SyncPrintf("WPS Set property %s (%d) at %s\n", propName, enableWps, GetPath());
+//	    changeWpsStatus();
+//        }
+//        lock.Unlock();
     }
     return status;
 }
@@ -449,6 +459,7 @@ populateWireless()
 	if(!(uci_wireless = init_package("wireless")))
 		return;
 
+	MyBus->enableWifi = 1;
 	MyBus->enableWps = 0;
 	MyBus->channel2g = 0;
 	MyBus->channel5g = -1;
@@ -477,6 +488,8 @@ populateWireless()
 			MyBus->ssid = ugets(s, "ssid");
 			MyBus->encryption = ugets(s, "encryption");
 			MyBus->key = ugets(s, "key");
+			if (ugeti(s, "disabled") == 1)
+				MyBus->enableWifi = 0;
 			if (ugeti(s, "wps_pbc") == 1)
 				MyBus->enableWps = 1;
 		}
