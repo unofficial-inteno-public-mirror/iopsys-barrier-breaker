@@ -206,8 +206,20 @@ QStatus WirelessBusObject::SendWpsSignal(int respcode) {
         QStatus status = Signal(NULL, 0, *wpsResponse, &arg, 1, 0, flags);
 
 
+	const char *sgnl = NULL;
+	if (respcode == 2)
+		sgnl = "is activated";
+	else if (respcode == 1)
+		sgnl = "pairing is successful";
+	else if (respcode == 0)
+		sgnl = "pairing is timed out";
+	else if (respcode == 3)
+		sgnl = "is terminated";
+
+	printf("Sending WPS %s signal\n", sgnl);
+
         if (status != ER_OK) {
-            printf("Failed to create SendWpsSignal.\n");
+            printf("Failed to create WPS Signal.\n");
         }
 	return status;
 }
@@ -415,10 +427,15 @@ void WirelessBusObject::changeWpsStatus() {
 	ucommit(s);
 
 	if (enableWps) {
+		printf("Enabling WPS\n");
+		runCmd("nvram set wps_proc_status=0");
 		runCmd("sed -i \"s/wps_mode 'disabled'/wps_mode 'enabled'/g\" /etc/config/broadcom");
-		if (strCmd("pidof wps_monitor") == "")
+		if (strCmd("pidof wps_monitor") == "") {
+			printf("Activating WPS\n");
 			runCmd("wps_monitor &");
+		}
 	} else {
+		printf("Disabling WPS\n");
 		runCmd("sed -i \"s/wps_mode 'enabled'/wps_mode 'disabled'/g\" /etc/config/broadcom");
 		runCmd("killall -SIGTERM wps_monitor 2>/dev/null");
 	}
@@ -427,12 +444,17 @@ void WirelessBusObject::changeWpsStatus() {
 void WirelessBusObject::wpsPushButton(int status) {
 	if (status) {
 		if (strCmd("pidof wps_monitor") == "") {
+			printf("Activating WPS\n");
 			runCmd("wps_monitor &");
 			usleep(100000);
 		}
+		printf("Starting WPS Pairing\n");
 		runCmd("killall -SIGUSR2 wps_monitor");
-	} else
+	} else {
+		printf("Terminating WPS Pairing\n");
+		runCmd("nvram set wps_proc_status=0");
 		runCmd("killall -SIGTERM wps_monitor");
+	}
 }
 
 
@@ -443,6 +465,8 @@ void wps_event(const char *key, const char *val)
 	int respcode = 2;
 	if(!strcmp(val, "timeout"))
 		respcode = 0;
+	else if (!strcmp(val, "terminated"))
+		respcode = 3;
 	else if (!strcmp(key, "sta"))
 		respcode = 1;
 
