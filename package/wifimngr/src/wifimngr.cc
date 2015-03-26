@@ -36,6 +36,8 @@ static const char* wirelessInterfaceXML =
 			"<property name='EnableWps' type='i' access='readwrite'/>"
 			"<property name='Channel2g' type='i' access='readwrite'/>"
 			"<property name='Channel5g' type='i' access='readwrite'/>"
+			"<method name='ApplyChanges'>"
+			"</method>"
 			"<method name='GetChannels'>"
 				"<arg name='freq' type='i' direction='in'/>"
 				"<arg name='channels' type='ai' direction='out'/>"
@@ -86,6 +88,7 @@ class WirelessBusObject : public BusObject {
     QStatus Set(const char* ifcName, const char* propName, MsgArg& val);
     QStatus SendWpsSignal(int respcode);
 
+    void ApplyChanges(const InterfaceDescription::Member* member, Message& msg);
     void GetChannels(const InterfaceDescription::Member* member, Message& msg);
     void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
     void GetClients(const InterfaceDescription::Member* member, Message& msg);
@@ -129,11 +132,40 @@ WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusOb
 
         /* Register the method handlers with the object */
         const MethodEntry methodEntries[] = {
+            { wireless_iface->GetMember("ApplyChanges"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::ApplyChanges) },
             { wireless_iface->GetMember("GetChannels"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::GetChannels) },
 	    { wps_iface->GetMember("WpsPushButton"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::WpsPushButton) },
 	    { client_iface->GetMember("GetClients"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::GetClients) }
         };
         AddMethodHandlers(methodEntries, sizeof(methodEntries) / sizeof(methodEntries[0]));
+}
+
+void WirelessBusObject::ApplyChanges(const InterfaceDescription::Member* member, Message& msg) {
+        printf("ApplyChanges method called\n");
+
+	string vifs;
+	char vifsbuf[32];
+	char *token;
+
+	vifs = strCmd("nvram show | grep vifs | cut -d'=' -f2 | tr '\n' ' '");
+	snprintf(vifsbuf, 32, "%s", vifs.c_str());
+
+	token = strtok(vifsbuf, " ");
+	while (token != NULL)
+	{
+		runCmd("nvram set %s_ssid=%s", token, ssid.c_str());
+		runCmd("nvram set %s_wpa_psk=%s", token, key.c_str());
+		runCmd("wlctl -i %s ssid %s", token, ssid.c_str());
+		token = strtok (NULL, " ");
+	}
+
+	runCmd("killall -9 nas; nas");
+	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
+
+	QStatus status = MethodReply(msg, NULL, 1);
+        if (status != ER_OK) {
+            printf("Failed to create MethodReply for ApplyChanges.\n");
+        }
 }
 
 void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, Message& msg) {
@@ -361,10 +393,6 @@ void WirelessBusObject::setSsid() {
 		}
 	}
 	ucommit(s);
-
-	runCmd("sed -i \"s/_ssid=.*/_ssid=%s/g\" /etc/config/broadcom", ssid.c_str());
-	runCmd("killall -9 nas; nas");
-	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
 }
 
 void WirelessBusObject::setKey() {
@@ -378,10 +406,6 @@ void WirelessBusObject::setKey() {
 		}
 	}
 	ucommit(s);
-
-	runCmd("sed -i \"s/_wpa_psk=.*/_wpa_psk=%s/g\" /etc/config/broadcom", key.c_str());
-	runCmd("killall -9 nas; nas");
-	runCmd("killall -SIGTERM wps_monitor; wps_monitor &");
 }
 
 void WirelessBusObject::changeWifiStatus() {
@@ -390,25 +414,43 @@ void WirelessBusObject::changeWifiStatus() {
 
 	uci_foreach_element(&uci_wireless->sections, e) {
 		s = uci_to_section(e);
-		if (!strcmp(s->type, "wifi-iface")) {
-			uset(s, "disabled", enableWifi?"0":"1");
+		if (!strcmp(s->type, "wifi-device")) {
+			uset(s, "radio", enableWifi?"on":"off");
 		}
 	}
 	ucommit(s);
 
-	string vifs;
-	char vifsbuf[32];
-	char *token;
+	if (enableWifi)
+		runCmd("wifi up &");
+	else
+		runCmd("wifi down &");
 
-	vifs = strCmd("nvram show | grep vifs | cut -d'=' -f2 | tr '\n' ' '");
-	snprintf(vifsbuf, 32, "%s", vifs.c_str());
+//	uci_foreach_element(&uci_wireless->sections, e) {
+//		s = uci_to_section(e);
+//		if (!strcmp(s->type, "wifi-iface")) {
+//			uset(s, "disabled", enableWifi?"0":"1");
+//		}
+//	}
+//	ucommit(s);
 
-	token = strtok(vifsbuf, " ");
-	while (token != NULL)
-	{
-		runCmd("wifi %s %s", enableWifi?"enable":"disable", token);
-		token = strtok (NULL, " ");
-	}
+//	if (enableWifi)
+//		runCmd("ubus call led.wifi set '{\"state\":\"ok\"}'");
+//	else
+//		runCmd("ubus call led.wifi set '{\"state\":\"off\"}'");
+
+//	string vifs;
+//	char vifsbuf[32];
+//	char *token;
+
+//	vifs = strCmd("nvram show | grep vifs | cut -d'=' -f2 | tr '\n' ' '");
+//	snprintf(vifsbuf, 32, "%s", vifs.c_str());
+
+//	token = strtok(vifsbuf, " ");
+//	while (token != NULL)
+//	{
+//		runCmd("wifi %s %s", enableWifi?"enable":"disable", token);
+//		token = strtok (NULL, " ");
+//	}
 }
 
 void WirelessBusObject::changeWpsStatus() {
@@ -426,17 +468,29 @@ void WirelessBusObject::changeWpsStatus() {
 	}
 	ucommit(s);
 
+	string vifs;
+	char vifsbuf[32];
+	char *token;
+
+	vifs = strCmd("nvram show | grep vifs | cut -d'=' -f2 | tr '\n' ' '");
+	snprintf(vifsbuf, 32, "%s", vifs.c_str());
+
+	token = strtok(vifsbuf, " ");
+	while (token != NULL)
+	{
+		runCmd("nvram set %s_wps_mode=%s", token, (enableWps)?"enabled":"disabled");
+		token = strtok (NULL, " ");
+	}
+
 	if (enableWps) {
 		printf("Enabling WPS\n");
 		runCmd("nvram set wps_proc_status=0");
-		runCmd("sed -i \"s/wps_mode 'disabled'/wps_mode 'enabled'/g\" /etc/config/broadcom");
 		if (strCmd("pidof wps_monitor") == "") {
 			printf("Activating WPS\n");
 			runCmd("wps_monitor &");
 		}
 	} else {
 		printf("Disabling WPS\n");
-		runCmd("sed -i \"s/wps_mode 'enabled'/wps_mode 'disabled'/g\" /etc/config/broadcom");
 		runCmd("killall -SIGTERM wps_monitor 2>/dev/null");
 	}
 }
@@ -479,6 +533,7 @@ populateWireless()
 	struct uci_element *e;
 	struct uci_section *s;
 	String channel, chanspec;
+	const char *radio = NULL;
 
 	if(!(uci_wireless = init_package("wireless")))
 		return;
@@ -501,6 +556,9 @@ populateWireless()
 					MyBus->channel5g = ugeti(s, "channel");
 			} else {
 				MyBus->radio2g = s->e.name;
+				radio = ugets(s, "radio");
+				if (radio && strcmp(radio, "off") == 0)
+					MyBus->enableWifi = 0;
 				chanspec = ugets(s, "channel");
 				channel = chanspec.substr(0, chanspec.find('/'));
 				if (channel == "auto")
@@ -512,8 +570,6 @@ populateWireless()
 			MyBus->ssid = ugets(s, "ssid");
 			MyBus->encryption = ugets(s, "encryption");
 			MyBus->key = ugets(s, "key");
-			if (ugeti(s, "disabled") == 1)
-				MyBus->enableWifi = 0;
 			if (ugeti(s, "wps_pbc") == 1)
 				MyBus->enableWps = 1;
 		}
