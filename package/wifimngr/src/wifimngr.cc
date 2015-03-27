@@ -38,6 +38,10 @@ static const char* wirelessInterfaceXML =
 			"<property name='Channel5g' type='i' access='readwrite'/>"
 			"<method name='ApplyChanges'>"
 			"</method>"
+			"<method name='CurrentChannel'>"
+				"<arg name='freq' type='i' direction='in'/>"
+				"<arg name='channel' type='i' direction='out'/>"
+			"</method>"
 			"<method name='GetChannels'>"
 				"<arg name='freq' type='i' direction='in'/>"
 				"<arg name='channels' type='ai' direction='out'/>"
@@ -89,6 +93,7 @@ class WirelessBusObject : public BusObject {
     QStatus SendWpsSignal(int respcode);
 
     void ApplyChanges(const InterfaceDescription::Member* member, Message& msg);
+    void CurrentChannel(const InterfaceDescription::Member* member, Message& msg);
     void GetChannels(const InterfaceDescription::Member* member, Message& msg);
     void WpsPushButton(const InterfaceDescription::Member* member, Message& msg);
     void GetClients(const InterfaceDescription::Member* member, Message& msg);
@@ -133,6 +138,7 @@ WirelessBusObject::WirelessBusObject(BusAttachment& bus, const char* path):BusOb
         /* Register the method handlers with the object */
         const MethodEntry methodEntries[] = {
             { wireless_iface->GetMember("ApplyChanges"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::ApplyChanges) },
+	    { wireless_iface->GetMember("CurrentChannel"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::CurrentChannel) },
             { wireless_iface->GetMember("GetChannels"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::GetChannels) },
 	    { wps_iface->GetMember("WpsPushButton"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::WpsPushButton) },
 	    { client_iface->GetMember("GetClients"), static_cast<MessageReceiver::MethodHandler>(&WirelessBusObject::GetClients) }
@@ -168,10 +174,29 @@ void WirelessBusObject::ApplyChanges(const InterfaceDescription::Member* member,
         }
 }
 
+void WirelessBusObject::CurrentChannel(const InterfaceDescription::Member* member, Message& msg) {
+        printf("CurrentChannel method called: %d\n", msg->GetArg(0)->v_int32);
+	int freq = msg->GetArg(0)->v_int32;
+	String wl;
+	string channel;
+	int chn;
+
+	(freq == 5)?(wl = radio5g):(wl = radio2g);
+	channel = strCmd("wlctl -i %s channel | grep current | awk '{print$NF}'", wl.c_str());
+	chn = atoi(channel.c_str());
+
+	MsgArg arg[1];
+	arg[0].Set("i", chn);
+        QStatus status = MethodReply(msg, arg, 1);
+        if (status != ER_OK) {
+            printf("Failed to create MethodReply for CurrentChannel.\n");
+        }
+}
+
 void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, Message& msg) {
         printf("GetChannels method called: %d\n", msg->GetArg(0)->v_int32);
 	int freq = msg->GetArg(0)->v_int32;
-	int32_t chn[24];
+	int *chn = new int[16];
 	String wl;
 	string channels;
 	char *token;
@@ -191,11 +216,13 @@ void WirelessBusObject::GetChannels(const InterfaceDescription::Member* member, 
 	}
 
 	MsgArg arg[1];
-	arg[0].Set("ai", ArraySize(chn), chn);
+	arg[0].Set("ai", i, chn);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
             printf("Failed to create MethodReply for GetChannels.\n");
         }
+
+	delete[] chn;
 }
 
 void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, Message& msg) {
@@ -363,7 +390,9 @@ QStatus WirelessBusObject::Set(const char* ifcName, const char* propName, MsgArg
 void WirelessBusObject::setChannel(int freq) {
 	String wl;
 	int ch;
-	char channel[3];
+	char channel[4];
+	string acsifs;
+	bool restartAcsd = true;
 
 	if (freq == 5) {
 		wl = radio5g;
@@ -373,13 +402,33 @@ void WirelessBusObject::setChannel(int freq) {
 		ch = channel2g;
 	}
 
-	snprintf(channel, 3, "%d", ch);
+	acsifs = strCmd("nvram get acs_ifnames");
+
+	if (ch == 0) {
+		if (acsifs == "")
+			runCmd("nvram set acs_ifnames=%s", wl.c_str());
+		else if (acsifs.find(wl.c_str()) == string::npos)
+			runCmd("nvram set acs_ifnames=\"%s %s\"", acsifs.c_str(), wl.c_str());
+		else
+			restartAcsd = false;
+
+		strncpy(channel, "auto", 4);
+		if (restartAcsd || strCmd("pidof acsd") == "") {
+			runCmd("killall -9 acsd; acsd");
+		} else {
+			runCmd("acs_cli -i %s mode 2", wl.c_str());
+			runCmd("acs_cli -i %s autochannel", wl.c_str());
+		}
+	} else {
+		snprintf(channel, 3, "%d", ch);
+		runCmd("acs_cli -i %s mode 0", wl.c_str());
+		runCmd("wlctl -i %s down", wl.c_str());
+		runCmd("wlctl -i %s channel %d", wl.c_str(), ch);
+		runCmd("wlctl -i %s up", wl.c_str());
+	}
 
 	uciSet("wireless", wl.c_str(), "channel", channel);
 	uciCommit("wireless");
-	runCmd("wlctl -i %s down", wl.c_str());
-	runCmd("wlctl -i %s channel %d", wl.c_str(), ch);
-	runCmd("wlctl -i %s up", wl.c_str());
 }
 
 void WirelessBusObject::setSsid() {
