@@ -238,7 +238,7 @@ void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, M
 	}
 
 	MsgArg arg[1];
-	arg[0].Set("a(iss)", ArraySize(cln), cln);
+	arg[0].Set("a(iss)", i, cln);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
             printf("Failed to create MethodReply for GetClients.\n");
@@ -505,6 +505,9 @@ void WirelessBusObject::changeWifiStatus() {
 void WirelessBusObject::changeWpsStatus() {
 	struct uci_element *e;
 	struct uci_section *s;
+
+	/* send wps status changed signal */
+	SendWpsSignal(-1);
 
 	char wps[2];
 	snprintf(wps, 2, "%d", enableWps);
