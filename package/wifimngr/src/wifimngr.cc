@@ -274,6 +274,8 @@ QStatus WirelessBusObject::SendWpsSignal(int respcode) {
 		sgnl = "pairing is timed out";
 	else if (respcode == 3)
 		sgnl = "is terminated";
+	else if (respcode == -1)
+		sgnl = "status is changed";
 
 	printf("Sending WPS %s signal\n", sgnl);
 
@@ -576,7 +578,8 @@ void wps_event(const char *key, const char *val)
 	else if (!strcmp(key, "sta"))
 		respcode = 1;
 
-	MyBus->SendWpsSignal(respcode);
+	if (respcode != 3)
+		MyBus->SendWpsSignal(respcode);
 }
 
 static void
