@@ -37,6 +37,7 @@ cleanup() {
 }
 
 kill_related_daemons() {
+	killall -9 wifimngr 2>/dev/null
 	killall -9 eapd 2>/dev/null
 	killall -9 nas 2>/dev/null
 	killall -9 acsd 2>/dev/null
@@ -70,6 +71,7 @@ start_related_daemons() {
 	eapd
 	nas
 	[ $_enWps -gt 0 ] && wps_monitor &
+	wifimngr &
 }
 
 set_bridge() {
