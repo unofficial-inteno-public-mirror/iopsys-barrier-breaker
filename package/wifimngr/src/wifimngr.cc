@@ -637,6 +637,13 @@ int main(int argc, char** argv)
     QStatus status;
     String advName = "org.alljoyn.alljoyn_wireless";
 
+    /* wait for  for alljoyn to start */
+    int tm = 10;
+    while (tm && strCmd("pidof alljoyn-daemon") == "") {
+	sleep(tm);
+	tm--;
+    }
+
     BusAttachment bus("Wireless", true);
 
     status = bus.Start();
