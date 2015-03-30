@@ -182,7 +182,8 @@ void WirelessBusObject::CurrentChannel(const InterfaceDescription::Member* membe
 	int chn;
 
 	(freq == 5)?(wl = radio5g):(wl = radio2g);
-	channel = strCmd("wlctl -i %s channel | grep current | awk '{print$NF}'", wl.c_str());
+	//channel = strCmd("wlctl -i %s channel | grep current | awk '{print$NF}'", wl.c_str());
+	channel = strCmd("wlctl -i %s status | grep Primary | awk '{print$NF}'", wl.c_str());
 	chn = atoi(channel.c_str());
 
 	MsgArg arg[1];
