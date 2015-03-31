@@ -2,6 +2,7 @@ typedef struct {
 	int conntype;
 	char hostname[128];
 	char macaddr[24];
+	char wdev[8];
 } Client;
 
 void ubus_listener();

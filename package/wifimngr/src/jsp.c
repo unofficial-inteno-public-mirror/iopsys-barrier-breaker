@@ -59,7 +59,7 @@ static int add_json_object(json_object *obj)
 		if (strstr(key, "client-")) {
 			cno++;
 			ret = add_json_element(key, val);
-		} else if (!strcmp(key, "wireless") || !strcmp(key, "hostname") || !strcmp(key, "macaddr") || !strcmp(key, "connected")) {
+		} else if (!strcmp(key, "wireless") || !strcmp(key, "wdev") || !strcmp(key, "hostname") || !strcmp(key, "macaddr") || !strcmp(key, "connected")) {
 			ret = add_json_client_element(key, val);
 		}
 		if (ret)
@@ -85,6 +85,8 @@ static int add_json_client_element(const char *key, json_object *obj)
 	} else if (!strcmp(key, "wireless")) {
 		if (json_object_get_boolean(obj))
 			clients[cno].conntype = 2;
+	} else if (!strcmp(key, "wdev")) {
+		strcpy(clients[cno].wdev, json_object_get_string(obj));
 	}
 
 	return 0;

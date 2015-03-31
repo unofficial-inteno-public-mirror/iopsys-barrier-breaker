@@ -59,7 +59,7 @@ static const char* wirelessInterfaceXML =
 		"<interface name='org.allseen.Clients'>"
 			"<property name='Version' type='i' access='read'/>"
 			"<method name='GetClients'>"
-				"<arg name='clients' type='a(iss)' direction='out'/>"
+				"<arg name='clients' type='a(ssiii)' direction='out'/>"
 			"</method>"
 		"</interface>"
 	"</node>";
@@ -230,16 +230,28 @@ void WirelessBusObject::GetClients(const InterfaceDescription::Member* member, M
 	printf("GetClients method called\n");
 	Client clients[128];
 	MsgArg cln[128];
+	int freq, snr, noise, rssi;
 	int i = 0;
 
 	json_parse_clients(clients);
 	while(strlen(clients[i].macaddr) > 16) {
-		cln[i].Set("(iss)", clients[i].conntype, clients[i].hostname, clients[i].macaddr);
+		freq = 0;
+		snr = 0;
+		if (clients[i].conntype == 2) {
+			if (strcmp(clients[i].wdev, radio5g.c_str()) == 0)
+				freq = 5;
+			else if (strcmp(clients[i].wdev, radio2g.c_str()) == 0)
+				freq = 2;
+			noise = atoi(chrCmd("wlctl -i %s noise", clients[i].wdev));
+			rssi = atoi(chrCmd("wlctl -i %s rssi %s", clients[i].wdev, clients[i].macaddr));
+			snr = rssi - noise;
+		}
+		cln[i].Set("(ssiii)", clients[i].hostname, clients[i].macaddr, clients[i].conntype, freq, snr);
 		i++;
 	}
 
 	MsgArg arg[1];
-	arg[0].Set("a(iss)", i, cln);
+	arg[0].Set("a(ssiii)", i, cln);
         QStatus status = MethodReply(msg, arg, 1);
         if (status != ER_OK) {
             printf("Failed to create MethodReply for GetClients.\n");
