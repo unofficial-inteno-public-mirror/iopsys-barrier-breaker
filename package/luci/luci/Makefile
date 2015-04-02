@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.174
-PKG_SOURCE_VERSION:=a060810173cd3594ca9448766909df418d90be33
+PKG_VERSION:=inteno-1.0.175
+PKG_SOURCE_VERSION:=f0a0aae5790c7a7d5eefeb08ddc7bb8bc5ab79d2
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -500,7 +500,7 @@ define voice_module
     MAINTAINER:=Inteno
     SUBMENU:=3. Applications
     TITLE:=$(if $(2),$(2),LuCI voice $(1) module)
-    DEPENDS:=luci-app-voice $(3)
+    DEPENDS:=luci-app-voice +asterisk18-mod-res-srtp $(3)
   endef
 
   LUCI_BUILD_PACKAGES+=luci-app-voice-$(1)
