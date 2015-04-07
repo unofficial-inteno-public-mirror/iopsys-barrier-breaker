@@ -655,6 +655,7 @@ int main(int argc, char** argv)
 	sleep(tm);
 	tm--;
     }
+    sleep(1);
 
     BusAttachment bus("Wireless", true);
 
