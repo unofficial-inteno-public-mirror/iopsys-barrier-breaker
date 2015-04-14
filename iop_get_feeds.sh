@@ -10,18 +10,13 @@
 ./scripts/feeds install libsqlite3
 ./scripts/feeds install libffmpeg
 ./scripts/feeds install libjpeg
-./scripts/feeds install libusb
 ./scripts/feeds install usb-modeswitch-data
 ./scripts/feeds install usb-modeswitch
-./scripts/feeds install strace
 ./scripts/feeds install libeventlog
-./scripts/feeds install libevent2
 ./scripts/feeds install libpng
-./scripts/feeds install iperf
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
 ./scripts/feeds install minidlna
-./scripts/feeds install tcpdump
 ./scripts/feeds install smap
 ./scripts/feeds install smap-to-devinfo
 ./scripts/feeds install ddns-scripts
@@ -29,7 +24,6 @@
 ./scripts/feeds install multiwan
 ./scripts/feeds install ntpclient
 ./scripts/feeds install collectd-mod-olsrd
-./scripts/feeds install openvpn
 ./scripts/feeds install p910nd
 ./scripts/feeds install polipo
 ./scripts/feeds install radvd
