@@ -1,4 +1,4 @@
-L.network.Protocol.extend({
+L.NetworkModel.Protocol.extend({
 	protocol:    '6rd',
 	description: L.tr('IPv6-over-IPv4 (6rd)'),
 	tunnel:      true,
@@ -6,7 +6,7 @@ L.network.Protocol.extend({
 
 	populateForm: function(section, iface)
 	{
-		var wan = L.network.findWAN();
+		var wan = L.NetworkModel.findWAN();
 
 		section.taboption('general', L.cbi.InputValue, 'peeraddr', {
 			caption:     L.tr('6RD Gateway'),

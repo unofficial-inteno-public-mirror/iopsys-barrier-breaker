@@ -1,0 +1,445 @@
+.overviewLink  {
+  display: block;
+}
+
+#wps {
+	background: transparent url('../img/overview/overview-icon-wifi.png') no-repeat 0px bottom;
+	height: 35px;
+	width: 40px;
+}
+#wifi-schedule {
+	background: transparent url('../img/overview/overview-icon-notice.png') no-repeat 5px bottom;
+	height: 35px;
+	width: 40px;
+}
+.signal-on{
+	background: transparent url('../img/overview/overview-sig-quality.png') no-repeat 0px center;
+	height: 147px;  
+}
+.signal-off{
+	background: transparent url('../img/overview/overview-nosig-quality.png') no-repeat 0px center;
+	height: 147px;  
+}
+.arrows{
+  background: transparent url('../img/overview/overview-icon-arrows.png') no-repeat 5px center;
+  height: 60px;
+  width: 40px;
+}
+.drive{
+  background: transparent url('../img/overview/overview-icon-drive.png') no-repeat 1px center;
+}
+.laptop{
+  background: transparent url('../img/overview/overview-icon-laptop.png') no-repeat 2px center;
+  height: 40px;
+  width: 40px;
+}
+.notice{
+  background: transparent url('../img/overview/overview-icon-notice.png') no-repeat 5px center;
+  height: 35px;
+  width: 40px;
+}
+.wifi-off{
+  background: transparent url('../img/overview/overview-icon-wifi-off.png') no-repeat 5px center;
+}
+.wifi-on{
+  background: transparent url('../img/overview/overview-icon-wifi-on.png') no-repeat left center;
+}
+.printer{
+  background: transparent url('../img/overview/overview-icon-printer.png') no-repeat left center;
+}
+.ps{
+  background: transparent url('../img/overview/overview-icon-ps.png') no-repeat left center;
+}
+.reception{
+  background: transparent url('../img/overview/overview-icon-reception.png') no-repeat left center;
+}
+.loading{
+  background: transparent url('../img/overview/overview-icon-loading.png') no-repeat left center;
+}
+.smartphone{
+  background: transparent url('../img/overview/overview-icon-smartphone.png') no-repeat 8px center;
+  height: 50px;
+  width: 40px;
+}
+.tablet{
+  background: transparent url('../img/overview/overview-icon-tablet.png') no-repeat 5px center;
+  height: 50px;
+  width: 40px;
+}
+.telOne{
+  background: transparent url('../img/overview/overview-icon-tel-one.png') no-repeat left center;
+}
+.phone{
+  /*background: transparent url('../img/overview/overview-icon-phone.png') no-repeat left center;*/
+}
+.telTwo{
+  background: transparent url('../img/overview/overview-icon-tel-two.png') no-repeat left center;
+}
+.teluOne{
+  background: transparent url('../img/u1.png') no-repeat 11px 16px;
+}
+.teluTwo{
+  background: transparent url('../img/u2.png') no-repeat 11px 16px;
+}
+.answering-machine{
+  background: transparent url('../img/overview/overview-icon-answering-machine.png') no-repeat left center;
+  height: 35px;
+  width: 40px;
+}
+.tv{
+  background: transparent url('../img/overview/overview-icon-tv.png') no-repeat left center;
+  height: 50px;
+  width: 40px;
+}
+.wakeUpCall{
+  background: transparent url('../img/overview/overview-icon-wake-up-call.png') no-repeat 2px center;
+  height: 35px;
+  width: 40px;
+}
+.wifi{
+  background: transparent url('../img/overview/overview-icon-wifi.png') no-repeat left center;
+}
+.smallArrow{
+  background: transparent url('../img/overview/overview-icon-small-arrow.png') no-repeat right center;
+  width:100px;
+}
+.smallArrowUp{
+  background: transparent url('../img/overview/overview-icon-small-arrow-up.png') no-repeat right center;
+}
+.faxU{
+  background: transparent url('../img/overview/overview-icon-fax-u.png') no-repeat left center;
+}
+.faxN{
+  background: transparent url('../img/overview/overview-icon-fax-n.png') no-repeat left center;
+}
+.isdn{
+  background: transparent url('../img/overview/overview-icon-isdn.png') no-repeat left center;
+}
+.voicemail{
+  background: transparent url('../img/overview/overview-icon-voicemail.png') no-repeat left 0px;
+}
+.voicemail-plain{
+  background: transparent url('../img/overview/overview-icon-voicemail-plain.png') no-repeat 6px center;
+}
+.phoneF{
+  background: transparent url('../img/overview/overview-icon-phoneF.png') no-repeat 10px center;
+}
+.laptop.reception{
+  background: url('../img/overview/overview-icon-laptop.png') no-repeat 2px center, url("../img/overview/overview-icon-reception.png") no-repeat scroll right center;
+}
+.smartphone.reception{
+  background: url('../img/overview/overview-icon-smartphone.png') no-repeat 8px center, url("../img/overview/overview-icon-reception.png") no-repeat scroll right center;
+}
+.tablet.reception{
+  background: url('../img/overview/overview-icon-tablet.png') no-repeat 6px center, url("../img/overview/overview-icon-reception.png") no-repeat scroll right center;
+}
+.tablet.wifi-on{
+  background: url('../img/overview/overview-icon-tablet.png') no-repeat 6px center, url("../img/overview/overview-icon-wifi-on.png") no-repeat scroll right center;
+}
+.drive.loading{
+  background: url('../img/overview/overview-icon-drive.png') no-repeat 1px center, url("../img/overview/overview-icon-loading.png") no-repeat scroll right center;
+}
+.six.smallArrow{
+  background: url('../img/overview/overview-icon-six.png') no-repeat 10px center, url("../img/overview/overview-icon-small-arrow.png") no-repeat scroll left center;
+}
+.fontArial{
+  font-size: 13px;
+  color: #000000;
+}
+.umtsStick{
+  background: transparent url('../img/overview/overview-icon-umts-stick.png') no-repeat left 7px;
+}
+.product16 .columnContent.ethernet, .product18 .columnContent.ethernet, .product26 .columnContent.ethernet, .product29 .columnContent.ethernet, .product30 .columnContent.ethernet,  .product33 .columnContent.ethernet  {
+  padding: 0 134px;
+}
+
+.task8 .columnContent.ethernet{
+  padding: 0 134px;
+}
+.columnContent{
+  width: 192px;
+  float: left;
+  padding: 0 19px 19px;
+}
+.headline{
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+.headline a{
+  color: #343434;
+}
+.columnContent .row {
+  height: 44px;
+  line-height: 44px;
+  padding-left: 40px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+.columnContent .rowMACAddress {
+  height: 39px;
+  line-height: 17px;
+  margin-bottom: 3px;
+  margin-top: 3px;
+  padding-left: 40px;
+  padding-top: 5px;
+}
+.border{
+  background: url("../img/overview/overview-lane-wide.png") no-repeat scroll center top, url("../img/overview/overview-lane-wide-bot.png") no-repeat scroll center bottom transparent;
+  padding: 5px 0;
+}
+.borderWithoutShadow{
+  background: url("../img/overview/overview-lane-plain.png") no-repeat scroll center top, url("../img/overview/overview-lane-plain.png") no-repeat scroll center bottom transparent;
+  padding: 5px 0;
+}
+.borderWithoutShadowOnlyTop{
+  background: url("../img/overview/overview-lane-plain.png") no-repeat scroll center top transparent;
+  padding: 5px 0;
+}
+.backgroundTopLeft{
+  width: 368px;
+  height: 181;
+}
+.backgroundTopRight{
+  width: 574px;
+  height: 191px;
+}
+.backgroundBot{
+  width: 743px;
+  height: 120px;
+}
+.pictureBox{
+  width: 33px;
+  height: 30px;
+}
+.contentRow{
+  width: 159;
+  height: 60;
+}
+
+.group:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.groupTable{
+  padding:0 19px;
+}
+.hlWifi{
+  float:left;
+  font-weight: bold;
+  width: 150px;
+  padding-left: 114px;
+}
+.task11.product16 .hlWifi, .task11.product18 .hlWifi, .task11.product26 .hlWifi  {
+  float:left;
+  font-weight: bold;
+  padding: 0;
+  width: 50%;
+  text-align: center;
+}
+
+.hlEthernet{
+  float:left;
+  font-weight: bold;
+  width: 150px;
+  padding-left: 70px;
+}
+.task11.product16 .hlEthernet, .task11.product18 .hlEthernet, .task11.product26 .hlEthernet  {
+  float:left;
+  font-weight: bold;
+  padding: 0;
+  width: 50%;
+  text-align: center;
+}
+
+.hlUSB{
+  float:left;
+  font-weight: bold;
+  width: 150px;
+  padding-left: 96px;
+}
+.hlPhone{
+  float:left;
+  font-weight: bold;
+  width: 150px;
+  padding-left: 73px;
+}
+
+.divGuestWifi {
+	text-align:center;
+	height:60px;
+	line-height:60px;
+}
+
+.hlGuestWifi{
+  font-weight: bold;
+  font-size:18px;
+  /*margin: 8px 0;
+  text-align: center;*/
+  display: inline-block;
+  vertical-align: middle;
+  line-height: normal;
+}
+
+.product16 .hlWifi, .product18 .hlWifi, .product26 .hlWifi, .product29 .hlWifi, .product30 .hlWifi, .product33 .hlWifi  {
+  float:left;
+  font-weight: bold;
+  width: 28%;
+  text-align: center;
+  padding: 0;
+}
+
+
+.product16 .hlEthernet, .product18 .hlEthernet, .product26 .hlEthernet, .product29 .hlEthernet, .product30 .hlEthernet, .product33 .hlEthernet  {
+  float:left;
+  font-weight: bold;
+  width: 44%;
+  text-align: center;
+  padding: 0;
+}
+
+
+.product16 .hlPhone, .product18 .hlPhone, .product26 .hlPhone, .product29 .hlPhone, .product30 .hlPhone, .product33 .hlPhone  {
+  float:left;
+  font-weight: bold;
+  width: 28%;
+  text-align: center;
+  padding: 0;
+}
+
+.task8 .hlWifi{
+  float:left;
+  font-weight: bold;
+  width: 28%;
+  text-align: center;
+  padding: 0;
+}
+
+.task8 .hlEthernet{
+  float:left;
+  font-weight: bold;
+  width: 44%;
+  text-align: center;
+  padding: 0;
+}
+
+.task8 .hlUSB{
+  float:left;
+  font-weight: bold;
+  width: 28%;
+  text-align: center;
+  padding: 0;
+}
+
+.task11 .columnContent.ethernet{
+  padding: 0 0 0 50px;
+  float: left;
+  width: 185px;
+}
+.task11 .columnContent{
+  float: left;
+  width: 185px;
+  padding: 0;
+}
+
+#captionWifi {
+	background: url("../img/overview/overview-wifi-bkg-button.png") no-repeat scroll center top;
+	height:46px;
+	padding-bottom: 30px;
+	position: relative;
+	text-align: center;
+}
+
+#captionEthernet {
+	background: url("../img/overview/overview-ethernet-bkg-button.png") no-repeat scroll center top;
+	height:46px;
+	padding-bottom: 30px;
+	position: relative;
+	text-align: center;
+}
+#captionUsb {
+	background: url("../img/overview/overview-usb-bkg-button.png") no-repeat scroll center top;
+	height:46px;
+	padding-bottom: 30px;
+	position: relative;
+	text-align: center;
+}
+#captionPhone {
+	background: url("../img/overview/overview-phone-bkg-button.png") no-repeat scroll center top;
+	height:46px;
+	padding-bottom: 30px;
+	position: relative;
+}
+#captionWifi p, #captionEthernet p, #captionUsb p, #captionPhone p {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+    right:0;
+}
+
+.statistics {
+	background: transparent url("../img/overview/overview-link.png") no-repeat scroll 85px center;
+	height:90px;
+	position:relative;
+}
+.count {
+	position:absolute;
+	top:3.3em;
+	font-weight: bold;
+}
+#countwifi {
+	left:7.3em;
+}
+#counteth {
+	left:24em;
+}
+#countusb {
+	left:36.8em;
+}
+#countphone {
+	left:53.3em;
+}
+
+.task11 .groupTable.group {
+  margin: 0 auto;
+  width: 438px;
+  padding: 0;
+}
+.task11 .headline{
+  margin: 4px auto 6px;
+  width: 463px;
+}
+
+#moreDevice, #moreDevice2, #moreDevice3,
+#hideDevice, #hideDevice2, #hideDevice3
+{
+  cursor: pointer;
+}
+
+.upDown
+{
+  font-size: 14px;
+  font-weight: bold;
+  position: absolute;
+  top: 90px;
+  left: 250px;
+}
+
+.es-es .columnContent .lh {
+  line-height: 16px;
+  margin-top: 5px;
+  height: 39px;
+}
+.attention {
+  font-size: 13px;
+  font-style: italic;
+  position: absolute;
+  right: 816px;
+  top: 46px;
+}
+
+#attention-icon {
+  left: 150px;
+  position: absolute;
+  top: 43px;
+}

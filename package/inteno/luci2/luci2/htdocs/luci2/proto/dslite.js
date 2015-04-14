@@ -1,4 +1,4 @@
-L.network.Protocol.extend({
+L.NetworkModel.Protocol.extend({
 	protocol:    'dslite',
 	description: L.tr('Dual-Stack Lite (RFC6333)'),
 	tunnel:      true,
@@ -6,7 +6,7 @@ L.network.Protocol.extend({
 
 	populateForm: function(section, iface)
 	{
-		var wan6 = L.network.findWAN6();
+		var wan6 = L.NetworkModel.findWAN6();
 
 		section.taboption('general', L.cbi.InputValue, 'peeraddr', {
 			caption:     L.tr('DS-Lite AFTR address'),

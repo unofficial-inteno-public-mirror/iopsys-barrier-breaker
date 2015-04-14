@@ -1,0 +1,12 @@
+{
+    "overview": {
+        "title": "Overview",
+        "index": 10
+    },
+	 "overview/overview": {
+        "title": "Overview",
+        "acls": [ "status" ],
+        "view": "overview/overview",
+        "index": 10
+    }
+}

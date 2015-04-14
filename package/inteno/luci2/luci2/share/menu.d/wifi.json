@@ -1,0 +1,36 @@
+{       
+    "wifi": {
+        "title": "Wifi",
+        "index": 40
+    },   
+	"wifi/general": {
+        "title": "General",
+        "acls": [ "system" ],
+        "view": "wifi/general",
+        "index": 10
+    }, 
+	"wifi/schedule": {
+        "title": "Schedule",
+        "acls": [ "internet" ],
+        "view": "wifi/schedule",
+        "index": 20
+    },
+    "wifi/wps": {
+        "title": "WPS",
+        "acls": [ "internet" ],
+        "view": "wifi/wps",
+        "index": 30
+    },
+    "wifi/mac_filter": {
+        "title": "MAC Filter",
+        "acls": [ "internet" ],
+        "view": "wifi/mac_filter",
+        "index": 40
+    },
+    "wifi/settings": {
+        "title": "Settings",
+        "acls": [ "internet" ],
+        "view": "wifi/settings",
+        "index": 50
+    }	
+}

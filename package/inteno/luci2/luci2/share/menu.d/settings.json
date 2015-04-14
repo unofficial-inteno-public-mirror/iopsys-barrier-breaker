@@ -1,0 +1,36 @@
+{       
+    "settings": {
+        "title": "Settings",
+        "index": 50
+    },   
+	"settings/easyBox_password": {
+        "title": "EasyBox Password",
+        "acls": [ "system" ],
+        "view": "settings/easyBox_password",
+        "index": 10
+    }, 
+	"settings/firmware_update": {
+        "title": "Firmware Update",
+        "acls": [ "internet" ],
+        "view": "settings/firmware_update",
+        "index": 20
+    },
+    "settings/energy_settings": {
+        "title": "Energy Settings",
+        "acls": [ "internet" ],
+        "view": "settings/energy_settings",
+        "index": 30
+    },
+    "settings/configuration": {
+        "title": "Configuration",
+        "acls": [ "internet" ],
+        "view": "settings/configuration",
+        "index": 40
+    },
+    "settings/network": {
+        "title": "Network",
+        "acls": [ "internet" ],
+        "view": "settings/network",
+        "index": 50
+    }	
+}

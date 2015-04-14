@@ -27,7 +27,7 @@
 			}
 		}
 	},
-
+	
 	"status": {
 		"description": "Status information display",
 		"read": {
@@ -35,8 +35,7 @@
 				"iwinfo": [
 					"devices",
 					"info",
-					"assoclist",
-					"phyname"
+					"assoclist"
 				],
 				"system": [
 					"info",
@@ -57,7 +56,11 @@
 					"diskfree",
 					"syslog",
 					"dmesg",
-					"process_list"
+					"process_list",
+					"date"
+				],
+				"router": [
+					"clients"
 				]
 			}
 		},
@@ -344,7 +347,7 @@
 			]
 		}
 	},
-
+	
 	"firewall": {
 		"description": "Firewall configuration",
 		"read": {

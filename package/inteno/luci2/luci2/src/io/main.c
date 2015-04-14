@@ -503,7 +503,7 @@ init_parser(void)
 	const char *var;
 
 	multipart_parser *p;
-	static multipart_parser_settings s = {
+	multipart_parser_settings s = {
 		.on_part_data        = data_cb,
 		.on_headers_complete = data_begin_cb,
 		.on_part_data_end    = data_end_cb,

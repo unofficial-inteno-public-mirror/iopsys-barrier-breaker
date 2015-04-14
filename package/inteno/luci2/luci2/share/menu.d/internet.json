@@ -1,0 +1,31 @@
+{
+    "internet": {
+        "title": "Internet",
+        "index": 30
+    },   
+	"internet/firewall": {
+        "title": "Firewall",
+        "acls": [ "system" ],
+        "view": "internet/firewall",
+        "index": 10
+    }, 
+	"internet/port_mapping": {
+        "title": "Port Mapping",
+        "acls": [ "internet" ],
+        "view": "internet/port_mapping",
+        "index": 20
+    },
+    "internet/exposed_host": {
+        "title": "Exposed Host",
+        "acls": [ "internet" ],
+        "view": "internet/exposed_host",
+        "index": 30
+    },
+    "internet/dns_ddns": {
+        "title": "DNS & DDNS",
+        "acls": [ "internet" ],
+        "view": "internet/dns_ddns",
+        "index": 40
+    }
+	
+}

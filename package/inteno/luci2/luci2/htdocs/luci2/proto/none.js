@@ -1,4 +1,4 @@
-L.network.Protocol.extend({
+L.NetworkModel.Protocol.extend({
 	protocol:    'none',
 	description: L.tr('Unmanaged'),
 	tunnel:      false,

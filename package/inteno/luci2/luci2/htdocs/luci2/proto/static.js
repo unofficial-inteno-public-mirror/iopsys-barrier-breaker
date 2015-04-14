@@ -1,4 +1,4 @@
-L.network.Protocol.extend({
+L.NetworkModel.Protocol.extend({
 	protocol:    'static',
 	description: L.tr('Static address'),
 	tunnel:      false,
@@ -39,7 +39,7 @@ L.network.Protocol.extend({
 
 	populateForm: function(section, iface)
 	{
-		var device = L.network.getDeviceByInterface(iface);
+		var device = L.NetworkModel.getDeviceByInterface(iface);
 
 		section.taboption('general', L.cbi.InputValue, 'ipaddr', {
 			caption:  L.tr('IPv4 address'),

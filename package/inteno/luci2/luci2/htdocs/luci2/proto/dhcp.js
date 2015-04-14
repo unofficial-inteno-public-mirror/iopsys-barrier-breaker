@@ -1,4 +1,4 @@
-L.network.Protocol.extend({
+L.NetworkModel.Protocol.extend({
 	protocol:    'dhcp',
 	description: L.tr('DHCP client'),
 	tunnel:      false,

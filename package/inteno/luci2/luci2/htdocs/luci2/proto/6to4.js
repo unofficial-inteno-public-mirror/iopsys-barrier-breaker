@@ -1,4 +1,4 @@
-L.network.Protocol.extend({
+L.NetworkModel.Protocol.extend({
 	protocol:    '6to4',
 	description: L.tr('IPv6-over-IPv4 (6to4)'),
 	tunnel:      true,
@@ -12,7 +12,7 @@ L.network.Protocol.extend({
 			datatype:    'ip4addr',
 			optional:    true
 		}).load = function() {
-			var wan = L.network.findWAN();
+			var wan = L.NetworkModel.findWAN();
 			if (wan)
 				this.options.placeholder = wan.getIPv4Addrs()[0];
 		};

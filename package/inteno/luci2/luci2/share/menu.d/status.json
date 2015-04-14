@@ -1,36 +1,66 @@
 {
     "status": {
+        "title": "Status & Support",
+        "index": 60
+    },
+    "status/status": {
         "title": "Status",
+        "acls": [ "status" ],
+        "view": "status/status",
         "index": 10
     },
-    "status/overview": {
-        "title": "Overview",
-        "acls": [ "status" ],
-        "view": "status/overview",
-        "index": 10
+	"status/status/dsl": {
+        "title": "DSL",
+        "acls": [ "system" ],
+        "view": "status/status/dsl",
+        "index": 60
     },
-    "status/routes": {
-        "title": "Routes",
-        "acls": [ "status" ],
-        "view": "status/routes",
+    "status/status/voice": {
+        "title": "Voice",
+        "acls": [ "system" ],
+        "view": "status/status/voice",
+        "index": 70
+    },
+    "status/status/vodaphone_tv": {
+        "title": "Vodaphone TV",
+        "acls": [ "system" ],
+        "view": "status/status/vodaphone_tv",
+        "index": 80
+    },
+	"status/nat_mapping_table": {
+        "title": "NAT Mapping Table",
+        "acls": [ "system" ],
+        "view": "status/nat_mapping_table",
         "index": 20
     },
-    "status/syslog": {
-        "title": "System Log",
-        "acls": [ "status" ],
-        "view": "status/syslog",
+	"status/diagnostic_utility": {
+        "title": "Diagnostic Utility",
+        "acls": [ "system" ],
+        "view": "status/diagnostic_utility",
         "index": 30
     },
-    "status/dmesg": {
-        "title": "Kernel Log",
-        "acls": [ "status" ],
-        "view": "status/dmesg",
+	"status/diagnostic_utility/vodafone_tv": {
+        "title": "Vodafone TV",
+        "acls": [ "system" ],
+        "view": "status/diagnostic_utility/vodafone_tv",
+        "index": 10
+    },
+	"status/event_log": {
+        "title": "Event log",
+        "acls": [ "system" ],
+        "view": "status/event_log",
         "index": 40
     },
-    "status/processes": {
-        "title": "Processes",
-        "acls": [ "status" ],
-        "view": "status/processes",
+	"status/restart": {
+        "title": "Restart",
+        "acls": [ "system" ],
+        "view": "status/restart",
         "index": 50
-    }
+    },
+	"status/about": {
+        "title": "About",
+        "acls": [ "system" ],
+        "view": "status/about",
+        "index": 60
+    },
 }
