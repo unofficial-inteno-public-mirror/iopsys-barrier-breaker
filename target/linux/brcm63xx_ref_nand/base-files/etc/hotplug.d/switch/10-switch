@@ -17,86 +17,35 @@ delif() {
 	fi
 }
 
+# true if speed on interface is Gbit
 gigatest() {
 	local speed=$(ethctl $INTERFACE media-type 2>&1 | awk '{if (NR == 2) print $6}')
 	case "$speed" in
-		1000*) return 1 ;;
-		*) return 0 ;;
+		1000*) return 0 ;;
+		*) return 1 ;;
 	esac
 }
 
-ethtest () {
+# true if there is a link on any lan port
+lan_test () {
 	local landev=$(db get hw.board.ethernetLanPorts)
 	local ledontest
 	for dev in $landev; do
 		ledontest=$(cat /sys/class/net/$dev/operstate)
 		if [ "$ledontest" == "up" ]; then
-			return 1
+			return 0
 		fi
 	done
-	return 0
+	return 1
 }
 
+# true if adsl or vdsl is up.
 dsltest() {
 	if cat /var/state/layer2_interface 2>/dev/null | grep 'adsl\|vdsl' | grep up; then
-		return 1
-	else
 		return 0
+	else
+		return 1
 	fi
-}
-
-# Unfortunately, /sys/class/net/$if/speed and .../duplex seems not to
-# be supported by the drivers. So parse the messy output of ethctl $if
-# media-type instead. Return a string like "100FD", as used by ethctl
-# for setting the media type (except that "1000FD" is not a valid
-# setting; one has to use auto instead).
-getspeed() {
-    ethctl "$1" media-type 2>&1 | awk '
-BEGIN { auto = speed = up = 0; }
-/Auto-negotiation enabled/ { auto = 1; }
-/The autonegotiated media type is/ {
-  speed = $6;
-  sub(/[^0-9]*$/, "", speed);
-  if ($7 == "Full")
-    speed = (speed "FD");
-  else if ($7 == "Half")
-    speed = (speed "HD");
-}
-/Speed fixed at.*full-duplex/ {
-  speed = sprintf("%sFD", $4);
-}
-/Speed fixed at.*half-duplex/ {
-  speed = sprintf("%sHD", $4);
-}
-/Link is up/ { up = 1; }
-END {
-  if (up && speed) print speed;
-  else exit 1;
-}
-'
-}
-
-ifacechain () {
-    local ifname
-    local iffrom
-    local ifto
-    
-    read iffrom ifto <<EOF
-`db show hw.board.ifacechain | sed 's/^.*=//`
-EOF
-    [ "$iffrom" = "$INTERFACE" ] && {
-	local speed=$(getspeed $INTERFACE)
-	if [ $? = 0 ] ; then
-	    logger -t DEBUG "iface-chain: Setting $ifto to $speed"
-	    # It would make sense to set *both* interfaces to fixed speed,
-	    # but apparently the builtin EG300 GMAC (eth0) doesn't get link
-	    # if we set it to anything but auto.
-	    #
-	    # Instead, always keep auto negotiation enabled, but
-	    # advertise only the desired speed and duplex.
-	    ethctl "$ifto" media-type advertise "$speed" auto 2>/dev/null
-	fi
-    }
 }
 
 case "$ACTION" in
@@ -107,25 +56,26 @@ case "$ACTION" in
 		addif
 		local interfname=$(interfacename $INTERFACE)
 		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
-		if [ "$operstate" == "up" ]; then
+#		if [ "$operstate" == "up" ]; then
+		if true ; then
 			case "$interfname" in
 				GbE*)
-					ledctl gbe off
-					$(gigatest) || ledctl gbe alert 
-					ledctl gbe notice
-					ledctl lan on
+					ubus call led.lan           set '{"state" : "ok"}'
+					ubus call led.gbe           set '{"state" : "ok"}'
+					ubus call led.gbe_phy_link  set '{"state" : "ok"}'
+					ubus call led.gbe_phy_speed set '{"state": "off"}'
+					$(gigatest) && ubus call led.gbe_phy_speed set '{"state":"ok"}'
 				;;
 				LAN*)
-					ledctl lan on
+					ubus call led.lan set '{"state":"ok"}'
 				;;
 				WAN*)
-					ledctl wan off
-					$(gigatest) || ledctl wan alert
-					ledctl wan notice
-					ledctl broadband on
+					ubus call led.wan           set '{"state" : "notice"}'
+					ubus call led.wan_phy_link  set '{"state" : "ok"}'
+					ubus call led.wan_phy_speed set '{"state" : "off"}'
+					$(gigatest) && ubus call led.wan_phy_speed set '{"state":"ok"}'
 				;;
 			esac
-			ifacechain
 		fi		
 	;;
 	remove|unregister)
@@ -134,15 +84,20 @@ case "$ACTION" in
 		if [ "$operstate" == "down" ]; then
 			case "$interfname" in
 				GbE*)
-					ledctl gbe off
-					$(ethtest) && ledctl lan off
+					ubus call led.gbe           set '{"state" : "off"}'
+					ubus call led.gbe_phy_link  set '{"state" : "off"}'
+					ubus call led.gbe_phy_speed set '{"state" : "off"}'
+					$(lan_test) || ubus call led.lan set '{"state":"off"}'
 				;;
 				LAN*)
-					$(ethtest) && ledctl lan off
+					$(lan_test) || ubus call led.lan set '{"state":"off"}'
 				;;
 				WAN*)
-					ledctl wan off
-					$(dsltest) && ledctl broadband off
+					ubus call led.wan           set '{"state" : "off"}'
+					ubus call led.wan_phy_speed set '{"state" : "off"}'
+					ubus call led.wan_phy_link  set '{"state" : "off"}'
+					# is this needed here ?? don't the dsl hotplug event control this ???
+#					$(dsltest) || ubus call led.dsl set '{"state":"off"}'
 				;;
 			esac
 		fi

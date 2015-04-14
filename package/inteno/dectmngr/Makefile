@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_RELEASE:=1
-PKG_VERSION:=1.0.13
+PKG_VERSION:=1.0.22
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr.git
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=ef1a01526129db8d75377faff0a989573959995c
+PKG_SOURCE_VERSION:=30b15dc5533c1dcdea89fb245e9521a7abc4c8e0
 PKG_NAME:=dectmngr
 
 
@@ -36,11 +36,11 @@ define Package/dectmngr
   CATEGORY:=Utilities
   TITLE:=Broadcom endpoint test application
   URL:=
-  DEPENDS:= +libevent2 +libjson +natalie-dect-h
+  DEPENDS:= +libevent2 +libjson +natalie-dect-h +bcmkernel
 endef
 
 define Package/dectmngr/description
-	Broadcom endpoint test application
+	Dect proxy, manager and tools
 endef
 
 
@@ -51,6 +51,7 @@ define Package/dectmngr/install
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/dect
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_DIR) $(1)/etc/dect/
+	$(INSTALL_DIR) $(1)/etc/config/
 
 	cp $(PKG_BUILD_DIR)/dectmngr $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/atohx $(1)/usr/bin/
@@ -58,9 +59,11 @@ define Package/dectmngr/install
 	cp $(PKG_BUILD_DIR)/dectdbgd $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/dect $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/dectcalib $(1)/usr/bin/
+	cp $(PKG_BUILD_DIR)/dect_testmode $(1)/usr/bin/
 	cp files/etc/init.d/* $(1)/etc/init.d/
 	cp files/etc/hotplug.d/dect/* $(1)/etc/hotplug.d/dect/
 	cp files/etc/dect/* $(1)/etc/dect/
+	cp files/etc/config/* $(1)/etc/config/
 	cp files/sbin/dectreg $(1)/sbin/
 endef
 

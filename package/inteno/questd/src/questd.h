@@ -26,6 +26,16 @@ typedef struct {
 } Wireless;
 
 typedef struct {
+	int idle;
+	int in_network;
+	long tx_bytes;
+	long rx_bytes;
+	int tx_rate;
+	int rx_rate;
+	int rssi;
+} Detail;
+
+typedef struct {
 	bool exists;
 	bool local;
 	bool dhcp;
@@ -150,9 +160,9 @@ struct fdb_entry
 	unsigned char is_local;
 };
 
-void recalc_sleep_time(bool calc, long dec);
+void recalc_sleep_time(bool calc, int toms);
 void init_db_hw_config(void);
-bool arping(char *target, char *device);
+bool arping(char *target, char *device, int toms);
 void remove_newline(char *buf);
 void get_jif_val(jiffy_counts_t *p_jif);
 void dump_keys(Key *keys);
@@ -166,3 +176,6 @@ void get_port_stats(Port *port);
 void get_bridge_ports(char *network, char **ifname);
 void get_clients_onport(char *bridge, int portno, char **macaddr);
 void dump_usb_info(USB *usb, char *usbno);
+void clear_macaddr(void);
+char *get_macaddr(void);
+bool ndisc (const char *name, const char *ifname, unsigned flags, unsigned retry, unsigned wait_ms);
