@@ -1,0 +1,17 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+
+#: htdocs/views/about.html:2
+msgid "About"
+msgstr ""
+
+#: htdocs/views/status.overview.html:42
+msgid "Free"
+msgstr ""
+
+#: htdocs/views/about.html:3
+msgid "Test"
+msgstr ""
