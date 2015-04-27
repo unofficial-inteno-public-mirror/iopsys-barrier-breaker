@@ -39,8 +39,12 @@
 					"phyname"
 				],
 				"router": [
+<<<<<<< HEAD
 					"dslstats", 
 					"info"
+=======
+					"dslstats"
+>>>>>>> c29fad75cd5cc89b526990c4e935e462a83ebeae
 				],
 				"system": [
 					"info",

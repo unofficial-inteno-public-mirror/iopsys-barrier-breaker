@@ -7,7 +7,7 @@
 		"body-parser": "*",
 		"grunt": "*",
  		"grunt-angular-gettext": "*",
-i		"request": "*"
+		"request": "*"
  },
   "engines": {
     "node": "0.10.x",
