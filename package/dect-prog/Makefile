@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_RELEASE:=1
-PKG_VERSION:=1.0.2
+PKG_VERSION:=1.0.3
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:dect-prog.git
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dect-prog.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=025b144c9c41ecb66cc01c14178dc74becf7778c
+PKG_SOURCE_VERSION:=5986dcc95c308d6eac40ccc7e33ed0e8123781f2
 PKG_NAME:=dect-prog
 
 
@@ -47,7 +47,7 @@ define Package/dect-prog/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc/dect/
 
-	cp $(PKG_BUILD_DIR)/dect-prog $(1)/usr/bin/
+	cp $(PKG_BUILD_DIR)/src/dect-prog $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/files/dect-reset $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/files/target.bin $(1)/etc/dect/
 endef
