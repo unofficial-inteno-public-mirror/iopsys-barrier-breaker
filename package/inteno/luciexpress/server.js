@@ -83,6 +83,11 @@ app.post('/ubus', function(req, res) {
 	}, function (error, response, body) {
 		if(error){ 
 			console.log("ERROR: "+error); 
+			res.write(JSON.stringify({
+				jsonrpc: "2.0", 
+				result: [1, error]
+			}));
+			res.end(); 
 			//doLocalRPC(); 
 			return; 
 		}
