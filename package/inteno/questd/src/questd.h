@@ -36,13 +36,14 @@ typedef struct {
 } Wireless;
 
 typedef struct {
+	int connum;
 	int idle;
 	int in_network;
 	long tx_bytes;
 	long rx_bytes;
 	int tx_rate;
 	int rx_rate;
-	int rssi;
+	int snr;
 } Detail;
 
 typedef struct {

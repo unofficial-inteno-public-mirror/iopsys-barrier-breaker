@@ -88,6 +88,16 @@ static const struct blobmsg_policy host_policy[__HOST_MAX] = {
 	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
 	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
 };
+
+enum {
+	PIN,
+	__PIN_MAX,
+};
+
+
+static const struct blobmsg_policy pin_policy[__PIN_MAX] = {
+	[PIN] = { .name = "pin", .type = BLOBMSG_TYPE_STRING },
+};
 /* END POLICIES */
 
 pthread_t tid[1];
@@ -305,6 +315,8 @@ load_wireless()
 static void
 match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, char **dev)
 {
+	if(!lan->ipaddr || !lan->netmask)
+		return;
 
 	struct in_addr ip, mask, snet, host, rslt;
 
@@ -353,6 +365,7 @@ wireless_sta(Client *clnt, Detail *dtl)
 	bool there = false;
 	char tab[16];
 	int ret, tmp;
+	int noise;
 
 	for (i = 0; wireless[i].device; i++) {
 		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);
@@ -373,10 +386,45 @@ wireless_sta(Client *clnt, Detail *dtl)
 			}
 			pclose(stainfo);
 		}
+		if (there) {
+			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);
+			if ((stainfo = popen(cmnd, "r"))) {
+				fgets(line, sizeof(line), stainfo);
+				remove_newline(line);
+				noise = atoi(line);
+				pclose(stainfo);
+			}
+			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);
+			if ((stainfo = popen(cmnd, "r"))) {
+				fgets(line, sizeof(line), stainfo);
+				remove_newline(line);
+				dtl->snr = atoi(line) - noise;
+				pclose(stainfo);
+			}
+		}
 		if (there)
 			break;
 	}
 	return there;
+}
+
+static int
+active_connections(char *ipaddr)
+{
+	FILE *conn;
+	char cmnd[64];
+	char line[8];
+	int connum = 0;
+
+	sprintf(cmnd, "grep %s /proc/net/ip_conntrack | wc -l", ipaddr);
+	if ((conn = popen(cmnd, "r"))) {
+		fgets(line, sizeof(line), conn);
+		remove_newline(line);
+		connum = atoi(line);
+		pclose(conn);
+	}
+
+	return connum;
 }
 
 static void
@@ -410,6 +458,9 @@ populate_clients()
 					clients[cno].wireless = true;
 				else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
 					recalc_sleep_time(true, toms);
+
+				if (clients[cno].connected)
+					details[cno].connum = active_connections(clients[cno].hostaddr);
 				cno++;
 			}
 		}
@@ -449,6 +500,9 @@ populate_clients()
 						else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
 							recalc_sleep_time(true, toms);
 						cno++;
+
+						if (clients[cno].connected)
+							details[cno].connum = active_connections(clients[cno].hostaddr);
 					}
 				}
 			}
@@ -503,7 +557,7 @@ populate_clients6()
 			clients6[cno].exists = false;
 			clients6[cno].wireless = false;
 			memset(clients6[cno].hostname, '\0', 64);
-			if (sscanf(line, "# %s %s %d %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
+			if (sscanf(line, "# %s %s %x %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
 				clear_macaddr();
 				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, toms)))
@@ -688,10 +742,13 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
 			blobmsg_add_u32(b, "in_network", details[i].in_network);
+			blobmsg_add_u32(b, "snr", details[i].snr);
 			blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
 			blobmsg_add_u64(b, "rx_bytes", details[i].rx_bytes);
 			blobmsg_add_u32(b, "tx_rate", details[i].tx_rate);
@@ -724,6 +781,7 @@ router_dump_connected_clients(struct blob_buf *b)
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
@@ -761,6 +819,8 @@ router_dump_network_clients(struct blob_buf *b, char *net)
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
@@ -855,6 +915,7 @@ router_dump_stas(struct blob_buf *b)
 		if(strstr(clients[i].device, "br-"))
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		blobmsg_add_u32(b, "idle", details[i].idle);
 		blobmsg_add_u32(b, "in_network", details[i].in_network);
 		blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
@@ -901,6 +962,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		if(!vif)
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		blobmsg_add_u32(b, "idle", details[i].idle);
 		blobmsg_add_u32(b, "in_network", details[i].in_network);
 		blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
@@ -1053,6 +1115,8 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);
 				blobmsg_add_u8(b, "wireless", clients[i].wireless);
+				if(clients[i].connected)
+					blobmsg_add_u32(b, "active_cons", details[i].connum);
 				if(clients[i].wireless) {
 					blobmsg_add_string(b, "wdev", clients[i].wdev);
 					blobmsg_add_u32(b, "idle", details[i].idle);
@@ -1074,6 +1138,8 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);
 				blobmsg_add_u8(b, "wireless", clients[i].wireless);
+				if(clients[i].connected)
+					blobmsg_add_u32(b, "active_cons", details[i].connum);
 				if(clients[i].wireless) {
 					blobmsg_add_string(b, "wdev", clients[i].wdev);
 					blobmsg_add_u32(b, "idle", details[i].idle);
@@ -1088,6 +1154,7 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 	}
 }
 
+/* ROUTER OBJECT */
 static int
 quest_router_specific(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1443,6 +1510,153 @@ static struct ubus_object router_object = {
 	.methods = router_object_methods,
 	.n_methods = ARRAY_SIZE(router_object_methods),
 };
+/* END OF ROUTER OBJECT */
+
+/* WPS OBJECT */
+static int
+wps_pbc(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	system("killall -SIGUSR2 wps_monitor");
+	return 0;
+}
+
+static int
+wps_genpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	FILE *genpin;
+	char cmnd[16];
+	char pin[9] = { '\0' };
+
+	sprintf(cmnd, "wps_cmd genpin");
+	if ((genpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), genpin);
+		remove_newline(pin);
+		pclose(genpin);
+	}
+
+	blob_buf_init(&bb, 0);
+
+	blobmsg_add_string(&bb, "pin", pin);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_checkpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	FILE *checkpin;
+	char cmnd[32];
+	char pin[9] = { '\0' };
+	bool valid = false;
+
+	snprintf(cmnd, 32, "wps_cmd checkpin %s", blobmsg_data(tb[PIN]));
+	if ((checkpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), checkpin);
+		remove_newline(pin);
+		pclose(checkpin);
+	}
+
+	if(strlen(pin))
+		valid = true;
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_u8(&bb, "valid", valid);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_stapin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	runCmd("wps_cmd addenrollee wl0 sta_pin=%s &", blobmsg_data(tb[PIN]));
+
+	return 0;
+}
+
+static int
+wps_setpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	runCmd("wps_cmd setpin %s &", blobmsg_data(tb[PIN]));
+
+	return 0;
+}
+
+static int
+wps_showpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	FILE *showpin;
+	char cmnd[32];
+	char pin[9] = { '\0' };
+
+	sprintf(cmnd, "nvram get wps_device_pin");
+	if ((showpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), showpin);
+		remove_newline(pin);
+		pclose(showpin);
+	}
+
+	blob_buf_init(&bb, 0);
+
+	blobmsg_add_string(&bb, "pin", pin);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static struct ubus_method wps_object_methods[] = {
+	UBUS_METHOD_NOARG("pbc", wps_pbc),
+	UBUS_METHOD_NOARG("genpin", wps_genpin),
+	UBUS_METHOD("checkpin", wps_checkpin, pin_policy),
+	UBUS_METHOD("stapin", wps_stapin, pin_policy),
+	UBUS_METHOD("setpin", wps_setpin, pin_policy),
+	UBUS_METHOD_NOARG("showpin", wps_showpin),
+};
+
+static struct ubus_object_type wps_object_type =
+	UBUS_OBJECT_TYPE("wps", wps_object_methods);
+
+static struct ubus_object wps_object = {
+	.name = "wps",
+	.type = &wps_object_type,
+	.methods = wps_object_methods,
+	.n_methods = ARRAY_SIZE(wps_object_methods),
+};
+/* END OF WPS OBJECT */
 
 static void
 quest_ubus_add_fd(void)
@@ -1499,6 +1713,7 @@ quest_ubus_init(const char *path)
 	quest_ubus_add_fd();
 
 	quest_add_object(&router_object);
+	quest_add_object(&wps_object);
 
 	return 0;
 }
