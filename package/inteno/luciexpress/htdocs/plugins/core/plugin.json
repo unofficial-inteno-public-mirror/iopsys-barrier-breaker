@@ -13,7 +13,8 @@
 		"widgets/luci.top_bar", 
 		"widgets/luci.config", 
 		"widgets/uci.firewall.nat.rule.edit",
-		"widgets/core.modal"
+		"widgets/core.modal",
+        "widgets/luci.input.port"
 	],
 	"pages": {
 		"overview": {
