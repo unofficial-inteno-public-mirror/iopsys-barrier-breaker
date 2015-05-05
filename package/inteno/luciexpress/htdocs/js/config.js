@@ -71,6 +71,7 @@ angular.module("luci")
 				"uci.changes", 
 				"uci.configs",
 				"asterisk.call_log.list", 
+				"asterisk.status", 
 				"luci2.system.password_set", 
 				// local stuff for the node server. 
 				"local.features", 
