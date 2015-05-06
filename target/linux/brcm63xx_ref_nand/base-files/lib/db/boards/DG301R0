@@ -19,6 +19,12 @@ config board 'board'
 	option fxsRelayGpio '8'
 	option hasBrcmAvs '0'
 
+config pci_slot 'pci'
+        option 43a0 AC
+        option 43a2 AC
+        option 43bc AC
+        
+
 config wifi-chip '435f'
 	option bands 'b'
 
@@ -203,6 +209,17 @@ config gpio_led WAN_yellow
        option mode     direct
 
 ############### mapping led function to driver led
+config led_map led_map
+	list functions dsl
+	list functions wifi
+	list functions wps
+	list functions lan
+	list functions status
+	list functions dect	
+	list functions tv
+	list functions wan_phy_speed
+	list functions internet
+	list functions eco
 
 config led_map led_dsl
        list led_action_ok     Broadband_green=ON
