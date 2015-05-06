@@ -17,6 +17,7 @@ s/^CONFIG_BCM_CHIP_ID.*/CONFIG_BCM_CHIP_ID="63138"/g
 s/^CONFIG_PACKAGE_ice-client.*/# CONFIG_PACKAGE_ice-client is not set/g
 
 s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
+s/^# CONFIG_PACKAGE_dect-prog is not set/CONFIG_PACKAGE_dect-prog=y/g
 s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
 s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g
 
