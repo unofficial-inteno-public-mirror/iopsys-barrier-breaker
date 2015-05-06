@@ -7,7 +7,9 @@ angular.module("luci")
 			"usb_port": 		{ dvalue: true, type: Boolean }, 
 			"status_led": 	{ dvalue: true, type: Boolean }, 
 			"power_led": 		{ dvalue: true, type: Boolean }, 
-			"power_led_br":	{ dvalue: 100, type: Number }
+			"power_led_br":	{ dvalue: 100, type: Number },
+			"wifibutton": 		{ dvalue: true, type: Boolean },
+			"wpsbutton": 		{ dvalue: true, type: Boolean }
 		}, 
 		"firewall-defaults": {
 			"syn_flood":		{ dvalue: true, type: Boolean }, 
@@ -47,15 +49,19 @@ angular.module("luci")
 			"hidden": 			{ dvalue: true, type: Boolean }
 		}, 
 		"firewall-settings": {
-			"disabled":			{ dvalue: false, type: Boolean }, 
+			"disabled":			{ dvalue: false, type: Boolean },
 			"ping_wan":			{ dvalue: false, type: Boolean }
-		}, 
-		"wifi-settings": {
-			"disabled":			{ dvalue: false, type: Boolean }, 
-			"button_enabled": { dvalue: false, type: Boolean }, 
-			"scheduling": 	{ dvalue: false, type: Boolean },
-			"wps":					{ dvalue: false, type: Boolean }
-		}, 
+		},
+		"wifi-status": {
+			"wlan":		{ dvalue: true, type: Boolean },
+			"wps":		{ dvalue: true, type: Boolean },
+			"schedule":	{ dvalue: false, type: Boolean },
+			"sched_status":	{ dvalue: false, type: Boolean }
+		},
+		"wifi-schedule": {
+			"days":		{ dvalue: [], type: Array },
+			"time":		{ dvalue: "", type: String }
+		},
 		"wifi-device": {
 			"type": 			{ dvalue: "", type: String },
 			"country": 		{ dvalue: "", type: String},
@@ -101,7 +107,7 @@ angular.module("luci")
 			"macmode":		{ dvalue: 1, type: Number, allow: [ 0, 1, 2 ] },
 			"macfilter":	{ dvalue: false, type: Boolean },
 			"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
-		}, 
+		},
 		"host": {
 			"hostname":		{ dvalue: "", type: String, required: true}, 
 			"macaddr":		{ dvalue: "", type: String, match: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, required: true}
