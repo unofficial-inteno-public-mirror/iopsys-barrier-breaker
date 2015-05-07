@@ -45,11 +45,12 @@ angular.module("luci")
 			"vodafone"
 		], 
 		plugins: [
-			"hello_world", 
 			"core", 
-			"phone",
+			"phone", 
+			"settings", 
+			"status",
             "internet",
-            "router",
+			"router", 
 			"wifi"
 		], 
 		rpc: {
@@ -68,7 +69,11 @@ angular.module("luci")
 				"uci.rollback",
 				"uci.confirm", 
 				"uci.revert", 
+				"uci.changes", 
 				"uci.configs",
+				"asterisk.call_log.list", 
+				"asterisk.status", 
+				"luci2.system.password_set", 
 				// local stuff for the node server. 
 				"local.features", 
 				"local.set_rpc_host"

@@ -21,15 +21,14 @@
  */
  
 $juci.module("router")
-.state("settings", {
-	url: "/settings", 
-	onEnter: function(){
-		$juci.redirect("settings.password"); 
+.state("internet", {
+	url: "/internet", 
+	views: {
+		"content": {
+			templateUrl: "pages/internet.firewall.html", 
+		}
+	},
+	onEnter: function($state){
+		$juci.redirect("internet.firewall"); 
 	}
-})
-.state("status", {
-	url: "/status", 
-	onEnter: function(){
-		$juci.redirect("status.status"); 
-	}
-}); 
+});

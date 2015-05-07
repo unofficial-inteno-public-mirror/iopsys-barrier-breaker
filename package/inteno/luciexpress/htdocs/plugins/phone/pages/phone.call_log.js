@@ -21,23 +21,28 @@
  */
  
 $juci.module("phone")
-.controller("PhoneCallLogPageCtrl", function($scope, gettext, $tr){
-	$scope.phoneNumbers = [{
-		label: gettext("All Numbers")
-	}, {
-		label: gettext("Home Main")
-	}, {
-		label: gettext("Office")
-	}, {
-		label: gettext("Guest Room")
-	}]; 
-	$scope.callListTbl = {
-		rows: [
-			["<i class='fa fa-arrow-left'></i>", "Today", "13:12", "0171234568765", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-left'></i>", "Today", "13:12", "1123445451", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-right'></i>", "Today", "13:12", "123123123123", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-left'></i>", "Today", "13:12", "0171234568765", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-right'></i>", "Today", "13:12", "123123123123", "Office", "1:13", "<input type='checkbox'/>"]
-		]
-	}; 
+.controller("PhoneCallLogPageCtrl", function($scope, $uci, gettext, $tr){ 
+	$scope.phoneFilter = ""; 
+	$scope.uniquePhones = [];
+	$scope.phoneList = []; 
+	$rpc.asterisk.call_log.list().done(function(res){
+		var unique_phones = {}; 
+		$scope.call_log = res.call_log.map(function(log){
+			var date = new Date(log.time.replace(/CEST/g, "")); 
+			var now = new Date(); 
+			if(now.getDate() == date.getDate() && now.getMonth() == date.getMonth() && date.getFullYear() == now.getFullYear())
+				log.date = $tr(gettext("Today")); 
+			else 
+				log.date = date.getDate() + ":"+date.getMonth()+":"+date.getFullYear(); 
+			log.time = date.getHours()+":"+date.getMinutes(); 
+			unique_phones[log.from] = true; 
+			return log; 
+		}); 
+		$scope.phoneList = Object.keys(unique_phones).map(function(x){ return { from: x }; }); 
+		$scope.phoneFilter = ""; 
+		$scope.$apply(); 
+	}); 
+	$scope.onChangeFilter = function(item, model){
+		$scope.phoneFilter = model.from; 
+	}
 }); 

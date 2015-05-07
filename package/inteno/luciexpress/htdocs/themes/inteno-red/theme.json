@@ -3,5 +3,7 @@
 	"styles": [
 		"css/theme.css", 
 		"css/bootstrap.min.css"
+	],
+	"scripts": [
 	]
 }
