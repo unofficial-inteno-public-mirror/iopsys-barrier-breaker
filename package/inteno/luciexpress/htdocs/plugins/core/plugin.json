@@ -5,6 +5,7 @@
 		"widgets/luci.progress",
 		"widgets/luci.table",
 		"widgets/luci.config", 
+		"widgets/luci.dropdown", 
 		"widgets/luci.layout.naked",
 		"widgets/luci.layout.single_column",
 		"widgets/luci.layout.with_sidebar", 
@@ -15,7 +16,8 @@
 		"widgets/wifi.signal.indicator",
 		"widgets/uci.firewall.nat.rule.edit",
 		"widgets/core.modal",
-        "widgets/luci.input.port"
+        "widgets/luci.input.port",
+        "widgets/luci.input.radio"
 	],
 	"pages": {
 		"overview": {

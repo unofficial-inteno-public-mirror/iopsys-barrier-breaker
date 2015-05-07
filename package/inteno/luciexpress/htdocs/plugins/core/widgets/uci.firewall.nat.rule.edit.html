@@ -58,7 +58,7 @@
             <div class="col-xs-3"><input type="text" class="form-control" ng-model="rule.dest_port" ng-pattern="patterns.port"/></div>
         </div>
         <div ng-show="!portIsRange">
-            <luci-input-port id="publicPortId" name="publicPort" model="rule.src_port" form="ruleForm" label="Public port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+            <luci-input-port id="publicPortId" name="publicPort" model="rule.src_dport" form="ruleForm" label="Public port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
         </div>
         <div ng-show="!portIsRange">
             <luci-input-port id="privatePortId" name="privatePort" model="rule.dest_port" form="ruleForm" label="Private port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />

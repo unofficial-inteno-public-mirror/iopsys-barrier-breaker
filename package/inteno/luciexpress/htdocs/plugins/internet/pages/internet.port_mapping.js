@@ -8,23 +8,6 @@ $juci.module("internet")
 		}); 
 	} reload(); 
 	
-	$scope.showModal = 0; 
-	$scope.onAcceptModal = function(){
-		var rule = $scope.rule; 
-		//Object.keys($scope.redirects).map(function(idx) { var x = $scope.redirects[idx]; if(x[".name"] == rule[".name"]) $scope.redirects[idx] = rule; }); 
-		console.log(JSON.stringify(rule)); 
-		if(!rule[".name"]){
-			// set up the rule in uci
-			rule[".type"] = "redirect"; 
-			$uci.firewall.create(rule).done(function(rule){
-				$scope.rule_src = rule; 
-			}); 
-		} 
-		$scope.showModal = 0;  
-	};
-	$scope.onDismissModal = function(){
-		$scope.showModal = 0;
-	};
 	$scope.onAddRule = function(){
 		$scope.rule = {};
 		//$scope.redirects.push($scope.rule);  

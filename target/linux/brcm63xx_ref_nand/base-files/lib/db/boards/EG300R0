@@ -20,6 +20,11 @@ config board 'board'
 	option hasBrcmAvs '1'
 	option i2cGpioCustom 'bus0=0,23,22 bus1=1,9,8'
 
+config pci_slot 'pci'
+        option 43a0 AC
+        option 43a2 AC
+        option 43bc AC
+
 config wifi-chip '435f'
         option bands 'b'
 
@@ -199,6 +204,15 @@ config led_map led_map
        list press_indicator led_voice1
        list press_indicator led_dect
        list press_indicator led_ext
+	list functions wifi
+	list functions wps
+	list functions lan
+	list functions status
+	list functions wan
+	list functions internet
+	list functions voice1
+	list functions ext
+	list functions dect
 
 config led_map led_wifi
        list led_action_ok     'Wireless_green = ON'

@@ -10,7 +10,7 @@
 	}; 
 	Object.keys(overrides).map(function(k){
 		$juci.decorator(k, function($delegate){
-			var plugin_root = $juci.module("vodaphone").plugin_root; 
+			var plugin_root = $juci.module("vodafone").plugin_root; 
 			$delegate[1].templateUrl = plugin_root + overrides[k]; 
 			return $delegate; 
 		}); 

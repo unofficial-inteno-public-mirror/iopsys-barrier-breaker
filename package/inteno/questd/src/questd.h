@@ -1,3 +1,5 @@
+//#define _GNU_SOURCE 
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,6 +23,7 @@
 #include <libubus.h>
 
 #include "dslstats.h"
+#include "igmp.h"
 
 #define MAX_VIF		8
 #define MAX_NETWORK	16

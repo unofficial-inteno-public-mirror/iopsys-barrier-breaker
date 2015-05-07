@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("status")
 .controller("StatusVoicePageCtrl", function($scope, $rpc){
 	$rpc.asterisk.status().done(function(data){
 		if(data && data.sip){
@@ -7,6 +7,7 @@ $juci.module("router")
 				if(data.sip[k].ip) accounts.push(data.sip[k]); 
 			}); 
 			$scope.sipAccounts = accounts; 
+			$scope.$apply(); 
 		}
 	}); 
 }); 
