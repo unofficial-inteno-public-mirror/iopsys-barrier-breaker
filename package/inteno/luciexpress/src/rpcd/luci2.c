@@ -1004,6 +1004,23 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
+	struct blob_attr *tb[__RPC_BACKUP_MAX];
+	
+	blobmsg_parse(rpc_backup_policy, __RPC_BACKUP_MAX, tb,
+	              blob_data(msg), blob_len(msg));
+	
+	struct blob_attr *filename = tb[RPC_BACKUP_PASSWORD]; 
+	
+	if (filename && blobmsg_data_len(filename) > 0 && blobmsg_data(filename) && strlen(blobmsg_data(filename)) > 0){
+		const char *cmd[] = { "sysupgrade", blobmsg_data(filename), NULL };
+
+		return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
+	} 
+	
+	const char *cmd[] = { "sysupgrade", "/tmp/firmware.bin", NULL };
+
+	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
+	
 	return 0;
 }
 
