@@ -139,8 +139,8 @@ msgstr "DSL"
 msgid "Voice"
 msgstr "Telefoni"
 
-msgid "Vodaphone TV"
-msgstr "Vodaphone TV"
+msgid "Vodafone TV"
+msgstr "Vodafone TV"
 
 msgid "Diagnostics"
 msgstr "Diagnostik"
@@ -233,7 +233,7 @@ msgid "Automated Diagnostics"
 msgstr "Automatiserad diagnostik"
 
 #: htdocs/plugins/core/widgets/luci.top_bar.html:13
-#: htdocs/themes/old/vodaphone/widgets/luci.top_bar.html:13
+#: htdocs/themes/old/vodafone/widgets/luci.top_bar.html:13
 #: htdocs/themes/vodafone/widgets/luci.top_bar.html:13
 msgid "Basic"
 msgstr "Bas"
@@ -722,7 +722,7 @@ msgid "Today"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.navbar.html:4
-#: htdocs/themes/old/vodaphone/widgets/luci.navbar.html:4
+#: htdocs/themes/old/vodafone/widgets/luci.navbar.html:4
 #: htdocs/themes/vodafone/widgets/luci.navbar.html:4
 msgid "Toggle navigation"
 msgstr "Toggla navigation"
@@ -765,13 +765,13 @@ msgstr "VDSL"
 
 #: htdocs/plugins/status/pages/status.status.tv.html:7
 #, fuzzy
-msgid "Vodaphone TV Channels"
-msgstr "Vodaphone TV"
+msgid "Vodafone TV Channels"
+msgstr "Vodafone TV"
 
 #: htdocs/plugins/status/pages/status.status.tv.html:4
 #, fuzzy
-msgid "Vodaphone TV Status"
-msgstr "Vodaphone TV"
+msgid "Vodafone TV Status"
+msgstr "Vodafone TV"
 
 #: htdocs/plugins/status/pages/status.status.js:60
 msgid "Voice Ports"
@@ -1102,7 +1102,7 @@ msgstr "Om"
 msgid "status.nat.title"
 msgstr "NAT"
 
-# share/menu.d/status.vodaphone.json
+# share/menu.d/status.vodafone.json
 msgid "status.status.voice.title"
 msgstr "Telefoni"
 

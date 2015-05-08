@@ -45,7 +45,7 @@ msgid "Bandwidth"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.html:13
-#: htdocs/themes/old/vodaphone/widgets/luci.top_bar.html:13
+#: htdocs/themes/old/vodafone/widgets/luci.top_bar.html:13
 #: htdocs/themes/vodafone/widgets/luci.top_bar.html:13
 msgid "Basic"
 msgstr ""
@@ -576,7 +576,7 @@ msgid "Today"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.navbar.html:4
-#: htdocs/themes/old/vodaphone/widgets/luci.navbar.html:4
+#: htdocs/themes/old/vodafone/widgets/luci.navbar.html:4
 #: htdocs/themes/vodafone/widgets/luci.navbar.html:4
 msgid "Toggle navigation"
 msgstr ""
@@ -618,11 +618,11 @@ msgid "VDSL"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:7
-msgid "Vodaphone TV Channels"
+msgid "Vodafone TV Channels"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:4
-msgid "Vodaphone TV Status"
+msgid "Vodafone TV Status"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:59
