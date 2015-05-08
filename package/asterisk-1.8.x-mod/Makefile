@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
 
-PKG_SOURCE_VERSION:=02833e56ae32b258a9b1508315ab6f3e8a839d32
+PKG_SOURCE_VERSION:=ffdcf5be10c3d6cedb4957864fec1353a7438d14
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
@@ -141,6 +141,18 @@ endef
 define Package/asterisk18-mod-res-musiconhold/description
 $(call Package/asterisk18-mod/Default/description)
  This package provides Music On Hold support to
+ Asterisk.
+endef
+
+define Package/asterisk18-mod-res-voice
+$(call Package/asterisk18-mod/Default)
+  TITLE:=Voice client/pbx support
+  DEPENDS:= asterisk18-mod
+endef
+
+define Package/asterisk18-mod-res-voice/description
+$(call Package/asterisk18-mod/Default/description)
+ This package provides Voice Client/pbx support to
  Asterisk.
 endef
 
@@ -541,6 +553,11 @@ define Package/asterisk18-mod-res-musiconhold/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_musiconhold.so $(1)/usr/lib/asterisk/modules/
 endef
 
+define Package/asterisk18-mod-res-voice/install
+	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_voice.so $(1)/usr/lib/asterisk/modules/
+endef
+
 define Package/asterisk18-mod-chan-gtalk/conffiles
 /etc/asterisk/gtalk.conf
 /etc/asterisk/jabber.conf
@@ -715,6 +732,7 @@ $(eval $(call BuildPackage,asterisk18-mod-app-softhangup))
 $(eval $(call BuildPackage,asterisk18-mod-chan-iax2))
 $(eval $(call BuildPackage,asterisk18-mod-cdr))
 $(eval $(call BuildPackage,asterisk18-mod-res-musiconhold))
+$(eval $(call BuildPackage,asterisk18-mod-res-voice))
 $(eval $(call BuildPackage,asterisk18-mod-chan-gtalk))
 $(eval $(call BuildPackage,asterisk18-mod-chan-mobile))
 $(eval $(call BuildPackage,asterisk18-mod-res-fax))
