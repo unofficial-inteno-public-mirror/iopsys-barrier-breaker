@@ -20,8 +20,8 @@ handle_threads()
 
 handle_configs()
 {
-	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
-	BMAC=${BMAC// /}
+	local BMAC=$(db get hw.board.BaseMacAddr)
+        BMAC=${BMAC//\:/}
 	local MAC=$(printf "%X\n" $((0x$BMAC)))
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
