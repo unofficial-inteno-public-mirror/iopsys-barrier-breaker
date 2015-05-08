@@ -50,10 +50,6 @@ div.logo {
   padding: 0 10px;
 }
 
-hr.detail-line {
-
-}
-
 h3.detail-strong,
 h4.detail-strong{
     color: #333;
@@ -79,4 +75,12 @@ h4.detail-strong {
 
 .radio.radio-inline.radio-align {
     margin-top: 10px;
+}
+
+.margin-left-10 {
+    margin-left: 10px;
+}
+
+span.error {
+    color: #a94442;
 }
