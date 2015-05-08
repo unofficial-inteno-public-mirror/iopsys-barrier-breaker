@@ -114,7 +114,7 @@
     left: 0;
     margin-left: -20px;
     margin-top: -5px;
-    border: 1px solid #cccccc;
+    border: 1px solid #808080;
     border-radius: 50%;
     background-color: #fff;
     -webkit-transition: border 0.15s ease-in-out;
@@ -209,6 +209,15 @@
 }
 .radio-success input[type="radio"]:checked + label::after {
     background-color: #5cb85c;
+}
+.radio-custom input[type="radio"] + label::after {
+    background-color: #a8b400;
+}
+.radio-custom input[type="radio"]:checked + label::before {
+    border-color: #808080;
+}
+.radio-custom input[type="radio"]:checked + label::after {
+    background-color: #a8b400;
 }
 input[type="checkbox"].styled:checked + label:after {
     font-family: 'FontAwesome';

@@ -302,19 +302,19 @@ msgstr ""
 msgid "Choose Bandwidth"
 msgstr "Choose Bandwidth"
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:18
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:18
 msgid "Choose Channel"
 msgstr "Choose Channel"
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:15
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:11
 msgid "Choose Device"
 msgstr "Choose Device"
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:6
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:6
 msgid "Choose Mode"
 msgstr "Choose Mode"
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:21
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:17
 msgid "Choose Protection"
 msgstr "Choose Protection"
 
@@ -429,7 +429,6 @@ msgstr ""
 msgid "Exposed Host"
 msgstr ""
 
-#: htdocs/plugins/internet/pages/internet.exposed_host.html:8
 msgid "Exposed Host Function"
 msgstr ""
 

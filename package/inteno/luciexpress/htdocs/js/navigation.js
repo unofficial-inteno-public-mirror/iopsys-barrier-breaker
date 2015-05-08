@@ -13,7 +13,7 @@ angular.module("luci")
 		if(!path)
 			return data; 
 		return this.findLeaf(path); 
-	}
+	};
 	this.findLeaf = function(path){
 		var parts = path.split("."); 
 		var obj = data; 
@@ -26,7 +26,7 @@ angular.module("luci")
 			}
 		} 
 		return obj; 
-	}
+	};
 	this.insertLeaf = function(path, item){
 		var parts = item.path.split("."); 
 		var obj = data; 
@@ -62,7 +62,7 @@ angular.module("luci")
 			return a.index - b.index; 
 		}); 
 		return item; 
-	} 
+	};
 	this.register = function(item){
 		if(!item.path) return; 
 		item = this.insertLeaf(item.path, item); 

@@ -24,11 +24,11 @@ msgstr ""
 msgid "Active Stations"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
+#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Add clients to MAC filtering list"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:41
+#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:41
 msgid "Add currently connected hosts to the list"
 msgstr ""
 
@@ -40,7 +40,7 @@ msgstr ""
 msgid "Automated Diagnostics"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:10
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:10
 msgid "Bandwidth"
 msgstr ""
 
@@ -79,7 +79,7 @@ msgstr ""
 msgid "Change Password"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:16
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:16
 msgid "Channel"
 msgstr ""
 
@@ -87,23 +87,23 @@ msgstr ""
 msgid "Check for Update"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:12
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:12
 msgid "Choose Bandwidth"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:18
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:18
 msgid "Choose Channel"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:15
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:15
 msgid "Choose Device"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:6
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:6
 msgid "Choose Mode"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:21
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:21
 msgid "Choose Protection"
 msgstr ""
 
@@ -183,7 +183,7 @@ msgstr ""
 msgid "Enable WiFi On/Off button on EasyBox"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:4
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:4
 msgid "Enabled"
 msgstr ""
 
@@ -207,11 +207,11 @@ msgstr ""
 msgid "Expert Mode"
 msgstr ""
 
-#: htdocs/plugins/internet/pages/internet.exposed_host.html:3
+#: htdocs/plugins/router/pages/internet.exposed_host.html:3
 msgid "Exposed Host"
 msgstr ""
 
-#: htdocs/plugins/internet/pages/internet.exposed_host.html:7
+#: htdocs/plugins/router/pages/internet.exposed_host.html:7
 msgid "Exposed Host Function"
 msgstr ""
 
@@ -349,7 +349,7 @@ msgstr ""
 msgid "MAC Filter"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:4
+#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:4
 msgid "MAC Filtering"
 msgstr ""
 
@@ -384,10 +384,6 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "Noise"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.footer.js:46
-msgid "Not connected"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.number_blocking.html:4
@@ -665,7 +661,7 @@ msgstr ""
 msgid "Wifi"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:4
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:4
 msgid "Wifi Mode"
 msgstr ""
 
@@ -794,20 +790,20 @@ msgstr ""
 msgid "wifi-iface.closed"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:13
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:13
 msgid "wifi-iface.device"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:19
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:19
 msgid "wifi-iface.encryption"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:25
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:26
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:25
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:26
 msgid "wifi-iface.key"
 msgstr ""
 
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:7
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:7
 msgid "wifi-iface.ssid"
 msgstr ""
 

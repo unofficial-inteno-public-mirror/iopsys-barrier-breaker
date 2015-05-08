@@ -29,5 +29,15 @@ $juci.module("core")
 			} 
 		}); 
 		$scope.$apply(); 
-	}); 
+	});
+    $scope.onAccept = function(rule) {
+        console.log(JSON.stringify(rule));
+        if(!rule[".name"]){
+            // set up the rule in uci
+            rule[".type"] = "redirect";
+            $uci.firewall.create(rule).done(function(rule){
+                $scope.rule_src = rule;
+            });
+        }
+    }
 }); 
