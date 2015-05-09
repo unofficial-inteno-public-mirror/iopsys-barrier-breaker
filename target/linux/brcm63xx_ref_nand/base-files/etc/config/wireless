@@ -1,0 +1,6 @@
+config wifi-status 'status'
+	option wlan '1'
+	option wps '1'
+	option sched_status '0'
+	option schedule '0'
+
