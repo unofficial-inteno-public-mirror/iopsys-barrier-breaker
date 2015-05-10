@@ -219,7 +219,6 @@ angular.module("luci")
 		UCI.Field = UCIField; 
 	})(); 
 	(function(){
-		
 		function UCISection(config){
 			this[".config"] = config; 
 		}
