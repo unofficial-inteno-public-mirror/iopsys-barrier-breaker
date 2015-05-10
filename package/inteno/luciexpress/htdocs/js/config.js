@@ -9,19 +9,19 @@ angular.module("luci")
 			"tr": {
 				title: "Turkish"
 			}, 
-			"en": {
-				title: "English"
-			},
 			"de": {
 				title: "German"
 			}, 
 			"se": {
 				title: "Swedish"
+			},
+			"en": {
+				title: "English"
 			}
 		},
 		themes: [
-			"default", 
-			"inteno-red", 
+			//"default", 
+			//"inteno-red", 
 			"vodafone"
 		], 
 		plugins: [
@@ -29,7 +29,7 @@ angular.module("luci")
 			"phone", 
 			"settings", 
 			"status",
-      "internet",
+			"internet",
 			//"router", 
 			"wifi"
 		], 
