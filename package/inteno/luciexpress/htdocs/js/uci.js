@@ -527,8 +527,7 @@
 	
 	$juci.uci = window.uci = new UCI(); 
 	
-	angular.module("luci")
-	.factory('$uci', function(){
+	JUCI.app.factory('$uci', function(){
 		return $juci.uci; 
 	}); 
 
