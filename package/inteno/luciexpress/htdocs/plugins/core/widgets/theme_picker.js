@@ -10,7 +10,7 @@ $juci.module("core")
 .controller("JuciThemePickerController", function($scope, $theme, $config){
 	$scope.themes = $config.themes.map(function(x){
 		var item = {
-			id: x, 
+			value: x, 
 			label: x
 		}; 
 		if(x == $theme.getCurrentTheme()) $scope.selectedTheme = item; 
