@@ -15,26 +15,15 @@ $juci.module("core")
                 inputOuterClass: "@",
                 messageClass: "@",
                 messageOffsetClass: "@"
-            }
+            },
+            controller: "luciInputPortController"
         };
     })
-    .directive("validatePort", function () {
-        var PORT_REGEX = /^\d{1,5}$/;
-        return {
-            require: 'ngModel',
-            restrict: 'A',
-            link: function (scope, elm, attrs, ctrl) {
-                ctrl.$validators.validatePort = function (modelValue, viewValue) {
-                    if (ctrl.$isEmpty(modelValue)) { // consider empty models to be valid
-                        return true;
-                    }
-                    if (PORT_REGEX.test(viewValue)) { // valid regex
-                        if (viewValue > 0 && viewValue <= 65535) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-        }
+    .controller("luciInputPortController", function($scope, $log) {
+        $scope.data = "";
+        $scope.$watch("data", function(){
+            $log.debug('model', $scope.model);
+            $log.debug('data', $scope.data);
+            if ($scope.model) $scope.model.value = $scope.data;
+        }, true);
     });
