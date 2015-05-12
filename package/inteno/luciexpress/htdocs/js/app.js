@@ -119,7 +119,6 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 	
 	$juci.redirect(path); 
 })
-
 // TODO: figure out how to avoid forward declarations of things we intend to override. 
 .directive("luciFooter", function(){ return {} })
 .directive("luciLayoutNaked", function(){ return {} })

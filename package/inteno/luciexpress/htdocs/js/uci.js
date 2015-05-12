@@ -388,6 +388,16 @@
 		UCIConfig.prototype.$sync = function(){
 			var deferred = $.Deferred(); 
 			var self = this; 
+
+/*
+			Object.keys(self).map(function(k){
+				if(k.indexOf("@") == 0) {
+					self[k].map(function(x){
+						delete self[x[".name"]]; 
+					}); 
+					self[k].splice(1, self[k].length); 
+				}
+			}); */
 			$rpc.uci.state({
 				config: self[".name"]
 			}).done(function(data){
@@ -514,6 +524,7 @@
 	UCI.prototype.sync = function(configs){
 		var deferred = $.Deferred(); 
 		var self = this; 
+		
 		async.series([
 			function(next){
 				if(!(configs instanceof Array)) configs = [configs]; 

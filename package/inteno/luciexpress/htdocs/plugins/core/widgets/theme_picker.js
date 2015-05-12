@@ -16,10 +16,11 @@ $juci.module("core")
 		if(x == $theme.getCurrentTheme()) $scope.selectedTheme = item; 
 		return item; 
 	}); 
+	if(!$scope.selectedTheme) $scope.selectedTheme = $scope.themes[0]; 
 	$scope.onChangeTheme = function(){
 		//alert($scope.selectedTheme.id); 
-		/*$theme.changeTheme($scope.selectedTheme.id).done(function(){
+		$theme.changeTheme($scope.selectedTheme.value).done(function(){
 			window.location.reload(); 
-		}); */
+		});
 	}
 }); 
