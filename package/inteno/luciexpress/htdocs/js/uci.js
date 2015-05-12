@@ -261,10 +261,12 @@
 			set value(val){
 				if(!this.dirty && this.ovalue != val) this.dirty = true; 
 				this.uvalue = val; 
-				this.error = this.validator.validate(this); 
-				//if(errors && errors.length)	this.error = this.errors.join("\n"); 
-				//else this.error = null; 
-				this.valid = this.error == null; 
+			},
+			get error(){
+				return this.validator.validate(this); 
+			},
+			get valid(){
+				return this.validator.validate(this) == null; 
 			}
 		}
 		UCI.Field = UCIField; 
@@ -354,15 +356,16 @@
 			this.uci = uci; 
 			this[".name"] = name; 
 			this["@all"] = []; 
-			this["@deleted"] = []; 
+			//this["@deleted"] = []; 
 		}
 		
 		function _insertSection(self, item){
-			console.log("Inserting new section: "+item[".name"]); 
+			console.log("Adding local section: "+self[".name"]+"."+item[".name"]); 
 			var section = new UCI.Section(self); 
 			section.$update(item); 
-			if(!("@"+item[".type"] in self)) self["@"+item[".type"]] = []; 
-			self["@"+item[".type"]].push(section); 
+			var type = "@"+item[".type"]; 
+			if(!(type in self)) self[type] = []; 
+			self[type].push(section); 
 			self["@all"].push(section); 
 			self[item[".name"]] = section; 
 			return section; 
@@ -373,31 +376,30 @@
 		}
 		
 		function _unlinkSection(self, section){
-			for(var i = 0; i < self["@all"].length; i++){
-				if(self["@all"][i] == section) {
-					var jlist = self["@"+section[".type"]]||[]; 
-					for(var j = 0; j < jlist.length; j++){
-						if(jlist[j] == section) jlist.splice(j, 1); 
-					}
-					self["@all"].splice(i, 1); 
+			// NOTE: can not use filter() because we must edit the list in place 
+			// in order to play well with controls that reference the list! 
+			console.log("Removing local section: "+self[".name"]+"."+section[".name"]+" - "+section[".type"]); 
+			var all = self["@all"]; 
+			for(var i = 0; i < all.length; i++){
+				if(all[i][".name"] === section[".name"]) {
+					all.splice(i, 1); 
+					break; 
 				}; 
-				if(section[".name"]) delete self[section[".name"]]; 
 			}
+			var jlist = self["@"+section[".type"]]||[]; 
+			for(var j = 0; j < jlist.length; j++){
+				if(jlist[j][".name"] === section[".name"]) {
+					jlist.splice(j, 1); 
+					break; 
+				}
+			}
+			if(section[".name"]) delete self[section[".name"]]; 
 		}
 		
 		UCIConfig.prototype.$sync = function(){
 			var deferred = $.Deferred(); 
 			var self = this; 
 
-/*
-			Object.keys(self).map(function(k){
-				if(k.indexOf("@") == 0) {
-					self[k].map(function(x){
-						delete self[x[".name"]]; 
-					}); 
-					self[k].splice(1, self[k].length); 
-				}
-			}); */
 			$rpc.uci.state({
 				config: self[".name"]
 			}).done(function(data){
@@ -429,17 +431,18 @@
 		UCIConfig.prototype.$deleteSection = function(section){
 			var self = this; 
 			var deferred = $.Deferred(); 
-			console.log("Deleting section "+section[".name"]); 
+			console.log("Deleting section "+self[".name"]+"."+section[".name"]); 
 			
-			self[".need_commit"] = true; 
+			//self[".need_commit"] = true; 
 			$rpc.uci.delete({
 				"config": self[".name"], 
 				"section": section[".name"]
 			}).done(function(){
-				console.log("Deleted section "+section[".name"]+" from server"); 
 				_unlinkSection(self, section); 
+				self[".need_commit"] = true; 
 				deferred.resolve(); 
 			}).fail(function(){
+				console.error("Failed to delete section!"); 
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
@@ -462,7 +465,6 @@
 				}
 			}); 
 			var deferred = $.Deferred(); 
-			var section = _insertSection(self, item); 
 			console.log("Adding: "+item[".type"]+": "+JSON.stringify(values)); 
 			$rpc.uci.add({
 				"config": self[".name"], 
@@ -471,8 +473,10 @@
 				"values": values
 			}).done(function(state){
 				console.log("Added new section: "+state.section); 
-				section[".name"] = state.section; 
-				self[state.section] = section; 
+				item[".name"] = state.section; 
+				self[".need_commit"] = true; 
+				var section = _insertSection(self, item); 
+				//section[".new"] = true; 
 				deferred.resolve(section); 
 			}).fail(function(){
 				deferred.reject(); 
