@@ -7,11 +7,10 @@ $juci.module("core")
             replace: true,
             scope: {
                 id: "=",
-                name: "=",
                 label: "=",
                 labelClass: "=",
                 value: "=",
-                model: "=",
+                ngModel: "=",
                 inline: "="
             }
         };
