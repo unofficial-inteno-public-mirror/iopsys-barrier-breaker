@@ -169,6 +169,14 @@
 				"dns": 					{ dvalue: [], type: Array }
 			}
 		}, 
+		//"ddns": {
+		//    "interface":            { dvalue: "", type: String },
+		//    "enabled":              { dvalue: 0, type: Number },
+		//    "service_name":         { dvalue: "", type: String },
+		//    "domain":               { dvalue: "", type: String },
+		//    "username":             { dvalue: "", type: String },
+		//    "password":             { dvalue: "", type: String }
+		//},
 		"unknown": {
 			"upgrade": {
 				"fw_check_url":		{ dvalue: "", type: String, required: false},
@@ -544,7 +552,7 @@
 		var self = this; 
 		$rpc.uci.configs().done(function(response){
 			var cfigs = response.configs; 
-			if(!cfigs) { next("could not retreive list of configs!"); return; }
+			if(!cfigs) { next("could not retrieve list of configs!"); return; }
 			cfigs.map(function(k){
 				if(!(k in section_types)) {
 					console.log("Missing type definition for config "+k); 
