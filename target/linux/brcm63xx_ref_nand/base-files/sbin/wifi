@@ -1086,6 +1086,7 @@ wifi_detect() {
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local BSSID4=${BSSID:6:4}
+	local BSSID6=${BSSID:4:6}
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
@@ -1094,7 +1095,7 @@ wifi_detect() {
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
-	local PSID="$(uci -q get wireless.preferred.sid)"
+	local PSID="$(uci -q get wireless.preferred.ssid)"
 	local PENC="$(uci -q get wireless.preferred.enc)"
 	local PKEY="$(uci -q get wireless.preferred.key)"
 	local PWPS="$(uci -q get wireless.preferred.wpsb)"
@@ -1109,7 +1110,7 @@ wifi_detect() {
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
 	local PGST="$(uci -q get wireless.preferred.guest)"
 
-	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
+	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
 	[ -n "$ENCR" ] || ENCR=$PENC
 	[ -n "$KEY" ] || KEY=$PKEY
 	[ -n "$WPS" ] || WPS=$PWPS
@@ -1189,7 +1190,7 @@ config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
 	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}'
+	option ssid '${SSID}'
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
@@ -1206,7 +1207,7 @@ config wifi-iface
 	option device '$wl'
 	option network 'guest'
 	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}-Guest'
+	option ssid '${SSID}-Guest'
 	option encryption 'none'
 	option macfilter '0'
 	option wps_pbc '0'
@@ -1233,6 +1234,10 @@ EOF
 	done
 	uci -q delete wireless.preferred
 	uci commit wireless
+	sed -i "s/\$BSSID6/$BSSID6/g" /etc/config/wireless
+	sed -i "s/\$BSSID4/$BSSID4/g" /etc/config/wireless
+	sed -i "s/\$BSSID2/$BSSID2/g" /etc/config/wireless
+	sed -i "s/\$BSSID/$BSSID/g" /etc/config/wireless
 	touch /tmp/wireless/first
 }
 
