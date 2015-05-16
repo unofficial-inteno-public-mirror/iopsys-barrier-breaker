@@ -20,8 +20,8 @@
  * 02110-1301 USA
  */
  
-$juci.module("core")
-	.directive("luciLogin", function(){
+JUCI.app
+.directive("luciLogin", function(){
 		var plugin_root = $juci.module("core").plugin_root; 
 		return {
 			// accepted parameters for this tag
@@ -44,15 +44,17 @@ $juci.module("core")
 		$scope.loggedIn = $session.isLoggedIn(); 
 		$scope.errors = []; 
 		$scope.showHost = 0; 
-		$rpc.local.features().done(function(features){
-			if(features.list) features.list.map(function(x){
-				if(x.indexOf("rpcforward") == 0) {
-					$scope.showHost = 1; 
-					$scope.form.host = $localStorage.getItem("rpc_host")||""; 
-				}
+		if($rpc.local){
+			$rpc.local.features().done(function(features){
+				if(features.list) features.list.map(function(x){
+					if(x.indexOf("rpcforward") == 0) {
+						$scope.showHost = 1; 
+						$scope.form.host = $localStorage.getItem("rpc_host")||""; 
+					}
+				}); 
+				$scope.$apply(); 
 			}); 
-			$scope.$apply(); 
-		}); 
+		}
 		$scope.doLogin = function(){
 			$scope.errors = []; 
 			async.series([
@@ -92,4 +94,6 @@ $juci.module("core")
 				alert("Error logging out!");
 			});  
 		}
+
 	}); 
+		

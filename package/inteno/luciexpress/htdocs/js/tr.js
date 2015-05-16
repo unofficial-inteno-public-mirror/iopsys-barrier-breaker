@@ -1,23 +1,21 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 // service for managing session data
-angular.module("luci")
-.factory('$tr', function(gettextCatalog) {
+JUCI.app.factory('$tr', function(gettextCatalog) {
 	return function(str){
 		return gettextCatalog.getString(str); 
 	}
 });
 
-angular.module("luci")
-.factory('$languages', function($config, gettextCatalog, $localStorage) {
+JUCI.app.factory('$languages', function($config, gettextCatalog, $localStorage) {
 	gettextCatalog.currentLanguage = $localStorage.getItem("language") || "se"; 
 	return {
 		getLanguages: function(){
-			return Object.keys($config.languages).filter(function(lang){
+			return $config.languages.filter(function(lang){
 				return lang in gettextCatalog.strings; 
 			}).map(function(lang){
 				return {
-					title: $config.languages[lang].title, 
+					title: "language."+lang, 
 					short_code: lang
 				}
 			}); 

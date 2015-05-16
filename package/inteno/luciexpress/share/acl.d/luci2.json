@@ -5,8 +5,11 @@
 			"ubus": {
 				"luci2.ui": [
 					"themes"
+				], 
+				"uci": [
+					"juci"
 				]
-			}
+			}, 
 		}
 	},
 
@@ -138,7 +141,8 @@
 				"dropbear", 
 				"easybox", 
 				"hosts",
-				"voice_client"
+				"voice_client", 
+				"juci"
 			]
 		},
 		"write": {
@@ -161,7 +165,9 @@
 			"uci": [
 				"dropbear", 
 				"easybox", 
-				"hosts"
+				"hosts",
+				"voice_client", 
+				"juci"
 			]
 		}
 	},

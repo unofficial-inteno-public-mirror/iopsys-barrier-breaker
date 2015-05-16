@@ -1,13 +1,16 @@
-<div class="form-group has-feedback" ng-class="{ 'has-error': form[name].$dirty && form[name].$invalid }">
-    <label for="{{id}}" class="control-label {{labelClass}}">{{label|translate}}</label>
-    <div class="{{inputOuterClass}}">
-        <input id="{{id}}" name="{{name}}" type="text" class="form-control" ng-model="model" placeholder="Add port..." validate-port required />
-        <span ng-show="form[name].$dirty && form[name].$invalid" class="glyphicon glyphicon-remove form-control-feedback"></span>
-    </div>
-    <div class="row" ng-show="form[name].$dirty && form[name].$invalid">
-        <div class="{{messageClass}} {{messageOffsetClass}}">
-            <span class="error small margin-left-10" ng-show="form[name].$error.required">{{'error.port.required'|translate}}</span>
-            <span class="error small margin-left-10" ng-show="form[name].$error.validatePort">{{'error.port.invalid'|translate}}</span>
-        </div>
-    </div>
+<div>
+	<div ng-show="portRange">
+		<ul class="list-inline">
+			<li>
+				<input type="text" name="startPort" ng-model="startPort" class="form-control" style="width: 80px" maxlength="5" placeholder="{{'Start port'|translate}}" />
+			</li>
+			<li>to</li>
+			<li>
+				<input type="text" name="startPort" ng-model="endPort" class="form-control" style="width: 80px" maxlength="5"  placeholder="{{'End port'|translate}}" />
+			</li>
+		</ul>
+	</div>
+	<div ng-show="!portRange">
+		<input type="text" class="form-control" ng-model="port" placeholder="{{'Port (1-65535)'|translate}}" style="width: 80px" maxlength="5" />
+	</div>
 </div>

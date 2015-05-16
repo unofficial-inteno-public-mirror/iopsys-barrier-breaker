@@ -4,7 +4,7 @@ $juci.module("wifi")
 	return {
 		templateUrl: plugin_root+"/widgets/uci.wireless.schedule.edit.html", 
 		scope: {
-			schedule: "=ngModel"
+			schedule: "=schedule", 
 		}, 
 		controller: "uciWirelessScheduleEdit", 
 		replace: true, 
@@ -24,8 +24,9 @@ $juci.module("wifi")
 }).controller("uciWirelessScheduleEdit", function($scope, gettext, $uci){
 	$scope.selectedTimeFrame = []; 
 	$scope.data = {}; 
+	
 	$scope.allTimeFrames = [
-		{ label: gettext("Individual Days"), id: "inddays", value: [] }, 
+		{ label: gettext("Individual Days"), value: [] }, 
 		{ label: gettext("Every Day"), value: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] }, 
 		{ label: gettext("Every Workday"), value: ["mon", "tue", "wed", "thu", "fri"] }, 
 		{ label: gettext("All Weekend"), value: ["sat", "sun"] }
@@ -40,37 +41,28 @@ $juci.module("wifi")
 		{ label: gettext("Sunday"), value: "sun" }
 	]; 
 	$scope.selectedTimeFrame = $scope.allTimeFrames[0].value; 
-	function update_time(){
-		try {
-			function split(value) { return value.split(":").map(function(x){ return Number(x); }); };
-			var from = split($scope.data.timeFrom);
-			var to = split($scope.data.timeTo); 
-			if(from[0] >= 0 && from[0] < 24 && to[0] >= 0 && to[0] < 24 && from[1] >= 0 && from[1] < 60 && to[1] >= 0 && to[1] < 60){
-				if((from[0]*60+from[1]) < (to[0]*60+to[1])) {
-					$scope.schedule.time.value = ("0"+from[0]).slice(-2)+":"+("0"+from[1]).slice(-2)+"-"+("0"+to[0]).slice(-2)+":"+("0"+to[1]).slice(-2); 
-				} else {
-					console.log("'from' value must be less than 'to' value"); 
-				}
-			} else {
-				console.log("invalid time"); 
+	
+	(function(){
+		function update_time(){
+			if($scope.schedule){
+				$scope.schedule.time.value = ($scope.data.timeFrom||"")+"-"+($scope.data.timeTo||""); 
 			}
-		} catch(e) {}
-	}
-	$scope.$watch("data.timeFrom", function(){
-		update_time(); 
-	}, true); 
-	$scope.$watch("data.timeTo", function(){
-		update_time(); 
-	}, true);
+		}
+		
+		$scope.$watch("data.timeFrom", update_time, true); 
+		$scope.$watch("data.timeTo", update_time, true);
+	})(); 
+	
 	$scope.$watch("schedule", function(value){
-		var parts = value.time.value.split("-");//.map(function(x){ return x.split(":"); }); 
-		$scope.data.timeFrom = parts[0]; 
-		$scope.data.timeTo = parts[1]; 
-		console.log("New model" + value.time.value); 
-	}); 
-	$scope.onChangeDays = function(){ 
+		if(value != undefined && value.days && value.time){
+			$scope.data.days = value.days.value.map(function(x){ return x; }); 
+		} 
+	});
+	 
+	$scope.onChangeDays = function(value){
+		console.log("Changing days to: "+JSON.stringify($scope.selectedTimeFrame));  
 		//$scope.schedule.days.value.splice(0,$scope.schedule.days.value.length); 
-		$scope.schedule.days.value = $scope.selectedTimeFram; 
+		$scope.schedule.days.value = $scope.selectedTimeFrame; 
 		//Object.assign($scope.schedule.days.value, $scope.selectedTimeFrame); 
 	}
 }); 
