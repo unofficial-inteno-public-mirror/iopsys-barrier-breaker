@@ -12,6 +12,32 @@ require.config({
     urlArgs: 'v=1.0'
 });
 
+
+Object.assign = Object.assign || function (target, source) {
+	function ToObject(val) {
+		if (val == null) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	var from;
+	var keys;
+	var to = ToObject(target);
+
+	for (var s = 1; s < arguments.length; s++) {
+		from = arguments[s];
+		keys = Object.keys(Object(from));
+
+		for (var i = 0; i < keys.length; i++) {
+			to[keys[i]] = from[keys[i]];
+		}
+	}
+
+	return to;
+};
+
 JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider, $provide) {
 	console.log("CONF"); 
 	//$locationProvider.otherwise({ redirectTo: "/" });
@@ -68,6 +94,12 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 .run(function($rootScope, $state, $session, gettextCatalog, $tr, gettext, $rpc, $config, $location, $navigation){
 	console.log("RUN"); 
 	
+	// TODO: maybe use some other way to gather errors than root scope? 
+	$rootScope.errors = []; 
+	$rootScope.$on("error", function(ev, data){
+		$rootScope.errors.push({message: data}); 
+		console.log("ERROR: "+ev.name+": "+JSON.stringify(Object.keys(ev.currentScope))); 
+	}); 
 	// set current language
 	gettextCatalog.currentLanguage = "se"; 
 	gettextCatalog.debug = true;
@@ -81,7 +113,7 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 	// Generate states for all loaded pages
 	Object.keys($juci.plugins).map(function(pname){
 		var plugin = $juci.plugins[pname]; 
-		Object.keys(plugin.pages).map(function(k){
+		Object.keys(plugin.pages||{}).map(function(k){
 			var page = plugin.pages[k]; 
 			if(page.view){
 				//scripts.push(plugin_root + "/" + page.view); 
@@ -109,9 +141,11 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 							return deferred.promise;
 						}
 					},*/
-					onEnter: function($window){
-						document.title = $tr(k+".title")+" - "+$tr(gettext("application.name")); 
-					},
+					onEnter: function($uci, $rootScope){
+						$rootScope.errors.splice(0, $rootScope.errors.length); 
+						$uci.$revert(); 
+						document.title = $tr(k.replace(/\//g, ".")+".title")+" - "+$tr(gettext("application.name")); 
+					}
 				}); 
 			}
 		}); 
@@ -138,6 +172,18 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 				})
 		}
 }}]); 
+
+// make autofocus directive work as expected
+JUCI.app.directive('autofocus', ['$timeout', function($timeout) {
+  return {
+    restrict: 'A',
+    link : function($scope, $element) {
+      $timeout(function() {
+        $element[0].focus();
+      });
+    }
+  }
+}]);
 
 angular.element(document).ready(function() {
 	JUCI.$init().done(function(){

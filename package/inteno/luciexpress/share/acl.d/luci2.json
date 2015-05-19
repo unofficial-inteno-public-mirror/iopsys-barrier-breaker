@@ -139,9 +139,10 @@
 			},
 			"uci": [
 				"dropbear", 
-				"easybox", 
+				"boardpanel", 
 				"hosts",
-				"voice_client"
+				"voice_client", 
+				"juci"
 			]
 		},
 		"write": {
@@ -163,8 +164,10 @@
 			},
 			"uci": [
 				"dropbear", 
-				"easybox", 
-				"hosts"
+				"boardpanel", 
+				"hosts",
+				"voice_client", 
+				"juci"
 			]
 		}
 	},

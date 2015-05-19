@@ -1,8 +1,9 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-(function($juci){
+(function(scope){
 	var RPC_HOST = ""; //(($config.rpc.host)?$config.rpc.host:"")
 	var RPC_SESSION_ID = "00000000000000000000000000000000"; 
+	var RPC_DEFAULT_SESSION_ID = "00000000000000000000000000000000"; 
 	var gettext = function(text){ return text; }; 
 	var default_calls = [
 		"session.access", 
@@ -10,6 +11,7 @@
 		"local.features", 
 		"local.set_rpc_host"
 	]; 
+	
 	function rpc_request(type, namespace, method, data){
 		var sid = ""; 
 		var deferred = $.Deferred(); 
@@ -30,9 +32,8 @@
 						// an empty json object. Otherwise we have no way to differentiate success 
 						// from failure of a request. This has to be done on the host side. 
 						if(result.result[0] != 0){ // || result.result[1] == undefined) {
-							console.log("RPC succeeded, but returned error: "+JSON.stringify(result));
-							deferred.reject((function(){
-								switch(result.result[0]){
+							function _errstr(error){
+								switch(error){
 									case 0: return gettext("Parse error"); 
 									case 1: return gettext("Invalid request"); 
 									case 2: return gettext("Invalid parameters"); 
@@ -43,7 +44,9 @@
 									case 7: return gettext("Timed out"); 
 									default: return gettext("RPC error #")+result.result[0]+": "+result.result[1]; 
 								}
-							})()); 
+							}
+							console.log("RPC succeeded ("+namespace+"."+method+"), but returned error: "+JSON.stringify(result)+": "+_errstr(result.result[0]));
+							deferred.reject(_errstr(result.result[0])); 
 						} else {
 							deferred.resolve(result.result[1]);
 						}
@@ -72,6 +75,46 @@
 			if(sid) RPC_SESSION_ID = sid; 
 			else return RPC_SESSION_ID; 
 		}, 
+		$authenticate: function(){
+			var self = this; 
+			var deferred  = $.Deferred(); 
+			
+			self.session.access({
+				"keys": ""
+			}).done(function(result){
+				if(!("username" in result.data)) {
+					console.log("Session: Not authenticated!"); 
+					deferred.reject(); 
+				} else {
+					self.$session = result; 
+					if(!("data" in self.$session)) self.$session.data = {}; 
+					console.log("Session: Loggedin! "); 
+					deferred.resolve(result); 
+				}  
+			}).fail(function err(result){
+				self.sid = RPC_DEFAULT_SESSION_ID; 
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}, 
+		$login: function(opts){
+			var self = this; 
+			var deferred  = $.Deferred(); 
+			
+			self.session.login({
+				"username": opts.username, 
+				"password": opts.password
+			}).done(function(result){
+				RPC_SESSION_ID = result.ubus_rpc_session;
+				self.$session = result; 
+				//JUCI.localStorage.setItem("sid", self.sid); 
+				//if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
+				deferred.resolve(self.sid); 
+			}).fail(function(result){
+				deferred.reject(result); 
+			}); 
+			return deferred.promise(); 
+		},
 		$register: function(call){
 			//console.log("registering: "+call); 
 			if(!call) return; 
@@ -98,8 +141,11 @@
 			}
 			_find(call.split("."), self); 
 		}, 
-		$init: function(){
+		$init: function(host){
 			var self = this; 
+			if(host) {
+				if(host.host) RPC_HOST = host.host;
+			} 
 			console.log("Init UBUS"); 
 			var deferred = $.Deferred(); 
 			default_calls.map(function(x){ self.$register(x); }); 
@@ -139,11 +185,20 @@
 		}
 	}; 
 	
-	window.rpc = $juci.ubus = rpc; 
+	scope.UBUS = rpc; 
+	/*if(exports.JUCI){
+		var JUCI = exports.JUCI; 
+		JUCI.ubus = rpc; 
+		console.log(JSON.stringify(JUCI.app)); 
+		// luci rpc module for communicating with the server
+		if(JUCI.app) {
+			JUCI.app.factory('$rpc', function($rootScope, $config, gettext){
+				return window.rpc; 
+			}); 
+		}
+	} else {
+		console.log("RPC: Not registering as JUCI plugin!"); 
+	}*/
 	
-	// luci rpc module for communicating with the server
-	JUCI.app.factory('$rpc', function($rootScope, $config, gettext){
-		return window.rpc; 
-	}); 
-})(JUCI); 
+})(typeof exports === 'undefined'? this : global); 
 

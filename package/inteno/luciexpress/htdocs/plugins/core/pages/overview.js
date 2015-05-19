@@ -23,14 +23,14 @@ $juci.module("core")
 		$scope.wifiWPSStatus = gettext("off"); 
 		async.series([
 			function(next){
-				$uci.sync(["wireless", "easybox", "voice_client"]).done(function(){
+				$uci.sync(["wireless", "boardpanel", "voice_client"]).done(function(){
 					$scope.wifi = $uci.wireless; 
-					$scope.easybox = $uci.easybox; 
+					$scope.boardpanel = $uci.boardpanel; 
 					$scope.voice_client = $uci.voice_client; 
-					if($uci.wireless && $uci.wireless.status) 
+					if($uci.wireless && $uci.wireless.status) {
 						$scope.wifiSchedStatus = (($uci.wireless.status.schedule.value)?gettext("on"):gettext("off")); 
-					if($uci.wireless && $uci.wireless.wps)
-						$scope.wifiWPSStatus = (($scope.easybox.settings.wpsbutton.value)?gettext("on"):gettext("off")); 
+						$scope.wifiWPSStatus = (($uci.wireless.status.wps.value)?gettext("on"):gettext("off")); 
+					}
 					if($uci.voice_client && $uci.voice_client["@sip_service_provider"]){
 						$scope.sipAccounts = $uci.voice_client["@sip_service_provider"]; 
 					}
@@ -97,5 +97,4 @@ $juci.module("core")
 			$scope.$apply(); 
 		}); 
 	} refresh(); 
-	//setInterval(refresh, 5000); 
 }); 

@@ -24,11 +24,17 @@ local current_day=$(date | awk '{print$1}' | tr '[A-Z]' '[a-z]')
 local current_time=$(date +%H%M)
 
 nvset() {
-	uci -q set broadcom.nvram."$1"
+	local opt=$(echo $1 | cut -d'=' -f1)
+	local val=$(echo $1 | cut -d'=' -f2)
+	opt=${opt/./_}
+	uci -q set broadcom.nvram."$opt=$val"
 }
 
 nvget() {
-	uci -q get broadcom.nvram."$1"
+	local optval="$1"
+	optval=${optval/wl0./wl0_}
+	optval=${optval/wl1./wl1_}
+	uci -q get broadcom.nvram."$optval"
 }
 
 nvcommit() {
@@ -1047,8 +1053,8 @@ wifi_updown() {
 	# handle wireless led
 	ubus call led.eco set '{"state" : "off"}'
 	if [ $_enWifi -le 0 ]; then
-	    ubus call led.eco set '{"state" : "ok"}'
-	    return
+		ubus call led.eco set '{"state" : "ok"}'
+		return
 	else
 		[ -n "$(nvget wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
 		[ -n "$(nvget wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
@@ -1080,6 +1086,7 @@ wifi_detect() {
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local BSSID4=${BSSID:6:4}
+	local BSSID6=${BSSID:4:6}
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
@@ -1088,7 +1095,7 @@ wifi_detect() {
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
-	local PSID="$(uci -q get wireless.preferred.sid)"
+	local PSID="$(uci -q get wireless.preferred.ssid)"
 	local PENC="$(uci -q get wireless.preferred.enc)"
 	local PKEY="$(uci -q get wireless.preferred.key)"
 	local PWPS="$(uci -q get wireless.preferred.wpsb)"
@@ -1103,7 +1110,7 @@ wifi_detect() {
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
 	local PGST="$(uci -q get wireless.preferred.guest)"
 
-	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
+	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
 	[ -n "$ENCR" ] || ENCR=$PENC
 	[ -n "$KEY" ] || KEY=$PKEY
 	[ -n "$WPS" ] || WPS=$PWPS
@@ -1183,7 +1190,7 @@ config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
 	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}'
+	option ssid '${SSID}'
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
@@ -1200,7 +1207,7 @@ config wifi-iface
 	option device '$wl'
 	option network 'guest'
 	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}-Guest'
+	option ssid '${SSID}-Guest'
 	option encryption 'none'
 	option macfilter '0'
 	option wps_pbc '0'
@@ -1227,6 +1234,10 @@ EOF
 	done
 	uci -q delete wireless.preferred
 	uci commit wireless
+	sed -i "s/\$BSSID6/$BSSID6/g" /etc/config/wireless
+	sed -i "s/\$BSSID4/$BSSID4/g" /etc/config/wireless
+	sed -i "s/\$BSSID2/$BSSID2/g" /etc/config/wireless
+	sed -i "s/\$BSSID/$BSSID/g" /etc/config/wireless
 	touch /tmp/wireless/first
 }
 
@@ -1259,7 +1270,7 @@ wifi_onoff() {
 	cursta="${cursta:-1}"
 
 	if [ "$status" == "$cursta" ]; then
-		exit
+		return
 	fi
 
 	uci -q set wireless.status.wlan="$status"

@@ -8,15 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rpcd
-PKG_VERSION:=2014-07-04
+PKG_VERSION:=2015-05-18
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://nbd.name/luci2/rpcd.git
+PKG_SOURCE_URL:=https://github.com/mkschreder/openwrt-rpcd.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-PKG_SOURCE_VERSION:=7fd4564b8acb60254817cb341b84c6468c8c6440
+PKG_SOURCE_VERSION:=ed2a8a94f439ed673974899776f33f31894b1807
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
-PKG_MAINTAINER:=Jo-Philipp Wich <jow@openwrt.org>
+PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
 PKG_LICENSE:=ISC
 PKG_LICENSE_FILES:=
@@ -93,4 +93,4 @@ endef
 
 $(eval $(call BuildPackage,rpcd))
 $(eval $(call BuildPlugin,file,,Provides ubus calls for file and directory operations.))
-$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
+#$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
