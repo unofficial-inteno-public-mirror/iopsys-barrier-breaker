@@ -8,15 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_RELEASE:=1
-PKG_VERSION:=1.0.5
+PKG_VERSION:=1.0.1
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
-PKG_SOURCE_URL:=git@iopsys.inteno.se:dect-prog.git
+PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr2.git
 else
-PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dect-prog.git
+PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr2.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=1bf14349ff080e9ea294641b8297a436d1384c58
-PKG_NAME:=dect-prog
+PKG_SOURCE_VERSION:=3859c8e5008ccb8db1d20bfa19827f99194c7bfe
+PKG_NAME:=dectmngr2
 
 
 LDFLAGS+= \
@@ -32,24 +32,24 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/dect-prog
+define Package/dectmngr2
   CATEGORY:=Utilities
-  TITLE:=Dect programming tool
+  TITLE:=Dectmngr2
   URL:=
 endef
 
-define Package/dect-prog/description
-	Dect programming tool
+define Package/dectmngr2/description
+	Dectmngr2
 endef
 
 
-define Package/dect-prog/install
+define Package/dectmngr2/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc/dect/
 
-	cp $(PKG_BUILD_DIR)/src/dect-prog $(1)/usr/bin/
+	cp $(PKG_BUILD_DIR)/src/dectmngr2 $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/files/dect-reset $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/files/target.bin $(1)/etc/dect/
 endef
 
-$(eval $(call BuildPackage,dect-prog))
+$(eval $(call BuildPackage,dectmngr2))
