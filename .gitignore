@@ -24,3 +24,5 @@
 *#
 .emacs.desktop*
 TAGS*~
+bower_components
+node_modules
