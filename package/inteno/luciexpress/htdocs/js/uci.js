@@ -169,7 +169,7 @@
 			}
 		},
 		"network": {
-			"ineterface": {
+			"interface": {
 				"is_lan": 			{ dvalue: 1, type: Number }, 
 				"ifname":				{ dvalue: "", type: String }, 
 				"proto":				{ dvalue: "dhcp", type: String }, 
