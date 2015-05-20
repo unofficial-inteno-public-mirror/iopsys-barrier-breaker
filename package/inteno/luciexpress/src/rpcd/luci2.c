@@ -1039,7 +1039,8 @@ rpc_luci2_upgrade_test(struct ubus_context *ctx, struct ubus_object *obj,
                        struct ubus_request_data *req, const char *method,
                        struct blob_attr *msg)
 {
-	const char *fwpath = "/tmp/firmware.bin";
+	const char fwpath[255]; 
+	strcpy(fwpath, "/tmp/firmware.bin");
 
 	struct uci_package *p;
 	struct uci_element *e;
@@ -1066,7 +1067,7 @@ rpc_luci2_upgrade_test(struct ubus_context *ctx, struct ubus_object *obj,
 
 		if (ptr.o && ptr.o->type == UCI_TYPE_STRING)
 		{
-			fwpath = strdup(ptr.o->v.string);
+			strncpy(fwpath, sizeof(fwpath), ptr.o->v.string);
 		}
 
 		uci_unload(cursor, p);
@@ -1081,7 +1082,9 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
-	const char *fwpath = "/tmp/firmware.bin";
+	const char fwpath[255]; 
+	strcpy(fwpath, "/tmp/firmware.bin");
+	
 	//const char *keep = "";
 	bool found = false;
 
@@ -1089,7 +1092,7 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
 	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));
 
 	if (tb[RPC_UPGRADE_PATH] && strlen(blobmsg_data(tb[RPC_UPGRADE_PATH]))) {
-		fwpath = strdup(blobmsg_data(tb[RPC_UPGRADE_PATH]));
+		fwpath = strncpy(fwpath, sizeof(fwpath), blobmsg_data(tb[RPC_UPGRADE_PATH]));
 		found = true;
 	}
 
@@ -1122,7 +1125,7 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
 
 		if (ptr.o && ptr.o->type == UCI_TYPE_STRING)
 		{
-			fwpath = strdup(ptr.o->v.string);
+			strncpy(fwpath, sizeof(fwpath), ptr.o->v.string);
 		}
 
 		uci_unload(cursor, p);
