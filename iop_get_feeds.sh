@@ -20,7 +20,7 @@
 ./scripts/feeds install hd-idle
 ./scripts/feeds install multiwan
 ./scripts/feeds install ntpclient
-./scripts/feeds install collectd-mod-olsrd
+./scripts/feeds install collectd
 ./scripts/feeds install p910nd
 ./scripts/feeds install polipo
 ./scripts/feeds install radvd
