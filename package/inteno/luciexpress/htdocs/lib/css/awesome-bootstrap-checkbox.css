@@ -215,15 +215,6 @@
 .radio-success input[type="radio"]:checked + label::after {
     background-color: #5cb85c;
 }
-.radio-custom input[type="radio"] + label::after {
-    background-color: #a8b400;
-}
-.radio-custom input[type="radio"]:checked + label::before {
-    border-color: #808080;
-}
-.radio-custom input[type="radio"]:checked + label::after {
-    background-color: #a8b400;
-}
 input[type="checkbox"].styled:checked + label:after {
     font-family: 'FontAwesome';
     content: "\f00c";
