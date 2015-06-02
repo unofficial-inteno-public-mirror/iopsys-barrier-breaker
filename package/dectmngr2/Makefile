@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_RELEASE:=1
-PKG_VERSION:=1.0.2
+PKG_VERSION:=1.0.3
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr2.git
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr2.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=0fba0ec11a540c9aeb2ab1395513ca2542a59859
+PKG_SOURCE_VERSION:=5f531b6139b42ecf80ad3a4c6ad2d3b98892e355
 PKG_NAME:=dectmngr2
 
 
@@ -48,7 +48,6 @@ define Package/dectmngr2/install
 	$(INSTALL_DIR) $(1)/etc/dect/
 
 	cp $(PKG_BUILD_DIR)/src/dectmngr2 $(1)/usr/bin/
-	cp $(PKG_BUILD_DIR)/files/dect-reset $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/files/target.bin $(1)/etc/dect/
 endef
 
