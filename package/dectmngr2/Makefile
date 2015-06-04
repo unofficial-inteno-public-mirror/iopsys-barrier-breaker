@@ -15,7 +15,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr2.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=5f531b6139b42ecf80ad3a4c6ad2d3b98892e355
+PKG_SOURCE_VERSION:=3f0d02a0500b943ae7b7f4a6bbdf33be4e7f783c
 PKG_NAME:=dectmngr2
 
 
