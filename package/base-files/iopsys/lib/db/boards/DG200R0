@@ -15,6 +15,7 @@ config board 'board'
 	option ethernetWanPort 'eth4'
 	option adslWanPort 'atm0'
 	option vdslWanPort 'ptm0'
+	option i2cGpioCustom 'bus0=0,23,22'
 
 config pci_slot 'pci'
         option 43a0 AC

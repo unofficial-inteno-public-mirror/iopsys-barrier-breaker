@@ -30,7 +30,8 @@ int i2c_open_dev (const char *bus, int addr, unsigned long needed)
 {
 	int fd = open(bus, O_RDWR);
 	if (fd < 0) {
-		syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
+		perror("i2c error\n");
+		syslog(LOG_INFO,"%s: could not open %s\n",__func__,bus);
 		return -1;
 	}
 	if (ioctl(fd, I2C_SLAVE, addr) < 0) {
