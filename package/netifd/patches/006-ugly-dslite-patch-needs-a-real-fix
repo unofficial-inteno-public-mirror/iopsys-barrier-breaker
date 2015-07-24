@@ -1,0 +1,36 @@
+--- a/system-linux.c
++++ b/system-linux.c
+@@ -1428,7 +1455,8 @@ int system_add_ip_tunnel(const char *name, struct blob_attr *attr)
+ 	struct blob_attr *cur;
+ 	bool set_df = true;
+ 	const char *str;
+-
++	char cmdStr[4096],remoteIp[INET6_ADDRSTRLEN],addr6[INET6_ADDRSTRLEN];
++	
+ 	system_del_ip_tunnel(name);
+ 
+ 	blobmsg_parse(tunnel_attr_list.params, __TUNNEL_ATTR_MAX, tb,
+@@ -1526,6 +1554,23 @@ int system_add_ip_tunnel(const char *name, struct blob_attr *attr)
+ 		strncpy(p.name, name, sizeof(p.name));
+ 		if (tunnel_ioctl("ip6tnl0", SIOCADDTUNNEL, &p) < 0)
+ 			return -1;
++		//if (tunnel_ioctl("ip6tnl0", SIOCADDTUNNEL, &p) < 0)
++		//      return -1;
++		inet_ntop(AF_INET6, &(p.raddr), remoteIp, INET6_ADDRSTRLEN);
++		inet_ntop(AF_INET6, &(p.laddr), addr6, INET6_ADDRSTRLEN);               
++		snprintf(cmdStr, sizeof(cmdStr),"ip -6 tunnel add %s mode ip4ip6 remote %s local %s tclass inherit dscp inherit" ,name, remoteIp, addr6);
++		system(cmdStr);
++		snprintf(cmdStr, sizeof(cmdStr), "ip link set dev %s up", name);
++		system(cmdStr);
++		snprintf(cmdStr, sizeof(cmdStr), "ip -6 addr add %s dev %s", addr6,name);
++		system(cmdStr);
++		snprintf(cmdStr, sizeof(cmdStr), "ip ro add default dev %s",name);
++		system(cmdStr);
++		/* RFC 6333 section 5.7: 192.0.0.2/29 is reserved for B4 */
++		snprintf(cmdStr, sizeof(cmdStr), "ip addr add 192.0.0.2/29 dev %s",name);
++		system(cmdStr);
++		return -1;
++
+ 	} else
+ 		return -EINVAL;
+ 
