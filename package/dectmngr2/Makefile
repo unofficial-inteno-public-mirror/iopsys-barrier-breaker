@@ -15,7 +15,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr2.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=1565dda41e7bf6615912ee1a53e446fb1309f9a0
+PKG_SOURCE_VERSION:=2a5e16b98d006be468fbbc80a0c3f659f9a3396d
 PKG_NAME:=dectmngr2
 
 
@@ -46,9 +46,11 @@ endef
 define Package/dectmngr2/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/etc/dect/
+	$(INSTALL_DIR) $(1)/etc/init.d/
 
 	cp $(PKG_BUILD_DIR)/src/dectmngr2 $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/files/target.bin $(1)/etc/dect/
+	cp $(PKG_BUILD_DIR)/files/dect $(1)/etc/init.d/
 endef
 
 $(eval $(call BuildPackage,dectmngr2))
