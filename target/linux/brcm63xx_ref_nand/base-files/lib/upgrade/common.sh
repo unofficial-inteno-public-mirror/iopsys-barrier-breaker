@@ -79,6 +79,13 @@ run_ramfs() { # <command> [...]
 	exec /bin/busybox ash -c "$*"
 }
 
+kill_network() {
+	# bring down bridges
+	for br in $(ifconfig | grep "br-" | awk '{print$1}'); do
+		ifconfig $br down
+	done
+}
+
 kill_remaining() { # [ <signal> ]
 	local sig="${1:-TERM}"
 	echo -n "Sending $sig to remaining processes ... "

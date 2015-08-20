@@ -391,6 +391,8 @@ fi
 
 run_hooks "" $sysupgrade_pre_upgrade
 
+kill_network
+sleep 1
 kill_remaining TERM
 sleep 3
 kill_remaining KILL
