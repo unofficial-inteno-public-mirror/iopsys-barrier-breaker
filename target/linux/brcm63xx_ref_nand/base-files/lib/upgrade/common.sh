@@ -80,6 +80,8 @@ run_ramfs() { # <command> [...]
 }
 
 kill_network() {
+	wifi down
+
 	# bring down bridges
 	for br in $(ifconfig | grep "br-" | awk '{print$1}'); do
 		ifconfig $br down
