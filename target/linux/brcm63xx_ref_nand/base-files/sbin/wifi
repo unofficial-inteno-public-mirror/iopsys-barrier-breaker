@@ -1162,6 +1162,15 @@ wifi_detect() {
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
 	local PEXT="$(uci -q get wireless.preferred.extrassid)"
 	local PGST="$(uci -q get wireless.preferred.guest)"
+	local PGNT="$(uci -q get wireless.preferred.gnet)"
+	local PGEN="$(uci -q get wireless.preferred.genc)"
+	local PGKY="$(uci -q get wireless.preferred.gkey)"
+	local PGDS="$(uci -q get wireless.preferred.gdis)"
+
+	local GNET="${PGNT:-guest}"
+	local GENC="${PGEN:-none}"
+	local GKEY="$PGKY"
+	local GDIS="${PGDS:-1}"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
 	[ -n "$ENCR" ] || ENCR=$PENC
@@ -1280,15 +1289,16 @@ EOF
 					cat >> /etc/config/wireless <<EOF
 config wifi-iface
 	option device '$wl'
-	option network 'guest'
+	option network '${GNET:-guest}'
 	option mode 'ap'
 	option ssid '${SSID}-Guest'
-	option encryption 'none'
+	option encryption '${GENC:-none}'
+	option key '${GKEY:-$WPAKEY}'
 	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
 	option bss_max '16'
-	option disabled '1'
+	option disabled '$GDIS'
 
 EOF
 				fi
