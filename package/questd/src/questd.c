@@ -504,16 +504,12 @@ static bool
 wireless_sta(Client *clnt, Detail *dtl)
 {
 	bool there = false;
-	int i = 0;
 
-	while(stas[i].exists) {
-		if (!strcasecmp(stas[i].macaddr, clnt->macaddr)) {
+	if (!strcasecmp(clnt->hostname, "ipad") || !strcasecmp(clnt->hostname, "iphone") || 
+		!strcasecmp(clnt->hostname, "galaxy") || !strcasecmp(clnt->hostname, "android") || 
+			!strcasecmp(clnt->hostname, "tablet") || !strcasecmp(clnt->hostname, "xperia")) {
 			there = true;
-			strncpy(clnt->wdev, stas[i].wdev, sizeof(clnt->wdev));
-			dtl->snr = stas[i].snr;
-			break;
-		}
-		i++;
+			strncpy(clnt->wdev, "wl0", sizeof(clnt->wdev));
 	}
 	return there;
 }
@@ -669,7 +665,7 @@ ipv6_clients()
 static void
 populate_clients()
 {
-	wireless_assoclist();
+	//wireless_assoclist();
 	ipv4_clients();
 	ipv6_clients();
 }
