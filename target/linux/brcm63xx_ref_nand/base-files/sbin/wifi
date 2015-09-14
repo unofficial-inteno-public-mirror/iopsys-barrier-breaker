@@ -615,6 +615,7 @@ wdev_assured_settings() {
 	wlctl -i $device phy_watchdog 1
 	wlctl -i $device ap 1
 	wlctl -i $device mbss 1
+	dhdctl -i $device db1_for_mb 0
 }
 
 wdev_static_settings() {
