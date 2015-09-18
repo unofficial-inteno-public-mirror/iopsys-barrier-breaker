@@ -9,3 +9,15 @@ config timeserver ntp
 	option enable_server 0
 	list server	ntp1.sth.netnod.se
 	list server	ntp1.sth.netnod.se
+
+config log1 crashlog
+       option enable 1
+       option server crash.inteno.se
+
+config log2 corelog
+       option enable 1
+        option server crash.inteno.se
+ 
+config log3 watchdog
+        option enable 1
+ 

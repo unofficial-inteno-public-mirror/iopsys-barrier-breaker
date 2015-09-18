@@ -3,18 +3,22 @@
 START=01
 STOP=99
 
-USE_PROCD=1
 NAME=iwatchdog
 PROG=/sbin/iwatchdog
 
-start_service() {
-	procd_open_instance
-	procd_set_param command "$PROG"
-	procd_set_param respawn
-	procd_close_instance
+start()
+{
+    enable=$(/sbin/uci get system.watchdog.enable)
+    case $enable in
+       0|no|NO|false|FALSE)
+           exit 0
+           ;;
+    esac
+    
+    service_start $PROG
 }
 
-#stop() {
-#	service_stop /sbin/iwatchdog
-#}
-
+stop()
+{
+    service_stop $PROG
+}
