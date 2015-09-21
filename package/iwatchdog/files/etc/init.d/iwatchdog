@@ -6,6 +6,14 @@ STOP=99
 NAME=iwatchdog
 PROG=/sbin/iwatchdog
 
+fill_in_default()
+{
+    /sbin/uci add system log
+    /sbin/uci rename system.@log[-1]=watchdog
+    /sbin/uci set system.watchdog.enable=no
+    /sbin/uci commit
+}
+
 start()
 {
     enable=$(/sbin/uci get system.watchdog.enable)
@@ -13,7 +21,11 @@ start()
        0|no|NO|false|FALSE)
            exit 0
            ;;
-    esac
+	"")
+	    fill_in_default
+	    exit 0
+	    ;;
+     esac
     
     service_start $PROG
 }
