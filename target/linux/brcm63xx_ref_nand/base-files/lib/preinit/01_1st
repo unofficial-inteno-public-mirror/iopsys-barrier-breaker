@@ -18,6 +18,13 @@ White='\033[0;37m'        # White
 
 boot_reason() {
     manual=$(cat /overlay/etc/reboot 2>/dev/null)
+
+    if [ -z "$manual" ]
+    then
+	# default reset or first boot
+	manual=$(cat /etc/reboot 2>/dev/null)
+    fi
+    
     reason=$(cat /proc/watchdog  | grep reason | cut -d= -f2)
 
     store=""
