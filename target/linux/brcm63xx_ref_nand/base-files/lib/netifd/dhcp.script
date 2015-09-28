@@ -164,15 +164,15 @@ iup() {
 	if [ $vendorspecinf ]; then
 		url=${vendorspecinf%%,*}; rest=${vendorspecinf#*,}
 		provisioningcode=${rest%%,*};
-		uci_set_state provisioning iup urlcwmp "$url"
+		uci_set_state provisioning iup url "$url"
 		uci_set_state provisioning iup provisioningcode "$provisioningcode"
 	elif [ $httpurl128 ]; then
-		uci_set_state provisioning iup url "$httpurl128"
+		uci_set_state provisioning iup urliup "$httpurl128"
 	elif [ $tftp ]; then
 		if [ ${bootfile:0:1} == '/' ]; then 
-			uci_set_state provisioning iup url "tftp://$tftp$bootfile"
+			uci_set_state provisioning iup urliup "tftp://$tftp$bootfile"
 		else
-			uci_set_state provisioning iup url "tftp://$tftp/$bootfile"
+			uci_set_state provisioning iup urliup "tftp://$tftp/$bootfile"
 		fi
 	fi
 }
