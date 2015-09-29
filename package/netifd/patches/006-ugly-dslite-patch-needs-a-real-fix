@@ -1,6 +1,6 @@
 --- a/system-linux.c
 +++ b/system-linux.c
-@@ -1428,7 +1455,8 @@ int system_add_ip_tunnel(const char *name, struct blob_attr *attr)
+@@ -1455,7 +1455,8 @@ int system_add_ip_tunnel(const char *nam
  	struct blob_attr *cur;
  	bool set_df = true;
  	const char *str;
@@ -10,10 +10,12 @@
  	system_del_ip_tunnel(name);
  
  	blobmsg_parse(tunnel_attr_list.params, __TUNNEL_ATTR_MAX, tb,
-@@ -1526,6 +1554,23 @@ int system_add_ip_tunnel(const char *name, struct blob_attr *attr)
+@@ -1551,8 +1552,23 @@ int system_add_ip_tunnel(const char *nam
+ 			return -EINVAL;
+ 
  		strncpy(p.name, name, sizeof(p.name));
- 		if (tunnel_ioctl("ip6tnl0", SIOCADDTUNNEL, &p) < 0)
- 			return -1;
+-		if (tunnel_ioctl("ip6tnl0", SIOCADDTUNNEL, &p) < 0)
+-			return -1;
 +		//if (tunnel_ioctl("ip6tnl0", SIOCADDTUNNEL, &p) < 0)
 +		//      return -1;
 +		inet_ntop(AF_INET6, &(p.raddr), remoteIp, INET6_ADDRSTRLEN);
