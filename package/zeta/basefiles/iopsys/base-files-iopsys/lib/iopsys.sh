@@ -71,8 +71,8 @@ copy_old_config() {
 		if [ "$new_fs_type" == "jffs2" ]; then
 			# IOP2 jffs2 layout -> IOP3 jffs2 upgrade
 			echo "Upgrading $new_fs_type from unknown iVersion"
-			echo "Mount mtd:image_update on /mnt"
-			mount -t jffs2 -o ro mtd:image_update /mnt
+			echo "Mount mtd:rootfs_update_data on /mnt"
+			mount -t jffs2 -o ro mtd:rootfs_update_data /mnt
 			#Always copies config from IOP2
 			copy_config_from /mnt
 			umount /mnt

@@ -108,7 +108,7 @@
 
 # i2c/MTD/UBI Devices
 /lib/dev/i2c-0	c	600	0	0	89	0	0	0	-
-/lib/dev/mtd	c	600	0	0	90	0	0	2	7
+/lib/dev/mtd	c	600	0	0	90	0	0	2 8
 /lib/dev/mtd0ro	c	600	0	0	90	1	0	0	-
 /lib/dev/mtd1ro	c	600	0	0	90	3	0	0	-
 /lib/dev/mtd2ro	c	600	0	0	90	5	0	0	-
@@ -116,7 +116,8 @@
 /lib/dev/mtd4ro	c	600	0	0	90	9	0	0	-
 /lib/dev/mtd5ro	c	600	0	0	90	11	0	0	-
 /lib/dev/mtd6ro	c	600	0	0	90	13	0	0	-
-/lib/dev/mtdblock	b	600	0	0	31	0	0	1	7
+/lib/dev/mtd7ro	c	600	0	0	90	15	0	0	-
+/lib/dev/mtdblock	b	600	0	0	31	0	0	1 8
 /lib/dev/ubi	c	600	0	0	254	0	0	1	1
 /lib/dev/ubi_ctrl	c	600	0	0	10	63	0	0	-
 
