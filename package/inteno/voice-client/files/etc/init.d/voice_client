@@ -2111,6 +2111,13 @@ start_service() {
 	return
 }
 
+reload_service() {
+	start
+	asterisk -rx "core reload"
+	asterisk -rx "dialplan reload"
+	asterisk -rx "brcm reload"
+}
+
 service_triggers() {
         procd_add_reload_trigger voice_client
 }
