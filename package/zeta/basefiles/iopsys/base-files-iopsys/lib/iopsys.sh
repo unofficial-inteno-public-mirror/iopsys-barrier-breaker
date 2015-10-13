@@ -15,10 +15,26 @@ copy_config_from() {
 		tar xvzf $1/sysupgrade.tgz -C /overlay/
 	else
 		echo "Conservative copy of old config..."
-		mkdir -p /overlay/etc/dropbear
-		cp -rfdp $1/etc/dropbear/* /overlay/etc/dropbear/
-		mkdir -p /overlay/etc/config
-		for file in network dhcp wireless firewall dropbear ; do cp -rfp $1/etc/config/$file /overlay/etc/config/ ; done
+		for item in `uci show backup.services`
+		do
+			CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
+			case $(echo $item | sed -n 's/backup\.services\..*=\(.*\)/\1/p') in
+			1)
+				case $(uci -q get backup.$CONFNAME.conservative_keep) in
+				1) FILES="$FILES $(uci -q get backup.$CONFNAME.file)" ;;
+				esac
+			esac
+		done
+		for file in $FILES
+		do
+			if [ -e $1$file ]; then
+				echo "copy $1$file to /overlay$(dirname $file)/"
+				mkdir -p /overlay$(dirname $file)
+				cp -rfp $1$file /overlay$(dirname $file)/
+			else
+				echo "skip $1$file not found"
+			fi
+		done
 	fi
 	rm -f /overlay/SAVE_CONFIG
 }

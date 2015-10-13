@@ -24,11 +24,13 @@ config service 'cwmp'
 
 config service 'dropbear'
 	option desc 'Dropbear'
+	option conservative_keep 1
 	list file '/etc/config/dropbear'
 	list file '/etc/dropbear/*'
 
 config service 'firewall'
 	option desc 'Firewall'
+	option conservative_keep 1
 	list file '/etc/config/firewall'
 	option user '1'
 
@@ -73,6 +75,7 @@ config service 'multiwan'
 config service 'network'
 	option desc 'Network'
 	option detail 'Interfaces, DHCP and DNS, Hostnames, Static Routes'
+	option conservative_keep 1
 	list file '/etc/config/network'
 	list file '/etc/config/dhcp'
 	option user '0'
@@ -138,6 +141,7 @@ config service 'voice'
 
 config service 'wireless'
 	option desc 'Wireless'
+	option conservative_keep 1
 	list file '/etc/config/wireless'
 	option user '1'
 

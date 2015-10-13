@@ -200,14 +200,14 @@ add_selected_conffiles() {
 add_uci_backup_files() {
 	local file="$1"
 	for item in `uci show backup.services`
-		do
-			CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
-			case $(echo $item | sed -n 's/backup\.services\..*=\(.*\)/\1/p') in
-			1) FILES="$FILES $(uci show backup.$CONFNAME.file | sed -n 's/backup.*=\(.*\)/\1/p')" ;;
+	do
+		CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
+		case $(echo $item | sed -n 's/backup\.services\..*=\(.*\)/\1/p') in
+		1) FILES="$FILES $(uci get backup.$CONFNAME.file)" ;;
 		esac
-		done
-		echo $FILES | tr ' ' '\n' > "$file"
-		return 0
+	done
+	echo $FILES | tr ' ' '\n' > "$file"
+	return 0
 }
 
 # hooks
