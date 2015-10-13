@@ -21,42 +21,14 @@ config board 'board'
 	option sx9512_irq_pin 1
 	option sx9512_active_capsense_channels 0f
 	option sx9512_active_led_channels ff
-
-config sx9512_init_reg sx9512_init_regs
-	list regs 12
-	list regs 29
-	list regs 2A
-	list regs 2B
-	list regs 2C
-	list regs 2D
-	list regs 2E
-	list regs 2F
-
-#LED intensity level
-config sx9512_init_reg 12
-	option val 7F
-
-# BL1-7 threshold
-config sx9512_init_reg 29
-	option val 03
-
-config sx9512_init_reg 2A
-	option val 03
-
-config sx9512_init_reg 2B
-	option val 03
-
-config sx9512_init_reg 2C
-	option val 0B
-
-config sx9512_init_reg 2D
-	option val 06
-
-config sx9512_init_reg 2E
-	option val 06
-
-config sx9512_init_reg 2F
-	option val 06
+	option sx9512_led_intensity 7F
+	option sx9512_threshold_bl1 03
+	option sx9512_threshold_bl2 03
+	option sx9512_threshold_bl3 03
+	option sx9512_threshold_bl4 0B
+	option sx9512_threshold_bl5 06
+	option sx9512_threshold_bl6 06
+	option sx9512_threshold_bl7 06
 
 config pci_slot 'pci'
         option 43a0 AC
