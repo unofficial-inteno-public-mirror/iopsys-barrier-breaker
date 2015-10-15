@@ -12,7 +12,7 @@ PKG_VERSION:=0.1
 PKG_RELEASE:=1
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:endptcfg
-PKG_SOURCE_VERSION:=e6c70fe1284568474019bb4a2526043c49b57ec3
+PKG_SOURCE_VERSION:=1194b05278bd0945ca5c76436e56617b86871a65
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 
@@ -28,6 +28,10 @@ TARGET_LDFLAGS += $(BCMKERNEL_DIR)/userspace/private/apps/vodsl/telephonyProfile
 			$(BCMKERNEL_DIR)/userspace/private/apps/vodsl/endpoint/endpoint_user.o \
 			$(BCMKERNEL_DIR)/userspace/private/apps/vodsl/bos/bos.o \
 			-lpthread
+
+ifeq ($(CONFIG_BRCM_SDK_VER_416040),y)
+TARGET_CFLAGS += -DFAKE_SSP
+endif
 
 RSTRIP:=true
 export BUILD_DIR
