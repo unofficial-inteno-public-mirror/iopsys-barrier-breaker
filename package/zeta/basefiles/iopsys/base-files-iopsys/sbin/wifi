@@ -1062,6 +1062,7 @@ setup_wifi_device() {
 	# create virtual wireless interfaces
 	wlctl -i $device up
 	config_foreach create_vif wifi-iface "$device"
+	uci commit wireless
 	wlctl -i $device down
 	_cno=0
 
