@@ -595,6 +595,8 @@ create_vif() {
 		iface="$device"."$_cno"
 	fi
 
+	uci -q set wireless.$vif.ifname="$iface"
+
 	[ -n "$network" ] || network="$(find_network_of $iface)"
 
 	mbssnum=$(uci show wireless | grep "wifi-iface" | grep -c "device=$device")
@@ -674,6 +676,9 @@ wdev_assured_settings() {
 
 wdev_static_settings() {
 	local device=$1
+	wlctl -i $device up
+	wlconf $device up
+	wlctl -i $device down
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
