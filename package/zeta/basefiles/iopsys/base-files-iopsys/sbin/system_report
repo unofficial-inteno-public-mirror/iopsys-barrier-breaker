@@ -28,7 +28,7 @@ local cmd = {
     'iptables-save',
     'opkg list',
     'db show | grep has[A-Z]',
-    'freecwmp --json get InternetGatewayDevice.',
+    'icwmpd -m 1 get_value InternetGatewayDevice.',
 }
 
 function os.capture(cmd)
