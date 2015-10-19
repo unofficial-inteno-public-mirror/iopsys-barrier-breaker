@@ -388,7 +388,21 @@ void sx9512_handler_init(struct server_ctx *s_ctx)
 	DBG(1, "sx9512_active_led_channels = [%02X]", sx9512_active_led_channels);
 
 	sx9512_reg_nvm_init_defaults(&nvm, sx9512_active_capsense_channels, sx9512_active_led_channels);
-	
+
+	if((s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "sx9512_led_intensity"))) {
+		nvm.led2_on = nvm.led1_on = strtol(s,0,16);
+		DBG(1, "sx9512_led_intensity = [%02X]", nvm.led1_on);
+	}
+
+	for(i=0;i<8;i++) {
+		char tmpstr[22];
+		sprintf(tmpstr, "sx9512_threshold_bl%d", i);
+		if((s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", tmpstr))) {
+			nvm.cap_sense_thresh[i] = strtol(s,0,16);
+			DBG(1, "sx9512_threshold_bl%d = [%02X]", i, nvm.cap_sense_thresh[i]);
+		}
+	}
+
 	LIST_HEAD(sx9512_init_regs);
 	struct ucilist *node;
 	ucix_get_option_list(s_ctx->uci_ctx, "hw","sx9512_init_regs", "regs", &sx9512_init_regs);

@@ -6,6 +6,7 @@ reload_services() {
 	[ -f /etc/config/provisioning ] && /etc/init.d/iup reload
 	[ -f /etc/config/system ] && /etc/init.d/sysntpd reload
 	[ -e /var/run/asterisk/asterisk.ctl ] && /etc/init.d/asterisk reload
+	[ -f /etc/config/cwmp ] && /etc/init.d/icwmpd reload &
 }
 
 local IFACE=$1

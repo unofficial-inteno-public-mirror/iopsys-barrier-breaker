@@ -595,6 +595,8 @@ create_vif() {
 		iface="$device"."$_cno"
 	fi
 
+	uci -q set wireless.$vif.ifname="$iface"
+
 	[ -n "$network" ] || network="$(find_network_of $iface)"
 
 	mbssnum=$(uci show wireless | grep "wifi-iface" | grep -c "device=$device")
@@ -1060,6 +1062,7 @@ setup_wifi_device() {
 	# create virtual wireless interfaces
 	wlctl -i $device up
 	config_foreach create_vif wifi-iface "$device"
+	uci commit wireless
 	wlctl -i $device down
 	_cno=0
 
