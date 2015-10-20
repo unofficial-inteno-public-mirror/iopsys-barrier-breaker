@@ -42,7 +42,6 @@ static Wireless wireless[MAX_VIF];
 static Network network[MAX_NETWORK];
 static Detail details[MAX_CLIENT], details6[MAX_CLIENT];
 static Client clients[MAX_CLIENT];
-//static Client clients_old[MAX_CLIENT], clients_new[MAX_CLIENT];
 static Client6 clients6[MAX_CLIENT];
 static Sta stas[MAX_CLIENT];
 static Router router;
@@ -102,6 +101,17 @@ enum {
 
 static const struct blobmsg_policy pin_policy[__PIN_MAX] = {
 	[PIN] = { .name = "pin", .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+	ROOT_DIR,
+	FILE_TYPE,
+	__LIST_MAX,
+};
+
+static const struct blobmsg_policy list_policy[__LIST_MAX] = {
+	[ROOT_DIR] = { .name = "rootDir", .type = BLOBMSG_TYPE_STRING },
+	[FILE_TYPE] = { .name = "listFiles", .type = BLOBMSG_TYPE_BOOL },
 };
 /* END POLICIES */
 
@@ -450,58 +460,6 @@ wireless_assoclist()
 	}
 }
 
-/*static bool*/
-/*wireless_sta(Client *clnt, Detail *dtl)*/
-/*{*/
-/*	FILE *stainfo;*/
-/*	char cmnd[64];*/
-/*	char line[128];*/
-/*	int i = 0;*/
-/*	bool there = false;*/
-/*	char tab[16];*/
-/*	int tmp;*/
-/*	int noise;*/
-
-/*	for (i = 0; wireless[i].device; i++) {*/
-/*		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);*/
-/*		if ((stainfo = popen(cmnd, "r"))) {*/
-/*			while(fgets(line, sizeof(line), stainfo) != NULL)*/
-/*			{*/
-/*				remove_newline(line);*/
-/*				if(sscanf(line, "%sstate: AUTHENTICATED ASSOCIATED AUTHORIZED", tab)) {*/
-/*					there = true;*/
-/*					strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));*/
-/*				}*/
-/*				sscanf(line, "\t idle %d seconds", &(dtl->idle));*/
-/*				sscanf(line, "\t in network %d seconds", &(dtl->in_network));*/
-/*				sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));*/
-/*				sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));*/
-/*				sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));*/
-/*				sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));*/
-/*			}*/
-/*			pclose(stainfo);*/
-/*		}*/
-/*		if (there) {*/
-/*			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);*/
-/*			if ((stainfo = popen(cmnd, "r"))) {*/
-/*				fgets(line, sizeof(line), stainfo);*/
-/*				remove_newline(line);*/
-/*				noise = atoi(line);*/
-/*				pclose(stainfo);*/
-/*			}*/
-/*			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);*/
-/*			if ((stainfo = popen(cmnd, "r"))) {*/
-/*				fgets(line, sizeof(line), stainfo);*/
-/*				remove_newline(line);*/
-/*				dtl->snr = atoi(line) - noise;*/
-/*				pclose(stainfo);*/
-/*			}*/
-/*		}*/
-/*		if (there)*/
-/*			break;*/
-/*	}*/
-/*	return there;*/
-/*}*/
 
 static bool
 wireless_sta(Client *clnt, Detail *dtl)
@@ -1842,6 +1800,7 @@ static struct ubus_object router_object = {
 	.methods = router_object_methods,
 	.n_methods = ARRAY_SIZE(router_object_methods),
 };
+
 /* END OF ROUTER OBJECT */
 
 /* WPS OBJECT */
@@ -2045,6 +2004,33 @@ static struct ubus_object wps_object = {
 };
 
 /* END OF WPS OBJECT */
+
+/* START OF FILE OBJECT */
+
+static int file_list(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	
+	return 0;
+}
+
+static struct ubus_method file_object_methods[] = {
+	UBUS_METHOD("list", file_list, list_policy),
+};
+
+static ubus_object_type file_object_type = {
+	UBUS_OBJECT_TYPE("file", file_object_methods);
+};
+
+static struct ubus_object file_object = {
+	.name = "file",
+	.type = &file_object_type,
+	.methods = file_object_methods,
+	.n_methods = ARRAY_SIZE(rile_object_methods),
+};
+
+/* END OF FILE OBJECT */
 
 static void
 quest_ubus_add_fd(void)
