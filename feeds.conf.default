@@ -14,4 +14,4 @@ src-git oldpackages http://git.openwrt.org/14.07/packages.git
 #src-svn lxde svn://svn.openwrt.org/openwrt/feeds/lxde
 #src-link custom /usr/src/openwrt/custom-feed
 src-git intenoprivate git@iopsys.inteno.se:inteno-private-feed.git
-src-git juci https://github.com/mkschreder/mks-openwrt-feed.git;devel
+src-git juci https://github.com/mkschreder/mks-openwrt-feed.git^2919cb629c9cf54f2a697a41d9fbbc76f3700325
