@@ -199,6 +199,7 @@ define Package/bcmkernel/install
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/init.d/bcm-base-drivers.sh			$(1)/lib/
 	sed -i '/bcm_usb\.ko/d' $(1)/lib/bcm-base-drivers.sh
+	sed -i 's|/kernel/.*/|/|' $(1)/lib/bcm-base-drivers.sh
 
 	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh ]; then $(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh $(1)/etc/; fi;
 
