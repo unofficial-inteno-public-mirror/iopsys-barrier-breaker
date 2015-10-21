@@ -18,11 +18,7 @@ export CUSTCONF="package/zeta/customers"
 export VERBOSE=0
 LOCAL_MIRROR="http://10.10.1.31/mirror"
 
-set -e 
-
-# get rid of the stupid files folder that will mess up our brand new build
-# (I haz deleted your files, but don't worry, you shall thank me later!..)
-rm -rf ./files
+#set -e 
 
 echo "$0 $1 $2 $3 $4" > genconfig.last 
 
@@ -78,13 +74,6 @@ use_local_mirror()
 	echo "mirror [$LOCAL_MIRROR] don't exists. Not using local mirror"
     fi
 }
-
-# must do this here after we have parsed all the arguments
-export BOARDTYPE="$1"
-export CUSTOMER="$2"
-
-if [ "$CUSTOMER" == "" ]; then CUSTOMER="field"; fi
-if [ "$CUSTOMER" == "open" ]; then OPEN=1; fi
 
 update_customer_configs() 
 {
@@ -150,7 +139,17 @@ create_and_copy_files()
 		echo "WARNING: could not find ${CUST_DIR}...";
 	fi
 	
-	
+	# new: moving to the new env system
+	[ -d "$BOARD_DIR/fs" ] && [ -n "$(ls -A $BOARD_DIR/fs)" ] && cp -Rp "$BOARD_DIR/fs" ./files
+	[ -d "$BOARD_DIR/fs" ] && [ -n "$(ls -A $CUST_DIR/fs)" ] && cp -Rp "$CUST_DIR/fs" ./files
+
+	# for now we do not use the new configs, just update them so we can switch to them later
+	#echo "your customer configs have been copied to branch $CUSTOMERBRANCH in env"
+	#echo "EDIT YOUR CONFIG USING MENUCONFIG!"
+	#echo "AND PLACE ALL CUSTOMER FILES IN ./files FOLLOWED BY A COMMIT TO ENV!"
+	#echo "USE ./scripts/env switch TO SWITCH ENV"
+	#echo "USE ./scripts/env save TO SAVE ENV"
+
 	# remove any references to luci and lua
 	# sed -i 's/.*luci.*//gi' ${CONFIG}
 	# sed -i 's/.*lua.*//gi' ${CONFIG}
@@ -160,6 +159,34 @@ create_and_copy_files()
 #  [ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
 #fi
 }
+
+# must do this here after we have parsed all the arguments
+export BOARDTYPE="$1"
+export CUSTOMER="$2"
+
+if [ "$CUSTOMER" == "" ]; then CUSTOMER="field"; fi
+if [ "$CUSTOMER" == "open" ]; then OPEN=1; fi
+
+# get rid of the stupid files folder that will mess up our brand new build
+# (I haz deleted your files, but don't worry, you shall thank me later!..)
+rm -rf ./files
+
+# and replace it with inteno env! 
+if [ ! -d env ]; then 
+	git clone git@iopsys.inteno.se:inteno-env.git env 
+	(cd env; for remote in $(git branch -r | awk '{print $1}'); do git branch --track $remote; done)
+fi 
+
+CUSTOMERBRANCH="$BOARDTYPE-$CUSTOMER"
+if [ "$(cd env; git branch --list $CUSTOMERBRANCH)" ]; then 
+	yes | ./scripts/env switch $CUSTOMERBRANCH
+	echo "Switched to branch $CUSTOMERBRANCH in customer env"
+	#echo "DO NOT USE OLD package/zeta/customers ANYMORE! This customer config is now in ENV!"
+	#exit 0
+else 
+	echo "creating new env $CUSTOMERBRANCH"
+	yes | ./scripts/env new $CUSTOMERBRANCH
+fi
 
 
 echo "Using boardtype: $BOARDTYPE"
@@ -172,7 +199,11 @@ else
 	fi
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
-	use_local_mirror
+	cat $CONFIG | grep -v "^#.*" | grep -v "^$" | sort > $CONFIG.new; mv $CONFIG.new $CONFIG 
+	yes | ./scripts/env save "genconfig_new update"
+	(cd env; git push --all)
+	# do not use local mirror because this doesn't work right now (it toggles between local and nonlocal each time)
+	#use_local_mirror
 fi
 
 
