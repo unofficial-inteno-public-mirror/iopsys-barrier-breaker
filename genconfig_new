@@ -199,7 +199,7 @@ else
 	fi
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
-	cat $CONFIG | grep -v "^#.*" | grep -v "^$" | sort > $CONFIG.new; mv $CONFIG.new $CONFIG 
+	cat $CONFIG | grep -v "^$" | sort > $CONFIG.new; mv $CONFIG.new $CONFIG 
 	yes | ./scripts/env save "genconfig_new update"
 	(cd env; git push --all)
 	# do not use local mirror because this doesn't work right now (it toggles between local and nonlocal each time)
