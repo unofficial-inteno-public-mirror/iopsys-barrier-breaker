@@ -174,8 +174,10 @@ rm -rf ./files
 # and replace it with inteno env! 
 if [ ! -d env ]; then 
 	git clone git@iopsys.inteno.se:inteno-env.git env 
-	(cd env; for remote in $(git branch -r | awk '{print $1}'); do git branch --track $remote; done)
+	#(cd env; for remote in $(git branch -r | awk '{print $1}'); do git branch --track $remote; done)
 fi 
+
+(cd env; git fetch --all; for branch in `git branch -r | grep -v HEAD`; do git checkout -b $(basename $branch) $branch; done)
 
 CUSTOMERBRANCH="$BOARDTYPE-$CUSTOMER"
 if [ "$(cd env; git branch --list $CUSTOMERBRANCH)" ]; then 
