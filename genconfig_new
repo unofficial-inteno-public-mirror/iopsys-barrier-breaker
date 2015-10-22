@@ -140,8 +140,8 @@ create_and_copy_files()
 	fi
 	
 	# new: moving to the new env system
-	[ -d "$BOARD_DIR/fs" ] && [ -n "$(ls -A $BOARD_DIR/fs)" ] && cp -Rp "$BOARD_DIR/fs" ./files
-	[ -d "$BOARD_DIR/fs" ] && [ -n "$(ls -A $CUST_DIR/fs)" ] && cp -Rp "$CUST_DIR/fs" ./files
+	[ -d "$BOARD_DIR/fs" ] && [ -n "$(ls -A $BOARD_DIR/fs)" ] && cp -Rp "$BOARD_DIR/fs/*" ./files
+	[ -d "$BOARD_DIR/fs" ] && [ -n "$(ls -A $CUST_DIR/fs)" ] && cp -Rp "$CUST_DIR/fs/*" ./files
 
 	# for now we do not use the new configs, just update them so we can switch to them later
 	#echo "your customer configs have been copied to branch $CUSTOMERBRANCH in env"
