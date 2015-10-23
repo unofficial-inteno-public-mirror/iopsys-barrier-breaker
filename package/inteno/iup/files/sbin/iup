@@ -112,7 +112,7 @@ handle_provisioning() {
 	config_get_bool defaultreset "$config" defaultreset
 	config_get deckey "$config" deckey
 	if [ "$enabled" -eq 1	]; then
-		config_get url "$config" url
+		config_get url "$config" urliup
 		url=${url//\$MAC/$MAC}
 		v "Download from $url"
 		  
@@ -240,7 +240,7 @@ config_load provisioning
 #check if iup should be used or if its overridden by /etc/config
 config_get configurl configserver	url
 config_get reboot configserver reboot
-config_get iupurl iup	url
+config_get iupurl iup	urliup
 if [ $configurl ]; then
 	handle_provisioning configserver
 elif [ $iupurl ]; then

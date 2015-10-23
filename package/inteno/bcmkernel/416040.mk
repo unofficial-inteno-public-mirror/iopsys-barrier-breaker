@@ -17,7 +17,7 @@ PKG_RELEASE:=1
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=12320edefdf3d998f9b451735a4c726585fa03cf
+PKG_SOURCE_VERSION:=288d188594ff92ff8301348e60df76e96b8eba61
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 endif
 
@@ -199,6 +199,7 @@ define Package/bcmkernel/install
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/init.d/bcm-base-drivers.sh			$(1)/lib/
 	sed -i '/bcm_usb\.ko/d' $(1)/lib/bcm-base-drivers.sh
+	sed -i 's|/kernel/.*/|/|' $(1)/lib/bcm-base-drivers.sh
 
 	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh ]; then $(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh $(1)/etc/; fi;
 

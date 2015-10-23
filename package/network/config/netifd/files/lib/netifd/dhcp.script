@@ -3,6 +3,8 @@
 
 . /lib/functions.sh
 . /lib/netifd/netifd-proto.sh
+. /lib/functions/network.sh
+
 
 set_classless_routes() {
 	local max=128
@@ -12,6 +14,76 @@ set_classless_routes() {
 		max=$(($max-1))
 		shift 2
 	done
+}
+
+# function: change_to_vlan
+# arg 1 = vlan id
+# arg 2 = vlan priority
+# arg 3 = $INTERFACE
+change_to_vlan() {
+	# local variables.
+	local name="vlan$1"	# construct name = vlan + vlanid.
+	local base_dev		# varible holding device name of wan port.
+	local wan_if		# variable holding wan interfaces.
+	local new_wan_if	#
+
+	# extract device name.
+	network_get_device base_dev $3
+
+	# bring down old interface/device.
+	ifdown "${base_dev}"
+	logger -t dhcp_opt132 "bringing down old if: ${base_dev}"
+
+	# extract base name of device.
+	base_dev=$(echo ${base_dev} | cut -d. -f1)
+
+	# add "VLAN interface" to the "end of the file".
+	uci add layer2_interface_vlan vlan_interface
+	uci set layer2_interface_vlan.@vlan_interface[-1].name=${name}
+	uci set layer2_interface_vlan.@vlan_interface[-1].vlan8021q=${1}
+	uci set layer2_interface_vlan.@vlan_interface[-1].vlan8021p=${2}
+	uci set layer2_interface_vlan.@vlan_interface[-1].ifname="${base_dev}.${1}"
+	uci set layer2_interface_vlan.@vlan_interface[-1].baseifname=${base_dev}
+	# and commit the change.
+	uci commit layer2_interface_vlan
+	logger -t dhcp_opt132 "committed update to file layer2_interface_vlan"
+
+	# reload configuration files.
+	/etc/init.d/layer2_interface_vlan reload
+	logger -t dhcp_opt132 "reload layer2_interface_vlan config"
+
+	# replace old interface (like eth0.1 with new eth0.101).
+	wan_if=$(uci get network.$3.ifname)
+	logger -t dhcp_opt132 "old network.${3}.ifname: $wan_if"
+
+	# loop through the string, remove any word close to "base_dev".
+	for word in ${wan_if}; do
+	#echo $word
+	case $word in
+		${base_dev}*) # don't add if.
+		;;
+		*)	new_wan_if=${word}' '${new_wan_if}  # add if.
+			#new_wan_if+=" ${word}"  # probably not working in ash.
+		;;
+	esac
+	done
+	# append new interface.
+	new_wan_if=${new_wan_if}${base_dev}.${1}
+	uci set network.wan.ifname="${new_wan_if}"
+	# and commit the change.
+	uci commit network
+	logger -t dhcp_opt132 "committed update to file network: ifname=${new_wan_if}"
+
+	# reboot into new if configuration.
+	reboot
+
+	# debug code.
+	# reload configuration files.
+	#/etc/init.d/network reload
+	#logger -t dhcp_opt132 "reload network config"
+	# bring up new interface.
+	#ifup "${base_dev}.${1}"
+	#logger -t dhcp_opt132 "bringing up new if: ${base_dev}.${1}"
 }
 
 setup_interface () {
@@ -77,6 +149,18 @@ setup_interface () {
 	# [ -n "$timesvr" ] && 	change_state network "$ifc" lease_timesrv "$timesvr"
 	# [ -n "$hostname" ] &&	change_state network "$ifc" lease_hostname "$hostname"
 	# [ -n "$timezone" ] && change_state network "$ifc" lease_timezone "$timezone"
+
+	# if we get vlanid and maybe vlanpriority, configure for that.
+	if [ -n "$vlanid" -a -n "$vlanpriority" ]; then
+		logger -t dhcp_opt132 "vlanid: ${vlanid}, vlanpriority: ${vlanpriority}"
+		change_to_vlan ${vlanid} ${vlanpriority} ${INTERFACE}
+	elif [ -n "$vlanid" ]; then
+		logger -t dhcp_opt132 "vlanid: ${vlanid}"
+		change_to_vlan ${vlanid} 0 ${INTERFACE}
+	else
+		##logger -t dhcp_opt132 "no vlanid and vlan priority given"
+		logger -t dhcp_opt132 "no vlanid given"
+	fi
 }
 
 iup() {
@@ -87,15 +171,15 @@ iup() {
 	if [ $vendorspecinf ]; then
 		url=${vendorspecinf%%,*}; rest=${vendorspecinf#*,}
 		provisioningcode=${rest%%,*};
-		uci_set_state provisioning iup urlcwmp "$url"
+		uci_set_state provisioning iup url "$url"
 		uci_set_state provisioning iup provisioningcode "$provisioningcode"
 	elif [ $httpurl128 ]; then
-		uci_set_state provisioning iup url "$httpurl128"
+		uci_set_state provisioning iup urliup "$httpurl128"
 	elif [ $tftp ]; then
 		if [ ${bootfile:0:1} == '/' ]; then 
-			uci_set_state provisioning iup url "tftp://$tftp$bootfile"
+			uci_set_state provisioning iup urliup "tftp://$tftp$bootfile"
 		else
-			uci_set_state provisioning iup url "tftp://$tftp/$bootfile"
+			uci_set_state provisioning iup urliup "tftp://$tftp/$bootfile"
 		fi
 	fi
 }
