@@ -175,10 +175,10 @@ rm -rf .config
 # auto update of env has been disabled
 
 # and replace it with inteno env! 
-if [ ! -d env ]; then 
+#if [ ! -d env ]; then 
 	#git clone git@iopsys.inteno.se:inteno-env.git env 
 	#(cd env; for remote in $(git branch -r | awk '{print $1}'); do git branch --track $remote; done)
-fi 
+#fi 
 
 #(cd env; git fetch --all; for branch in `git branch -r | grep -v HEAD`; do git checkout -b $(basename $branch) $branch; done)
 
