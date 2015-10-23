@@ -170,25 +170,28 @@ if [ "$CUSTOMER" == "open" ]; then OPEN=1; fi
 # get rid of the stupid files folder that will mess up our brand new build
 # (I haz deleted your files, but don't worry, you shall thank me later!..)
 rm -rf ./files
+rm -rf .config
+
+# auto update of env has been disabled
 
 # and replace it with inteno env! 
 if [ ! -d env ]; then 
-	git clone git@iopsys.inteno.se:inteno-env.git env 
+	#git clone git@iopsys.inteno.se:inteno-env.git env 
 	#(cd env; for remote in $(git branch -r | awk '{print $1}'); do git branch --track $remote; done)
 fi 
 
-(cd env; git fetch --all; for branch in `git branch -r | grep -v HEAD`; do git checkout -b $(basename $branch) $branch; done)
+#(cd env; git fetch --all; for branch in `git branch -r | grep -v HEAD`; do git checkout -b $(basename $branch) $branch; done)
 
 CUSTOMERBRANCH="$BOARDTYPE-$CUSTOMER"
-if [ "$(cd env; git branch --list $CUSTOMERBRANCH)" ]; then 
-	yes | ./scripts/env switch $CUSTOMERBRANCH
-	echo "Switched to branch $CUSTOMERBRANCH in customer env"
+#if [ "$(cd env; git branch --list $CUSTOMERBRANCH)" ]; then 
+	#yes | ./scripts/env switch $CUSTOMERBRANCH
+#	echo "Switched to branch $CUSTOMERBRANCH in customer env"
 	#echo "DO NOT USE OLD package/zeta/customers ANYMORE! This customer config is now in ENV!"
 	#exit 0
-else 
-	echo "creating new env $CUSTOMERBRANCH"
-	yes | ./scripts/env new $CUSTOMERBRANCH
-fi
+#else 
+#	echo "creating new env $CUSTOMERBRANCH"
+	#yes | ./scripts/env new $CUSTOMERBRANCH
+#fi
 
 
 echo "Using boardtype: $BOARDTYPE"
@@ -202,8 +205,8 @@ else
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
 	cat $CONFIG | grep -v "^$" | sort > $CONFIG.new; mv $CONFIG.new $CONFIG 
-	yes | ./scripts/env save "genconfig_new update"
-	(cd env; git push --all)
+	#yes | ./scripts/env save "genconfig_new update"
+	#(cd env; git push --all)
 	# do not use local mirror because this doesn't work right now (it toggles between local and nonlocal each time)
 	#use_local_mirror
 fi
