@@ -7,38 +7,6 @@ handle_threads()
 {
 	# initialize kernel schedule priorities
 	smd -s
-
-	local pid_nic0=$(pgrep wl0-kthrd)
-	local pid_nic1=$(pgrep wl1-kthrd)
-	local pid_dhd0=$(pgrep dhd0_dpc)
-	local pid_dhd1=$(pgrep dhd1_dpc)
-	local pid_wfd0=$(pgrep wfd0-thrd)
-	local pid_wfd1=$(pgrep wfd1-thrd)
-	local pid_wl0=${pid_dhd0:-$pid_nic0}
-	local pid_wl1=${pid_dhd1:-$pid_nic1}
-
-	# set affinity
-	if [ -n "$pid_wl0" -a -n "$pid_wl1" ]; then
-		# bind to TP0
-		taskset -p 1 $pid_wl0
-		# bind to TP1
-		taskset -p 2 $pid_wl1
-	else
-		if [ "$pid_wl0" == "$pid_dhd0" ]; then
-			# bind to TP0
-			taskset -p 1 $pid_wl0
-		else
-			# bind to TP1
-			taskset -p 2 $pid_wl0
-		fi
-	fi
-
-	# set priority
-	local pid pids
-	pids="$pid_wl0 $pid_wl1 $pid_wfd0 $pid_wfd1"
-	for pid in $pids; do
-		chrt -rp 5 $pid
-	done
 }
 
 handle_configs()
