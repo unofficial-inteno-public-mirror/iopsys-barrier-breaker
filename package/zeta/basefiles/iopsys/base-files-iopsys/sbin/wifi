@@ -402,6 +402,7 @@ vif_settings() {
 	nvram set "$iface"_wmf_bss_enable=$wmf_bss_enable
 	nvram set "$iface"_wps_config_state=$wps
 	nvram set "$iface"_wps_mode=$wps_mode
+	nvram set "$iface"_interface=$device
 	nvram set "$iface"_network=$network
 }
 
@@ -635,7 +636,7 @@ wdev_settings() {
 	config_get reg_mode $cfg reg_mode "h"
 	config_get acs_dfs $cfg dfsc "1"
 	config_get beamforming $cfg beamforming "0"
-	config_get rxchain_pwrsave_enable $cfg rxchainps "0"
+	config_get rxchain_pwrsave_enable $cfg rxchainps "1"
 	config_get rxchain_pwrsave_pps $cfg rxchainps_qt "10"
 	config_get rxchain_pwrsave_quiet_time $cfg rxchainps_pps "10"
 
