@@ -1,0 +1,45 @@
+From d7a6feed97ea6460a9dad3703df66f991639b100 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Schr=C3=B6der?= <mkschreder.uk@gmail.com>
+Date: Mon, 26 Oct 2015 10:38:39 +0100
+Subject: [PATCH] rpcd: disable iwinfo support because it is not included in
+ iopsys
+
+---
+ CMakeLists.txt | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7770f81..8e9c629 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7,7 +7,7 @@ ADD_DEFINITIONS(-Os -Wall -Wno-format-y2k -W -Wstrict-prototypes -Wmissing-proto
+ INCLUDE_DIRECTORIES(include)
+ 
+ OPTION(FILE_SUPPORT "File plugin support" ON)
+-OPTION(IWINFO_SUPPORT "libiwinfo plugin support" ON)
++#OPTION(IWINFO_SUPPORT "libiwinfo plugin support" ON)
+ OPTION(RPCSYS_SUPPORT "rpc-sys plugin support" ON)
+ 
+ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+@@ -45,12 +45,12 @@ IF(RPCSYS_SUPPORT)
+   SET_TARGET_PROPERTIES(rpcsys_plugin PROPERTIES OUTPUT_NAME rpcsys PREFIX "")
+ ENDIF()
+ 
+-IF (IWINFO_SUPPORT)
+-  SET(PLUGINS ${PLUGINS} iwinfo_plugin)
+-  ADD_LIBRARY(iwinfo_plugin MODULE iwinfo.c)
+-  TARGET_LINK_LIBRARIES(iwinfo_plugin ubox ubus iwinfo)
+-  SET_TARGET_PROPERTIES(iwinfo_plugin PROPERTIES OUTPUT_NAME iwinfo PREFIX "")
+-ENDIF()
++#IF (IWINFO_SUPPORT)
++#  SET(PLUGINS ${PLUGINS} iwinfo_plugin)
++#  ADD_LIBRARY(iwinfo_plugin MODULE iwinfo.c)
++#  TARGET_LINK_LIBRARIES(iwinfo_plugin ubox ubus iwinfo)
++#  SET_TARGET_PROPERTIES(iwinfo_plugin PROPERTIES OUTPUT_NAME iwinfo PREFIX "")
++#ENDIF()
+ 
+ INSTALL(TARGETS rpcd ${PLUGINS}
+ 	RUNTIME DESTINATION sbin
+-- 
+1.9.1
+
