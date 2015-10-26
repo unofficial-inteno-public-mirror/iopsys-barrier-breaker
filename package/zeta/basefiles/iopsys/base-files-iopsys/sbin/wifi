@@ -314,9 +314,10 @@ wps_settings() {
 vif_settings() {
 	local cfg=$1
 	local iface=$2
-	local device ifname enabled isolate mode ssid network
+	local device ifname enabled isolate mode ssid network hspot
 	local encryption cipher key key1 key2 key3 key4 gtk_rekey
 	local macmode maclist wps wmf_bss_enable bss_max bss_enabled
+	local radius_server radius_port radius_secret net_reauth
 
 	config_get device $cfg device
 	config_get disabled $cfg disabled "0"
@@ -332,6 +333,10 @@ vif_settings() {
 	config_get key3 $cfg key3 "1234567890123"
 	config_get key4 $cfg key4 "1234567890123"
 	config_get gtk_rekey $cfg gtk_rekey "3600"
+	config_get radius_server $cfg radius_server "0.0.0.0"
+	config_get radius_port $cfg radius_port "1812"
+	config_get radius_secret $cfg radius_secret
+	config_get net_reauth $cfg key net_reauth "36000"
 	config_get macmode $cfg macmode "0"
 	maclist="$(uci -q get wireless.$cfg.maclist)"
 	config_get wps $cfg wps_pbc "0"
@@ -339,6 +344,7 @@ vif_settings() {
 	config_get wmf_bss_enable $cfg wmf_bss_enable "0"
 	config_get bss_max $cfg bss_max "16"
 	config_get network $cfg network "lan"
+	config_get hspot $cfg hspot "0"
 
 	[ "$disabled" == "1" ] && bss_enabled=0 || bss_enabled=1
 	[ "$wps" == "1" ] && wps_mode=enabled || wps_mode=disabled
@@ -388,17 +394,17 @@ vif_settings() {
 	nvram set "$iface"_bss_enabled=$bss_enabled
 	nvram set "$iface"_bss_maxassoc=$bss_max
 	nvram set "$iface"_closed=$closed
-	nvram set "$iface"_hspot=0
+	nvram set "$iface"_hspot=$hspot
 	nvram set "$iface"_ifname="$iface"
 	nvram set "$iface"_maclist="$maclist"
 	nvram set "$iface"_macmode=$macmode
-	nvram set "$iface"_mfp=0
+	#nvram set "$iface"_mfp=0
 	nvram set "$iface"_mode=$mode
-	nvram set "$iface"_net_reauth=36000
-	nvram set "$iface"_radio=1
-	nvram set "$iface"_radius_ipaddr=0.0.0.0
-	nvram set "$iface"_radius_key=*DEL*
-	nvram set "$iface"_radius_port=1812
+	nvram set "$iface"_net_reauth=$net_reauth
+	#nvram set "$iface"_radio=1
+	nvram set "$iface"_radius_ipaddr=$radius_server
+	nvram set "$iface"_radius_key=$radius_secret
+	nvram set "$iface"_radius_port=$radius_port
 	nvram set "$iface"_ssid="$ssid"
 	nvram set "$iface"_wme_bss_disable=$wmm_bss_disable
 	nvram set "$iface"_wmf_bss_enable=$wmf_bss_enable
@@ -612,12 +618,12 @@ wdev_static_settings() {
 wdev_settings() {
 	local cfg=$1
 	local device=$cfg
-	local country band bandwidth hwmode channel scantimer
+	local country band bandwidth hwmode channel scantimer disabled radio
 	local wme wme_no_ack wme_apsd frag rts dtim bcn frameburst
 	local rifs rifs_advert maxassoc reg_mode acs_dfs beamforming
 	local rxchain_pwrsave_enable rxchain_pwrsave_pps rxchain_pwrsave_quiet_time
 
-
+	config_get disabled $cfg disabled "0"
 	config_get country $cfg country "EU/13"
 	config_get band $cfg band "b"
 	config_get bandwidth $cfg bandwidth "80"
@@ -641,6 +647,8 @@ wdev_settings() {
 	config_get rxchain_pwrsave_enable $cfg rxchainps "1"
 	config_get rxchain_pwrsave_pps $cfg rxchainps_qt "10"
 	config_get rxchain_pwrsave_quiet_time $cfg rxchainps_pps "10"
+
+	[ "$disabled" == "1" ] && radio=0 || radio=1
 
 	if [ $band == "a" ]; then
 		freq=5
@@ -713,6 +721,7 @@ wdev_settings() {
 	nvram set "$device"_wme_apsd=$wme_apsd
 	nvram set "$device"_wme_no_ack=$wme_no_ack
 	nvram set "$device"_reg_mode=$reg_mode
+	nvram set "$device"_radio=$radio
 }
 
 setup_wifi_device() {
@@ -734,6 +743,7 @@ setup_wifi_device() {
 }
 
 configure_wifi() {
+	ubus call led.wifi set '{"state":"off"}'
 	config_load wireless
 	config_foreach setup_wifi_device wifi-device
 
@@ -763,6 +773,7 @@ configure_wifi() {
 
 	wlmngr_startServices
 	wlmngr_startWsc
+	ubus call led.wifi set '{"state":"ok"}'
 }
 
 case "$_ACTION" in
