@@ -107,7 +107,7 @@ wifi_detect() {
 				freq="5G"
 				hwmode="${PHW5:-auto}"
 				band="a"
-				bwidth="${PBW5:-40}"
+				bwidth="${PBW5:-80}"
 				ch="${PCH5:-auto}"
 				bno=5
 				doth="1"
@@ -143,7 +143,7 @@ config wifi-device '$wl'
 	option rts '2347'
 	option dtim_period '1'
 	option beacon_int '100'
-	option rxchainps '0'
+	option rxchainps '1'
 	option rxchainps_qt '10'
 	option rxchainps_pps '10'
 	option rifs '0'
@@ -229,7 +229,7 @@ EOF
 	touch /tmp/wireless/first
 }
 
-map_networks() {
+assign_network() {
 	# map all interfaces to corresponding networks by nvram parameters
 	local _acnt=0
 	local vif
@@ -242,7 +242,7 @@ map_networks() {
 		local net="$(nvram get "$vif"_network)"
 		local ifc
 
-		[ -z "$net" ] && return
+		net="${net:-lan}"
 
 		for ifc in $ifname; do
 			if [ $ifc == $vif ]; then
@@ -279,10 +279,12 @@ map_networks() {
 
 	config_load network
 	for vif in wl0 $(nvram get wl0_vifs) wl1 $(nvram get wl1_vifs); do
+		[ $(nvram get "$vif"_bss_enabled) == "1" ] || continue
 		config_foreach find_wireless_device interface $vif
 	done
 	config_foreach tag_network interface
 	uci commit network
+	ubus call network reload
 }
 
 wps_settings() {
@@ -757,7 +759,7 @@ configure_wifi() {
 		_WIDX=$((_WIDX+1))
 	done
 
-	map_networks
+	assign_network
 
 	wlmngr_startServices
 	wlmngr_startWsc
@@ -770,5 +772,4 @@ case "$_ACTION" in
 esac
 
 configure_wifi
-ubus call network reload
 
