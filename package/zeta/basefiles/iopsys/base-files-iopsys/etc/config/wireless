@@ -5,7 +5,7 @@ config wifi-settings preferred
 	option ch5g 'auto'
 	option bw5g '80'
 	option ch2g 'auto'
-	option scntmr '0'
+	option scntmr '15'
 	option bw2g '20'
 	option dfsc '1'
 	option hw5g '11ac'
