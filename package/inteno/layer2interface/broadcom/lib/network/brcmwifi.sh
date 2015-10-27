@@ -164,7 +164,7 @@ wlmngr_startServices() {
 #	wlmngr_SSDCtrl(){
 #		killall -q -15 ssd 2>/dev/null
 #		if [ "$(enableSSD)" == "TRUE" ]; then
-#			/bin/ssd&
+#			ssd&
 #		fi
 #	}
 }
@@ -278,7 +278,10 @@ wlmngr_issueServiceCmd() {
 }
 
 wlmngr_HspotCtrl() {
-	return
+	killall -q -15 hspotap 2>/dev/null
+	if [ "$(enableHspot)" == "TRUE" ]; then
+		hspotap&
+	fi
 }
 
 wlmngr_postStart() {

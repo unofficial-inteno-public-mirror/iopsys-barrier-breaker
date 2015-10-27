@@ -101,7 +101,7 @@ wifi_detect() {
 		if wlctl -i $wl ap >/dev/null 2>&1; then
 			pcid=$(pcID $wl)
 			country="${PCNT:-EU/13}"
-			scntmr="${PTMR:-120}"
+			scntmr="${PTMR:-15}"
 			apsd="${PAPS:-1}"
 			if $(is5G $pcid); then
 				freq="5G"
@@ -226,7 +226,6 @@ EOF
 	sed -i "s/\$BSSID4/$BSSID4/g" /etc/config/wireless
 	sed -i "s/\$BSSID2/$BSSID2/g" /etc/config/wireless
 	sed -i "s/\$BSSID/$BSSID/g" /etc/config/wireless
-	touch /tmp/wireless/first
 }
 
 assign_network() {
@@ -660,12 +659,14 @@ wdev_settings() {
 		reg_mode=off
 	fi
 
-	acs_scan_timer=$((scantimer * 60))
+	acs_scan_timer=0
+	[ "$acs_dfs" == "1" ] && acs_dfs=2 || acs_dfs=0
 
 	case "$channel" in
 		auto)
 			channel=0
 			chanspec=0
+			acs_scan_timer=$((scantimer * 60))
 		;;
 		*u|*l|*/80)
 			chanspec=$channel
@@ -707,7 +708,7 @@ wdev_settings() {
 	nvram set "$device"_dtim=$dtim
 	nvram set "$device"_frag=$frag
 	nvram set "$device"_frameburst=$frameburst
-	nvram set "$device"_interface="$device"
+	#nvram set "$device"_interface="$device"
 	nvram set "$device"_maxassoc=$maxassoc
 	nvram set "$device"_nband=$nband
 	nvram set "$device"_rts=$rts
@@ -758,8 +759,8 @@ configure_wifi() {
 		wlmngr_doWlConf $_WIDX
 		wlmngr_setupMbssMacAddr $_WIDX
 
-		#wlmngr_startServices # MOVED TO END
-		#wlmngr_startWsc # MOVED TO END
+		#wlmngr_startServices $_WIDX	# MOVED TO END
+		#wlmngr_startWsc $_WIDX		# MOVED TO END
 
 		#wlmngr_WlConfStart $_WIDX
 		wlmngr_wlIfcUp $_WIDX
@@ -777,9 +778,21 @@ configure_wifi() {
 }
 
 case "$_ACTION" in
-	detect) wifi_detect; exit ;;
-	down) _DOWN=1; wlmngr_WlConfDown 0; wlmngr_WlConfDown 1; exit ;;
-	reload*) _RELOAD=1 ;;
+	detect)
+		wifi_detect
+		exit
+	;;
+	down)
+		_DOWN=1
+		wlmngr_stopServices
+		wlmngr_WlConfDown 0
+		wlmngr_WlConfDown 1
+		ubus call led.wifi set '{"state":"off"}'
+		exit
+	;;
+	reload*)
+		_RELOAD=1
+	;;
 esac
 
 configure_wifi
