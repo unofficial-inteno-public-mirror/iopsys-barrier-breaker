@@ -363,7 +363,7 @@ vif_settings() {
 	[ "$closed" == "1" ] && qr_hidden="true"
 
 	nvram set "$iface"_auth=0
-	nvram set "$iface"_auth_mode=*DEL*
+	nvram set "$iface"_auth_mode="*DEL*"
 	nvram set "$iface"_preauth=0
 	nvram set "$iface"_net_auth_type=1
 	nvram set "$iface"_akm="*DEL*"
@@ -401,6 +401,24 @@ vif_settings() {
 			esac
 			nvram set "$iface"_wpa_psk="$key"
 			nvram set "$iface"_auth_mode="psk"
+			qr_enc="WPA"
+			qr_key="$key"
+		;;
+		*wpa*)
+			# wpa version + default cipher
+			case "$encryption" in
+				*mixed*|*wpa+wpa2*) nvram set "$iface"_akm='wpa wpa2'; nvram set "$iface"_crypto=tkip+aes;;
+				*wpa2*) nvram set "$iface"_akm=wpa2; nvram set "$iface"_crypto=aes;;
+				*) nvram set "$iface"_akm=wpa; nvram set "$iface"_crypto=tkip;;
+			esac
+			# cipher override
+			case "$cipher" in
+				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) nvram set "$iface"_crypto=tkip+aes;;
+				*aes*|*ccmp*) nvram set "$iface"_crypto=aes;;
+				*tkip*) nvram set "$iface"_crypto=tkip;;
+			esac
+			nvram set "$iface"_wpa_psk="$key"
+			nvram set "$iface"_auth_mode="radius"
 			qr_enc="WPA"
 			qr_key="$key"
 		;;
