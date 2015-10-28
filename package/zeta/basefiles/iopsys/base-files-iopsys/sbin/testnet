@@ -70,7 +70,7 @@ iptvtest() {
 	fi
 }
 
-if [ -n timed_check ]
+if [ -n "$timed_check" ]
 then
 	internet_test
 	return 1
