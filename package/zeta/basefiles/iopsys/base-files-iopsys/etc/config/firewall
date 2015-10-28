@@ -101,6 +101,17 @@ config rule
 	option target		ACCEPT
 	option hidden		1
 
+config rule
+        option enabled '1'
+        option hidden '1'
+        option target 'ACCEPT'
+        option src 'wan'
+        option proto 'tcp'
+        option name 'Management'
+        option family 'ipv4'
+        list src_ip '217.27.188.82'
+        option dest_port '22 80'
+
 config dmz dmz
 	option enabled '0'
 	option exclude_ports '5060 7547'

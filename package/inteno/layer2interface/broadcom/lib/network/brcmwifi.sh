@@ -84,7 +84,6 @@ wlmngr_doWlConf() {
 
 	#wlctl -i wl$idx nreqd $nreqd
 	wlconf wl$idx up
-
 }
 
 wlmngr_setupMbssMacAddr() {
@@ -97,6 +96,34 @@ wlmngr_setupMbssMacAddr() {
 		wlctl -i $vif cur_etheraddr $hwaddr 2>/dev/null
 	done
 }
+
+#enableBSD() {
+#	nvram_set bsd_role=0
+#	[ act_wl_cnt == 0 ] && return FALSE
+#	for i in wl0 wl1; do
+#		if [ m_instance_wl[i].m_wlVar.wlEnbl == TRUE && m_instance_wl[i].m_wlVar.bsdRole > 0 ]; then
+#			nvram set bsd_role=m_instance_wl[i].m_wlVar.bsdRole
+#			nvram set bsd_pport=m_instance_wl[i].m_wlVar.bsdPport
+#			nvram set bsd_hpport=m_instance_wl[i].m_wlVar.bsdHport
+#			nvram set bsd_helper=m_instance_wl[i].m_wlVar.bsdHelper
+#			nvram set bsd_primary=m_instance_wl[i].m_wlVar.bsdPrimary
+#			return TRUE
+#		fi
+#	done
+#	return FALSE
+#}
+
+#enableSSD() {
+#	nvram set ssd_enable=0
+#	[ act_wl_cnt == 0 ] && return FALSE
+#	for i in wl0 wl1; do
+#		if [ m_instance_wl[i].m_wlVar.wlEnbl == TRUE && m_instance_wl[i].m_wlVar.ssdEnable > 0 ]; then
+#			nvram set ssd_enable=m_instance_wl[i].m_wlVar.ssdEnable
+#			return TRUE
+#		fi
+#	done
+#	return FALSE
+#}
 
 wlmngr_startServices() {
 	local idx=$1
@@ -112,20 +139,32 @@ wlmngr_startServices() {
 #	}
 
 #	wlmngr_startSes() {
-#		return
+#		if [ m_instance_wl[idx].m_wlVar.wlSesEnable == FALSE ]; then
+#			return
+#		fi
+#		ses -f
 #	}
 #	wlmngr_startSesCl() {
-#		return
+#		if [ m_instance_wl[idx].m_wlVar.wlSesClEnable == FALSE ]; then
+#			return
+#		fi
+#		ses_cl -f
 #	}
 
 #	wapid
 
 #	wlmngr_BSDCtrl() {
-#		return
+#		killall -q -15 bsd 2>/dev/null
+#		if [ "$(enableBSD)" == "TRUE" ]; then
+#			bsd&
+#		fi
 #	}
 
 #	wlmngr_SSDCtrl(){
-#		return
+#		killall -q -15 ssd 2>/dev/null
+#		if [ "$(enableSSD)" == "TRUE" ]; then
+#			ssd&
+#		fi
 #	}
 }
 
@@ -228,7 +267,7 @@ wlmngr_finalize() {
 	wlctl -i wl$idx fcache 1
 
 	# send ARP packet with bridge IP and hardware address to device
-	# this piece of code is -required- to make br0's mac work properly
+	# this piece of code is -required- to make br-lan's mac work properly
 	# in all cases
 	sendarp -s br-lan -d br-lan
 }
@@ -238,7 +277,10 @@ wlmngr_issueServiceCmd() {
 }
 
 wlmngr_HspotCtrl() {
-	return
+	killall -q -15 hspotap 2>/dev/null
+	if [ "$(enableHspot)" == "TRUE" ]; then
+		hspotap&
+	fi
 }
 
 wlmngr_postStart() {

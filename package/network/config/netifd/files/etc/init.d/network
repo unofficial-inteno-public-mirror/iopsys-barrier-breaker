@@ -30,7 +30,8 @@ start_service() {
 reload_service() {
 	init_switch
 	ubus call network reload
-	/sbin/wifi reload
+	killall -9 wifi 2>/dev/null
+	/sbin/wifi reload &
 }
 
 stop_service() {
