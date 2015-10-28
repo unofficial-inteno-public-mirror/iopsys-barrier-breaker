@@ -228,6 +228,15 @@ EOF
 	sed -i "s/\$BSSID/$BSSID/g" /etc/config/wireless
 }
 
+create_qr_code() {
+	local wifc=$1
+	local wssd=$2
+	local wenc=$3
+	local wkey=$4
+	local whid=$5
+	qrencode -o /www/luci-static/resources/icons/wqr_$wifc.png "WIFI:T:$wenc;S:$wssd;P:$wkey;H:$whid;"
+}
+
 assign_network() {
 	# map all interfaces to corresponding networks by nvram parameters
 	local _acnt=0
@@ -313,16 +322,20 @@ wps_settings() {
 vif_settings() {
 	local cfg=$1
 	local iface=$2
-	local device ifname enabled isolate mode ssid network hspot
+	local device ifname enabled isolate mode ssid closed network hspot
 	local encryption cipher key key1 key2 key3 key4 gtk_rekey
 	local macmode maclist wps wmf_bss_enable bss_max bss_enabled
 	local radius_server radius_port radius_secret net_reauth
+	local qr_enc="nopass"
+	local qr_hidden="false"
+	local qr_key="no"
 
 	config_get device $cfg device
 	config_get disabled $cfg disabled "0"
 	config_get isolate $cfg isolate "0"
 	config_get mode $cfg mode "ap"
 	config_get ssid $cfg ssid ""
+	config_get closed $cfg hidden "0"
 	config_get encryption $cfg encryption "*DEL*"
 	config_get cipher $cfg cipher
 	config_get key_index "$vif" key_index "1"
@@ -347,6 +360,7 @@ vif_settings() {
 
 	[ "$disabled" == "1" ] && bss_enabled=0 || bss_enabled=1
 	[ "$wps" == "1" ] && wps_mode=enabled || wps_mode=disabled
+	[ "$closed" == "1" ] && qr_hidden="true"
 
 	nvram set "$iface"_auth=0
 	nvram set "$iface"_auth_mode=*DEL*
@@ -369,6 +383,7 @@ vif_settings() {
 				[1234]) echo -n "" ;;
 				*) nvram set "$iface"_key=$key ;;
 			esac
+			qr_enc="WEP"
 		;;
 		*psk*)
 			nvram set "$iface"_wpa_gtk_rekey=$gtk_rekey
@@ -386,6 +401,8 @@ vif_settings() {
 			esac
 			nvram set "$iface"_wpa_psk="$key"
 			nvram set "$iface"_auth_mode="psk"
+			qr_enc="WPA"
+			qr_key="$key"
 		;;
 	esac
 
@@ -411,6 +428,9 @@ vif_settings() {
 	nvram set "$iface"_wps_mode=$wps_mode
 	nvram set "$iface"_interface=$device
 	nvram set "$iface"_network=$network
+
+	# create QR code of the Wi-Fi network
+	create_qr_code "$iface" "$ssid" "$qr_enc" "$qr_key" "$qr_hidden"
 }
 
 configure_vif() {
