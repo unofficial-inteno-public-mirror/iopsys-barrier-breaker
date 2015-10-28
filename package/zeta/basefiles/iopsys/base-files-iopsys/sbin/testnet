@@ -73,7 +73,7 @@ iptvtest() {
 if [ -n "$timed_check" ]
 then
 	internet_test
-	return 1
+	return 0
 fi
 
 for tm in 1 3 5 7
