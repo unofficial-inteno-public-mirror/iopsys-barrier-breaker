@@ -657,7 +657,7 @@ wdev_settings() {
 	local device=$cfg
 	local country band bandwidth hwmode channel scantimer disabled radio
 	local wme wme_no_ack wme_apsd frag rts dtim bcn frameburst
-	local rifs rifs_advert maxassoc reg_mode acs_dfs beamforming
+	local rifs rifs_advert maxassoc reg_mode acs_dfs acs_fcs beamforming
 	local rxchain_pwrsave_enable rxchain_pwrsave_pps rxchain_pwrsave_quiet_time
 
 	config_get disabled $cfg disabled "0"
@@ -698,7 +698,13 @@ wdev_settings() {
 	fi
 
 	acs_scan_timer=0
-	[ "$acs_dfs" == "1" ] && acs_dfs=2 || acs_dfs=0
+	if [ "$acs_dfs" == "1" ]; then
+		acs_dfs=2
+		acs_fcs=0
+	else
+		acs_dfs=0
+		acs_fcs=1
+	fi
 
 	case "$channel" in
 		auto)
@@ -737,6 +743,7 @@ wdev_settings() {
 
 	nvram set "$device"_acs_cs_scan_timer=$acs_scan_timer
 	nvram set "$device"_acs_dfs=$acs_dfs
+	nvram set "$device"_acs_fcs_mode=$acs_fcs
 	nvram set "$device"_bcn=$bcn
 	nvram set "$device"_bw_cap=$bw_cap
 	nvram set "$device"_channel=$channel
