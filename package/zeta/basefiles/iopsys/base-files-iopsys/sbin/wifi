@@ -790,7 +790,7 @@ case "$_ACTION" in
 		ubus call led.wifi set '{"state":"off"}'
 		exit
 	;;
-	reload*)
+	reload)
 		_RELOAD=1
 	;;
 esac

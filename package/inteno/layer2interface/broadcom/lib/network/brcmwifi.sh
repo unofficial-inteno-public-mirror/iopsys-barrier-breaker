@@ -84,7 +84,6 @@ wlmngr_doWlConf() {
 
 	#wlctl -i wl$idx nreqd $nreqd
 	wlconf wl$idx up
-
 }
 
 wlmngr_setupMbssMacAddr() {
@@ -268,7 +267,7 @@ wlmngr_finalize() {
 	wlctl -i wl$idx fcache 1
 
 	# send ARP packet with bridge IP and hardware address to device
-	# this piece of code is -required- to make br0's mac work properly
+	# this piece of code is -required- to make br-lan's mac work properly
 	# in all cases
 	sendarp -s br-lan -d br-lan
 }
