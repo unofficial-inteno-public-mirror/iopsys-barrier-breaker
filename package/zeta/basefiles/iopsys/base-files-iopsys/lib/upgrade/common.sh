@@ -550,11 +550,12 @@ inteno_image_upgrade() {
 
 			v "Killing old kernel..."
 			mtd_no=$(find_mtd_no "kernel_$upd_vol")
-			imagewrite -b 8 /dev/mtd$mtd_no
+			imagewrite -b 8 /dev/mtd$mtd_no || return 1
 
 			v "Writing UBIFS data to rootfs_$upd_vol volume ..."
+			umount -f /dev/ubi0_$upd_vol
 			ubiupdatevol /dev/ubi0_$upd_vol \
-				     --size=$ubifs_sz --skip=$ubifs_ofs $from
+				     --size=$ubifs_sz --skip=$ubifs_ofs $from || return 1
 
 			v "Writing kernel image to kernel_$upd_vol partition ..."
 			mtd_no=$(find_mtd_no "kernel_$cur_vol")

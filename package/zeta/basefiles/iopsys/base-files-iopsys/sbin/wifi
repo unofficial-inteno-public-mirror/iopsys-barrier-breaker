@@ -12,6 +12,8 @@ local _RELOAD=0
 local _VIFNUM=0
 local _WDEVNUM=-1
 local _WIDX=0
+local _WL2G=
+local _WL5G=
 
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
@@ -691,10 +693,12 @@ wdev_settings() {
 		freq=5
 		nband=1
 		reg_mode=h
+		_WL5G=$device
 	else
 		freq=2
 		nband=2
 		reg_mode=off
+		_WL2G=$device
 	fi
 
 	acs_scan_timer=0
@@ -819,7 +823,9 @@ configure_wifi() {
 
 	wlmngr_startServices
 	wlmngr_startWsc
-	ubus call led.wifi set '{"state":"ok"}'
+
+	[ $(nvram get "$_WL2G"_radio) == "1" ] && ubus call led.wifi set '{"state":"ok"}'
+	[ $(nvram get "$_WL5G"_radio) == "1" ] && ubus call led.wifi set '{"state":"eok"}'
 }
 
 case "$_ACTION" in
