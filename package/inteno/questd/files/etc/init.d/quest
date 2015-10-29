@@ -27,37 +27,3 @@ reload() {
 	ubus call router reload
 }
 
-## THIS WILL NEED TO BE MOVED TO THE RIGHT PLACE
-# even though this runs repeatedly, it does not matter 
-
-# write iop version data to /etc/openwrt_version from where procd 
-# will read it and display it using system info ubus call
-IOP_VERSION="$(db get hw.board.iopVersion)"
-RELEASE=${IOP_VERSION%-*}; RELEASE=${RELEASE##*_}
-REVISION=${IOP_VERSION##*-}
-MODEL=$(db get hw.board.routerModel)
-sed -i "s/%D/IOPSYS/g" /etc/openwrt_release
-sed -i "s/%C/$RELEASE/g" /etc/openwrt_release
-sed -i "s/%V/$RELEASE/g" /etc/openwrt_release
-sed -i "s/%R/$REVISION/g" /etc/openwrt_release
-sed -i "s/%S/$MODEL/g" /etc/openwrt_release
-sed -i "s/%N//g" /etc/openwrt_release
-
-
-# openwrt defaults are set like this
-# DISTRIB_ID='OpenWrt'
-# DISTRIB_RELEASE='15.05'
-# DISTRIB_REVISION='r47165'
-# DISTRIB_CODENAME='chaos_calmer'
-# DISTRIB_TARGET='bcm53xx/generic'
-# DISTRIB_DESCRIPTION='OpenWrt Chaos Calmer 15.05'
-# DISTRIB_TAINTS='no-all busybox'
-
-# the template looks like this
-# DISTRIB_ID="%D"
-# DISTRIB_RELEASE="%C"
-# DISTRIB_REVISION="%R"
-# DISTRIB_CODENAME="%n"
-# DISTRIB_TARGET="%S"
-# DISTRIB_DESCRIPTION="%D %N %V"
-# DISTRIB_TAINTS="%t"
