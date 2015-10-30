@@ -21,6 +21,7 @@ config service 'backup'
 config service 'cwmp'
 	option desc 'CWMP'
 	list file '/etc/config/cwmp'
+	list file '/etc/icwmpd/.icwmpd_backup_session.xml'
 
 config service 'dropbear'
 	option desc 'Dropbear'
