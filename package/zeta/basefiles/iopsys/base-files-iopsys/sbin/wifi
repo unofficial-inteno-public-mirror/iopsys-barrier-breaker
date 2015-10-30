@@ -14,6 +14,7 @@ local _WDEVNUM=-1
 local _WIDX=0
 local _WL2G=
 local _WL5G=
+local _NVRAM=0
 
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
@@ -466,6 +467,9 @@ configure_vif() {
 		iface="$device"."$_VIFNUM"
 	fi
 
+	# set wireless ifname in wireless config
+	uci set wireless.$vif.ifname=$iface
+
 	vif_settings $vif $iface
 
 	_VIFNUM=$((_VIFNUM+1))
@@ -778,15 +782,17 @@ setup_wifi_device() {
 	local device="$1"
 	local vif
 
-	for vif in $device $device.1 $device.2 $device.3; do
-		nvram set "$vif"_bss_enabled=0
-	done
+	if [ $_NVRAM -eq 0 ]; then # for WiFi-Alliance
+		for vif in $device $device.1 $device.2 $device.3; do
+			nvram set "$vif"_bss_enabled=0
+		done
 
-	# configure virtual wireless interfaces
-	config_foreach configure_vif wifi-iface "$device"
-	_VIFNUM=0
+		# configure virtual wireless interfaces
+		config_foreach configure_vif wifi-iface "$device"
+		_VIFNUM=0
 
-	wdev_settings $device
+		wdev_settings $device
+	fi
 
 	_WDEVNUM=$((_WDEVNUM+1))
 	#nvram commit
@@ -794,8 +800,10 @@ setup_wifi_device() {
 
 configure_wifi() {
 	ubus call led.wifi set '{"state":"off"}'
+
 	config_load wireless
 	config_foreach setup_wifi_device wifi-device
+	uci commit wireless
 
 	[ $_RELOAD -eq 0 ] && wlmngr_setupTPs
 
@@ -841,7 +849,11 @@ case "$_ACTION" in
 		ubus call led.wifi set '{"state":"off"}'
 		exit
 	;;
-	reload)
+	reload|restart)
+		_RELOAD=1
+	;;
+	nvram)
+		_NVRAM=1
 		_RELOAD=1
 	;;
 esac
