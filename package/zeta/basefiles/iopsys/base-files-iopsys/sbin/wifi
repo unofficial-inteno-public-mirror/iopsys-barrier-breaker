@@ -668,7 +668,7 @@ wdev_settings() {
 	config_get bandwidth $cfg bandwidth "80"
 	config_get hwmode $cfg hwmode "11ac"
 	config_get channel $cfg channel "auto"
-	config_get scantimer $cfg scantimer "0"
+	config_get scantimer $cfg scantimer "15"
 	config_get wme $cfg wmm "1"
 	config_get wme_no_ack $cfg wmm_noack "0"
 	config_get wme_apsd $cfg wmm_apsd "1"
