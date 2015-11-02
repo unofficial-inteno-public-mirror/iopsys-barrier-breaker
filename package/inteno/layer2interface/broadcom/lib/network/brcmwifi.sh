@@ -60,6 +60,7 @@ wlmngr_stopServices() {
 wlmngr_WlConfDown() {
 	local idx=$1
 	wlconf wl$idx down
+	wlctl -i wl$idx chanspec 36/80
 }
 
 wlmngr_setSsid() {
