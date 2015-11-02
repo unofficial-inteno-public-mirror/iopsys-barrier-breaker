@@ -15,6 +15,7 @@ local _WIDX=0
 local _WL2G=
 local _WL5G=
 local _NVRAM=0
+local _ACSIFS=
 
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
@@ -719,6 +720,7 @@ wdev_settings() {
 			channel=0
 			chanspec=0
 			acs_scan_timer=$((scantimer * 60))
+			[ -n "$_ACSIFS" ] && _ACSIFS="$_ACSIFS $device" || _ACSIFS="$device"
 		;;
 		*u|*l|*/80)
 			chanspec=$channel
@@ -829,6 +831,7 @@ configure_wifi() {
 
 	assign_network
 
+	nvram set acs_ifnames="$_ACSIFS"
 	wlmngr_startServices
 	wlmngr_startWsc
 
