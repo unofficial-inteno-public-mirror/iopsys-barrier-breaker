@@ -865,9 +865,44 @@ configure_wifi() {
 	[ $(nvram get "$_WL5G"_radio) == "1" ] && ubus call led.wifi set '{"state":"eok"}'
 }
 
+toggle_wifi_iface() {
+	local action=$1
+	local vif=$2
+	[ "${vif:0:2}" == "wl" ] || exit
+	local ssid="$(nvram get "$vif"_ssid)"
+	if [ "$action" == "disable" ]; then
+		nvram set  "$vif"_bss_enabled=0
+		wlctl -i $vif ssid ""
+		wlctl -i $vif bss down
+	else
+		nvram set  "$vif"_bss_enabled=1
+		wlctl -i $vif ssid "$ssid"
+		wlctl -i $vif bss up
+	fi
+}
+
+toggle_wifi_device() {
+	local device=$1
+	local wlstatus="$(uci -q get wireless.$device.disabled)"
+	[ "${device:0:2}" == "wl" ] || exit
+	if [ "$wlstatus" == "1" ]; then
+		echo "Enabling WiFi Radio $device"
+		uci -q set wireless.status.wlan=1
+		uci -q set wireless.$device.disabled=0
+	else
+		echo "Disabling WiFi Radio $device"
+		uci -q set wireless.$device.disabled=1
+	fi
+	uci commit wireless
+}
+
 case "$_ACTION" in
 	detect)
 		wifi_detect
+		exit
+	;;
+	disable|enable)
+		toggle_wifi_iface "$1" "$2"
 		exit
 	;;
 	down)
@@ -879,6 +914,10 @@ case "$_ACTION" in
 		exit
 	;;
 	reload|restart)
+		_RELOAD=1
+	;;
+	toggle)
+		toggle_wifi_device "$2"
 		_RELOAD=1
 	;;
 	nvram)
