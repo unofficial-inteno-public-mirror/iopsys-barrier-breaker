@@ -268,6 +268,7 @@ assign_network() {
 		local found=0
 		local ifname="$(uci -q get network.$interface.ifname)"
 		local net="$(nvram get "$vif"_network)"
+		local enabled=$(nvram get "$vif"_bss_enabled)
 		local curnet=
 		local ifc
 
@@ -275,7 +276,7 @@ assign_network() {
 
 		for ifc in $ifname; do
 			if [ $ifc == $vif ]; then
-				if [ $interface == $net ]; then
+				if [ $interface == $net -a $enabled == "1" ]; then
 					#echo "wifi: $ifc is already at $net" >/dev/console
 					found=1
 				else
@@ -285,6 +286,8 @@ assign_network() {
 				break
 			fi
 		done
+
+		[ $enabled == "1" ] || return
 
 		if [ $found -eq 0 ]; then
 			if [ $interface == $net ]; then
@@ -315,7 +318,6 @@ assign_network() {
 
 	config_load network
 	for vif in wl0 $(nvram get wl0_vifs) wl1 $(nvram get wl1_vifs); do
-		[ $(nvram get "$vif"_bss_enabled) == "1" ] || continue
 		config_foreach find_wireless_device interface $vif
 	done
 	config_foreach tag_network interface
