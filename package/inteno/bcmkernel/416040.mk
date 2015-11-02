@@ -13,11 +13,10 @@ PKG_NAME:=bcmkernel-3.4
 PKG_VERSION:=$(BRCM_SDK_VERSION)
 PKG_RELEASE:=1
 
-# Yes, .04 is in the same repo as .03
-PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
+PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=523f068465db570109eb3a887ca83f21888b2ead
+PKG_SOURCE_VERSION:=ac2cf96af05c212d1cfe6d88e0cef2d64027015a
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 endif
 
