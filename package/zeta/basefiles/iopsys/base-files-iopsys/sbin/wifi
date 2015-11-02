@@ -246,25 +246,49 @@ assign_network() {
 	local _acnt=0
 	local vif
 
+	remove_from_network() {
+		local interface=$1
+		local vif=$2
+		local ifname="$(uci -q get network.$interface.ifname)"
+		local ifnames=
+		local ifc
+
+		for ifc in $ifname; do
+			if [ $ifc != $vif ]; then
+				#echo "wifi:$ifc can stay at $interface" >/dev/console
+				[ -n "$ifnames" ] && ifnames="$ifnames $ifc" || ifnames="$ifc"
+			fi
+		done
+		uci -q set network.$interface.ifname="$ifnames"
+	}
+
 	find_wireless_device() {
 		local interface=$1
 		local vif=$2
 		local found=0
 		local ifname="$(uci -q get network.$interface.ifname)"
 		local net="$(nvram get "$vif"_network)"
+		local curnet=
 		local ifc
 
 		net="${net:-lan}"
 
 		for ifc in $ifname; do
 			if [ $ifc == $vif ]; then
-				found=1
+				if [ $interface == $net ]; then
+					#echo "wifi: $ifc is already at $net" >/dev/console
+					found=1
+				else
+					#echo "wifi: remove $ifc from $interface" >/dev/console
+					remove_from_network $interface $ifc
+				fi
 				break
 			fi
 		done
 
 		if [ $found -eq 0 ]; then
 			if [ $interface == $net ]; then
+				#echo "wifi: add $vif to $interface" >/dev/console
 				uci -q set network.$interface.ifname="$ifname $vif"
 			fi
 		fi
