@@ -16,14 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.4.0
-PKG_RELEASE:=RC1
+PKG_RELEASE:=RC2
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=7380810fcbfb5f44c2eb073df48a28942c81056d
+PKG_SOURCE_VERSION:=d780b60a6dcc9d67642d0989bfe33ee1b9ce88eb
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -94,11 +94,6 @@ endef
 
 define Build/Clean
 	$(MAKE) -C $(PKG_BUILD_DIR) clean
-endef
-
-define Build/Compile	
-	$(MAKE) -C $(PKG_BUILD_DIR) config
-	$(MAKE) -C $(PKG_BUILD_DIR) 
 endef
 
 define Package/ice-client/preinst
@@ -407,9 +402,6 @@ define Package/ice-client-logreader
   $(call Package/ice-client/Default)
   TITLE:=LogReader
   DEPENDS+= 
-  # Actually logreader still works without all this
-  # however when collectd support is needed, all this is required on top
-  # +collectd +libltdl +libiptc +collectd-mod-network +collectd-mod-memory +collectd-mod-cpu +collectd-mod-interface
 endef
 
 define Package/ice-client-logreader/description
