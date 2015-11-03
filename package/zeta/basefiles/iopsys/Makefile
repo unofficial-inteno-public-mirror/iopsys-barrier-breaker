@@ -200,6 +200,8 @@ define Package/inteno-base-juci
         +!@JUCI_THEME_SELECTED:juci-theme-inteno \
         +PACKAGE_miniupnpd:juci-upnp \
         +PACKAGE_multiwan:juci-inteno-multiwan \
+		+PACKAGE_juci-igmpinfo \
+		+PACKAGE_uhttpd:juci-uhttpd \
 		+juci-ethernet \
 		+juci-natalie-dect \
         +USB_SUPPORT:juci-usb 
