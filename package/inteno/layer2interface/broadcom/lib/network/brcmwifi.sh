@@ -267,6 +267,17 @@ wlmngr_finalize() {
 	wlctl -i wl$idx phy_watchdog 1
 	wlctl -i wl$idx fcache 1
 
+	# RADAR THRESHOLD VALUES #
+	local pcid="$(wlctl -i wl$idx revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2)"
+#	local isac="$(db get hw.$pcid.is_ac)"
+#	if [ "$isac" == "1" ]; then
+#		wlctl -i $device msglevel +radar +dfs
+#	fi
+	local rdrthrs="$(db get hw.$pcid.radarthrs)"
+	if [ -n "$rdrthrs" ]; then
+		wlctl -i wl$idx radarthrs $rdrthrs
+	fi
+
 	# send ARP packet with bridge IP and hardware address to device
 	# this piece of code is -required- to make br-lan's mac work properly
 	# in all cases

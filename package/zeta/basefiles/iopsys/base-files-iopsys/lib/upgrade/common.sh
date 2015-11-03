@@ -450,10 +450,9 @@ build_springboard_rootfs() {
 
 copy_config_to_springboard() {
 	local newroot=$1
-
 	if [ -e /SAVE_CONFIG ]; then
 		touch $newroot/overlay/SAVE_CONFIG
-		cp -dpfr /overlay/etc $newroot/overlay && true
+		cp -fv /sysupgrade.tgz $newroot/overlay
 	fi
 }
 

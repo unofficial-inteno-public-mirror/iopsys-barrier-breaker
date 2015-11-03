@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/inteno-base
  # SECTION:=base
   CATEGORY:=Base System
-  DEPENDS:=+netifd +minidlna +miniupnpd +libc +block-mount +procd +jsonfilter +port-management
+  DEPENDS:=+netifd +minidlna +miniupnpd +libc +block-mount-old +procd +jsonfilter +port-management
   TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
@@ -174,34 +174,40 @@ endef
 define Package/inteno-base-juci
 	CATEGORY:=Config
 	DEPENDS:=+juci \
-		+PACKAGE_asterisk18-mod:juci-asterisk \
-		+PACKAGE_bcmkernel:juci-broadcom-dsl \
-		+PACKAGE_bcmkernel:juci-broadcom-ethernet \
-		+PACKAGE_bcmkernel:juci-broadcom-wl \
-		+PACKAGE_bcmkernel:juci-broadcom-vlan \
-		+juci-ddns \
-		+juci-diagnostics \
-		+PACKAGE_dnsmasq:juci-dnsmasq-dhcp \
-		+juci-dropbear \
-		+juci-event \
-		+PACKAGE_firewall:juci-firewall-fw3 \
-		+juci-igmpinfo \
-		+juci-inteno-router \
-		+juci-jquery-console \
-		+juci-macdb \
-		+PACKAGE_minidlna:juci-minidlna \
-		+juci-mod-status \
-		+juci-mod-system \
+        +juci-ethernet \
+        +PACKAGE_asterisk18-mod:juci-asterisk \
+        +PACKAGE_bcmkernel:juci-broadcom-dsl \
+        +PACKAGE_bcmkernel:juci-broadcom-ethernet \
+        +PACKAGE_bcmkernel:juci-broadcom-wl \
+        +PACKAGE_bcmkernel:juci-broadcom-vlan \
+        +PACKAGE_ddns-scripts:juci-ddns \
+        +juci-diagnostics \
+        +PACKAGE_dnsmasq:juci-dnsmasq-dhcp \
+        +PACKAGE_dropbear:juci-dropbear \
+        +juci-event \
+        +PACKAGE_firewall:juci-firewall-fw3 \
+        +PACKAGE_igmpproxy:juci-igmpinfo \
+        +PACKAGE_inteno-base:juci-inteno-router \
+        +juci-jquery-console \
+        +PACKAGE_inteno-base:juci-macdb \
+        +PACKAGE_minidlna:juci-minidlna \
+        +juci-mod-status \
+        +juci-mod-system \
+        +PACKAGE_inteno-base:juci-netmode \
+        +PACKAGE_netifd:juci-network-netifd \
+        +PACKAGE_samba36-server:juci-samba \
+        +PACKAGE_inteno-base:juci-sysupgrade \
+        +!@JUCI_THEME_SELECTED:juci-theme-inteno \
+        +PACKAGE_miniupnpd:juci-upnp \
+        +PACKAGE_multiwan:juci-inteno-multiwan \
+		+PACKAGE_juci-igmpinfo \
+		+PACKAGE_uhttpd:juci-uhttpd \
 		+juci-ethernet \
-		+juci-netmode \
 		+juci-natalie-dect \
-		+PACKAGE_netifd:juci-network-netifd \
-		+PACKAGE_samba36-server:juci-samba \
-		+PACKAGE_inteno-base:juci-sysupgrade \
-		+PACKAGE_miniupnpd:juci-upnp \
-		+USB_SUPPORT:juci-usb 
+        +USB_SUPPORT:juci-usb 
 	TITLE:=Preselected packages for juci
 endef
+
 $(eval $(call BuildPackage,inteno-base-juci))
 define Package/inteno-base-juci/description
  Inteno juci packages
