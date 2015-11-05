@@ -43,10 +43,14 @@ minidlna_create_config() {
 	local cfg=$1
 	local port
 	local interface
+	local network
 
 	config_get port $cfg port
 	config_get interface $cfg interface
+	config_get network $cfg network
 
+	[ -n "$network" ] && . /lib/functions/network.sh && network_get_device interface $network
+	
 	[ -z "$interface" -o -t "$port" ] && return 1
 
 	echo "# this file is generated automatically, don't edit" > "$MINIDLNA_CONFIG_FILE"
