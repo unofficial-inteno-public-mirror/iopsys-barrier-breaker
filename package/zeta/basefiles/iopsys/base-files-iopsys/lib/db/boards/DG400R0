@@ -294,6 +294,8 @@ list press_indicator led_ext
 list functions logo
 list functions status
 list functions wan
+list functions dsl
+list functions broadband
 list functions wan_phy_link
 list functions wan_phy_speed
 list functions wan_phy_link_speed
@@ -329,16 +331,30 @@ list led_action_error	'status_green2 = OFF'
 list led_action_error	'status_red   = FLASH_FAST'
 
 config led_map led_wan
+
+config led_map led_dsl
+
+config led_map led_broadband
 list led_action_ok	'broadband_red = OFF'
-list led_action_ok	'broadband_green  = ON'
+list led_action_ok	'broadband_green = ON'
+list super_ok		'wan_ok'
+list super_ok		'dsl_ok'
 list led_action_off	'broadband_red = OFF'
-list led_action_off	'broadband_green  = OFF'
-list led_action_notice	'broadband_red = OFF'
-list led_action_notice	'broadband_green  = FLASH_SLOW'
-list led_action_alert	'broadband_red = FLASH_SLOW'
-list led_action_alert	'broadband_green  = OFF'
+list led_action_off	'broadband_green = OFF'
+list super_off		'wan_off'
+list super_off		'dsl_off'
+list led_action_notice	'broadband_red = FLASH_SLOW'
+list led_action_notice	'broadband_green = OFF'
+list super_notice	'wan_notice'
+list super_notice	'dsl_notice'
+list led_action_alert	'broadband_red = OFF'
+list led_action_alert	'broadband_green = FLASH_SLOW'
+list super_alert	'wan_alert'
+list super_alert	'dsl_alert'
 list led_action_error	'broadband_red = ON'
-list led_action_error	'broadband_green  = OFF'
+list led_action_error	'broadband_green = OFF'
+list super_error	'wan_error'
+list super_error	'dsl_error'
 
 config led_map led_wan_phy_link
 
