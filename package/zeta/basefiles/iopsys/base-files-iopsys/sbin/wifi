@@ -95,9 +95,14 @@ wifi_detect() {
 	}
 
 	if ! uci -q get wireless.status; then
+		[ -f /etc/config/wireless ] || touch /etc/config/wireless
 		uci add wireless wifi-status
 		uci rename wireless.@wifi-status[-1]=status
 		uci set wireless.status.wlan=1
+		uci set wireless.status.wps=1
+		uci set wireless.status.schedule=0
+		uci set wireless.status.sched_status=0
+		uci commit wireless
 	fi
 
 	mkdir -p $WLDIR
@@ -126,6 +131,7 @@ wifi_detect() {
 				bno=2
 				doth="0"
 				dfsc=""
+				ENCR="mixed-psk"
 			fi
 			populate_chanspecs $wl
 			if ! uci -q get wireless.$wl; then
@@ -160,7 +166,7 @@ config wifi-iface
 	option network '${NET:-lan}'
 	option mode 'ap'
 	option ssid '${SSID}'
-	option encryption '${ENCR:-mixed-psk}'
+	option encryption '${ENCR:-psk2}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
 	option gtk_rekey '${GTK:-3600}'
