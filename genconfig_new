@@ -97,8 +97,13 @@ create_and_copy_files()
 		exit -1
 	fi 
 
-	local GITVERSION=$(git describe --tags --abbrev=0)
-	echo "Selecting board ${BOARDTYPE} for customer ${CUSTOMER}"
+	local GITVERSION=$(git rev-parse --abbrev-ref HEAD)
+	# master and devel get special treatment. Master is always the superstable and devel is the intermediate releases. 
+	# but if you build from your own branch then you should use the branch name which you have built
+	if [ "$GITVERSION" = "master" -o "$GITVERSION" = "devel" ]; then GITVERSION=$(git describe --tags --abbrev=0); fi
+	GITVERSION=${GITVERSION^^}
+
+	echo "Selecting board ${BOARDTYPE} for customer ${CUSTOMER} and building version $GITVERSION"
 	cp config.master ${CONFIG}
 	echo "CONFIG_PACKAGE_routermodel-${BOARDTYPE,,}=y" >> ${CONFIG}
 	echo "CONFIG_PACKAGE_profile-${CUSTOMER,,}=y" >> ${CONFIG}
