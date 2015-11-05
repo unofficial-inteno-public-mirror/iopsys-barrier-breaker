@@ -519,9 +519,9 @@ CONFIG_PACKAGE_bcmkernel=y
 #
 # Profile and CFE
 #
-# CONFIG_BRCM_SDK_VER_414040 is not set
+CONFIG_BRCM_SDK_VER_416040=y
 # CONFIG_BRCM_SDK_VER_416021 is not set
-CONFIG_BRCM_SDK_VER_416030=y
+# CONFIG_BRCM_SDK_VER_416030=y
 CONFIG_BCM_KERNEL_PROFILE="963268GWV"
 CONFIG_BCM_CHIP_ID="63268"
 CONFIG_BCM_BLNAND="0"
@@ -2625,7 +2625,7 @@ CONFIG_PACKAGE_libsqlite3=y
 # CONFIG_PACKAGE_pgsqlodbc is not set
 # CONFIG_PACKAGE_unixodbc is not set
 # CONFIG_PACKAGE_af_alg is not set
-CONFIG_PACKAGE_bcmnvram=y
+# CONFIG_PACKAGE_bcmnvram is not set
 # CONFIG_PACKAGE_bind-libs is not set
 # CONFIG_PACKAGE_bluez-libs is not set
 # CONFIG_PACKAGE_boost-chrono is not set
