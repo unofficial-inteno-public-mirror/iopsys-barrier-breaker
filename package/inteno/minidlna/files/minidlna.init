@@ -46,8 +46,8 @@ minidlna_create_config() {
 	local network
 
 	config_get port $cfg port
-	config_get interface $cfg interface
-	config_get network $cfg network
+	#config_get interface $cfg interface
+	config_get network $cfg network "lan"
 
 	[ -n "$network" ] && . /lib/functions/network.sh && network_get_device interface $network
 	
