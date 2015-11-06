@@ -204,6 +204,7 @@ define Package/inteno-base-juci
 		+PACKAGE_uhttpd:juci-uhttpd \
 		+juci-ethernet \
 		+juci-natalie-dect \
+		+juci-utils \
         +USB_SUPPORT:juci-usb 
 	TITLE:=Preselected packages for juci
 endef
