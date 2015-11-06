@@ -33,6 +33,7 @@ config service 'firewall'
 	option desc 'Firewall'
 	option conservative_keep 1
 	list file '/etc/config/firewall'
+	list file '/etc/config/parental'
 	option user '1'
 
 config service 'ice'
@@ -90,6 +91,7 @@ config service 'openvpn'
 
 config service 'password'
 	option desc 'Passwords'
+	option conservative_keep 1
 	list file '/etc/config/passwords'
 	list file '/etc/passwd'
 	list file '/etc/shadow'
@@ -132,6 +134,7 @@ config service 'system'
 
 config service 'upnp'
 	option desc 'UPNP'
+	option conservative_keep 1
 	list file '/etc/config/upnpd'
 	option user '0'
 
