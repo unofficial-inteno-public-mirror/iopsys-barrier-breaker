@@ -871,6 +871,36 @@ configure_wifi() {
 	[ $(nvram get "$_WL5G"_radio) == "1" ] && ubus call led.wifi set '{"state":"eok"}'
 }
 
+is_in_network() {
+	local vif=$1
+	local interface=$(nvram get "$vif"_network)
+	local ifdev
+	local found=0
+
+	json_load "$(ifstatus $interface)"
+	json_get_var ifdev device
+
+	if [ $ifdev == $vif ]; then
+		return 0
+	elif [ -n "$ifdev" ]; then
+		json_load "$(devstatus $ifdev)"
+		json_get_var devtype type
+		if [ "$devtype" == "Bridge" ]; then
+			local _i=1
+			json_select bridge-members
+			while json_get_var dev $_i; do
+				if [ $dev == $vif ]; then
+					found=1
+					break
+				fi
+				_i=$((_i+1))
+			done
+		fi
+		[ $found -eq 1 ] && return 0
+	fi
+	return 1
+}
+
 toggle_wifi_iface() {
 	local action=$1
 	local vif=$2
@@ -880,10 +910,16 @@ toggle_wifi_iface() {
 		nvram set  "$vif"_bss_enabled=0
 		wlctl -i $vif ssid ""
 		wlctl -i $vif bss down
+		exit
 	else
-		nvram set  "$vif"_bss_enabled=1
-		wlctl -i $vif ssid "$ssid"
-		wlctl -i $vif bss up
+		if $(is_in_network $vif); then
+			nvram set  "$vif"_bss_enabled=1
+			wlctl -i $vif ssid "$ssid"
+			wlctl -i $vif bss up
+			exit
+		else
+			_RELOAD=1
+		fi
 	fi
 }
 
@@ -909,7 +945,6 @@ case "$_ACTION" in
 	;;
 	disable|enable)
 		toggle_wifi_iface "$1" "$2"
-		exit
 	;;
 	down)
 		_DOWN=1
@@ -919,7 +954,7 @@ case "$_ACTION" in
 		ubus call led.wifi set '{"state":"off"}'
 		exit
 	;;
-	reload|restart)
+	reload|restart|up)
 		_RELOAD=1
 	;;
 	toggle)
