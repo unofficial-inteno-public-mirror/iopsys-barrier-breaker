@@ -16,6 +16,8 @@ local _WL2G=
 local _WL5G=
 local _NVRAM=0
 local _ACSIFS=
+local _OLDCRONMD5=
+local _NEWCRONMD5=
 
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
@@ -938,6 +940,119 @@ toggle_wifi_device() {
 	uci commit wireless
 }
 
+wifi_onoff() {
+	local status="$1"
+	[ "$status" == "on" ] && status="1" || status="0"
+	local cursta="$(uci -q get wireless.status.wlan)"
+	cursta="${cursta:-1}"
+
+	if [ "$status" == "$cursta" ]; then
+		exit
+	fi
+
+	uci -q set wireless.status.wlan="$status"
+	uci commit wireless
+
+	if [ "$status" == "1" ]; then
+		_ACTION="on"
+	else
+		_ACTION="off"
+	fi
+}
+
+day_to_number() {
+	case $1 in
+		all)		echo 0-6 ;;
+		weekdays)	echo 1-5 ;;
+		weekend)	echo 0,6 ;;
+		sun*)		echo 0 ;;
+		mon*)		echo 1 ;;
+		tue*)		echo 2 ;;
+		wed*)		echo 3 ;;
+		thu*)		echo 4 ;;
+		fri*)		echo 5 ;;
+		sat*)		echo 6 ;;
+		*)		echo error ;;
+	esac
+}
+
+set_wifi_schedule() {
+	local cfg="$1"
+	local status="$2"
+	local days time start stop start_hour stop_hour start_min stop_min
+	local sta revsta day dayn dayns
+
+	config_get days $cfg days
+	config_get time $cfg time
+
+	if [ "$status" == "1" ]; then
+		sta="on"
+		revsta="off"
+	else
+		sta="off"
+		revsta="on"
+	fi
+
+	start=$(echo $time | awk -F '[ ,-]' '{print$1}')
+	stop=$(echo $time | awk -F '[ ,-]' '{print$2}')
+
+	start_hour=$(echo $start | awk -F ':' '{print$1}')
+	start_min=$(echo $start | awk -F ':' '{print$2}')
+
+	stop_hour=$(echo $stop | awk -F ':' '{print$1}')
+	stop_min=$(echo $stop | awk -F ':' '{print$2}')
+
+	daymatch=0
+	for day in $days; do
+		[ "${day:0:3}" == "$current_day" ] && daymatch=1
+		dayn=$(day_to_number $day)
+		[ -n "$dayns" ] && dayns="$dayns,$dayn" || dayns="$dayn"
+	done
+
+	if [ $daymatch -eq 1 -a $current_time -gt ${start/:/} -a $current_time -lt ${stop/:/} ]; then
+		timematch=1
+		uci -q set wireless.status.wlan="$status"
+		uci commit wireless
+	fi
+
+	echo "$start_min $start_hour * * $dayns wifi $sta # WiFi_Schedule" >> /etc/crontabs/root
+	echo "$stop_min $stop_hour * * $dayns wifi $revsta # WiFi_Schedule" >> /etc/crontabs/root
+
+	_NEWCRONMD5=$(md5sum /etc/crontabs/root | awk '{print$1}')
+
+	[ "$_OLDCRONMD5" == "$_NEWCRONMD5" ] || /etc/init.d/cron reload
+}
+
+wifi_schedule() {
+	local schedule sched_status revstatus
+
+	_OLDCRONMD5=$(md5sum /etc/crontabs/root | awk '{print$1}')
+
+	sed -i "/WiFi_Schedule/ d" /etc/crontabs/root
+
+	config_load wireless
+
+	config_get_bool schedule status schedule "0"
+
+	[ $schedule == "0" ] && return
+
+	config_get_bool sched_status status sched_status "0"
+
+	config_foreach set_wifi_schedule wifi-schedule $sched_status
+
+	if [ $timematch -eq 0 ]; then
+		[ $sched_status == "1" ] && revstatus="0" || revstatus="1"
+		uci -q set wireless.status.wlan="$revstatus"
+		uci commit wireless
+	fi
+}
+
+#case "$_ACTION" in
+#	on|off)
+#		wifi_onoff "$1"
+#	;;
+#esac
+
 case "$_ACTION" in
 	detect)
 		wifi_detect
@@ -946,7 +1061,7 @@ case "$_ACTION" in
 	disable|enable)
 		toggle_wifi_iface "$1" "$2"
 	;;
-	down)
+	down|off)
 		_DOWN=1
 		wlmngr_stopServices
 		wlmngr_WlConfDown 0
@@ -955,16 +1070,20 @@ case "$_ACTION" in
 		exit
 	;;
 	reload|restart|up)
+#		wifi_schedule
 		_RELOAD=1
 	;;
 	toggle)
 		toggle_wifi_device "$2"
 		_RELOAD=1
 	;;
-	nvram)
+	nvram|on)
 		_NVRAM=1
 		_RELOAD=1
 	;;
+#	*)
+#		wifi_schedule
+#	;;
 esac
 
 configure_wifi
