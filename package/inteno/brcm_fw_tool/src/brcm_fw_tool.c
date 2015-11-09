@@ -219,7 +219,7 @@ int rr(int addr)
 
 
 static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int cfe_version, int wan_interfaces, int status, int boot_mode, int boot_mode_id) {
-    char ioctl_buf[64]={0};
+    unsigned char ioctl_buf[64]={0};
     fd = open("/dev/brcmboard", O_RDWR);
     if ( fd == -1 ) {
         fprintf(stderr, "failed to open: /dev/brcmboard\n");
@@ -235,8 +235,8 @@ static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int 
 
 //    if (set_gpio)      board_ioctl(BOARD_IOCTL_SET_GPIO,              0, 0, NULL, var1, var2);
     if (cfe_version) {
-        board_ioctl(BOARD_IOCTL_GET_CFE_VER,           0, 0, ioctl_buf, 64, 0);
-        printf("%d.%d.%d-%d.%d\n",ioctl_buf[0],ioctl_buf[1],ioctl_buf[2],ioctl_buf[3],ioctl_buf[4]);
+        board_ioctl(BOARD_IOCTL_GET_CFE_VER,           0, 0, (char *)ioctl_buf, 64, 0);
+        printf("%u.%u.%u-%u.%u-INT%u.%u\n",ioctl_buf[0],ioctl_buf[1],ioctl_buf[2],ioctl_buf[3],ioctl_buf[4],ioctl_buf[5],ioctl_buf[6]);
     }
     /* Dump 4 bytes */
     if (memdump) {
