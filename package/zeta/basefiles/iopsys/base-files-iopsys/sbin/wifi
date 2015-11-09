@@ -173,7 +173,7 @@ config wifi-iface
 	option macfilter '0'
 	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
-	option bss_max '16'
+	option bss_max '32'
 
 EOF
 				if [ "$PEXT" == "1" ]; then
@@ -183,14 +183,14 @@ config wifi-iface
 	option network '${NET:-lan}'
 	option mode 'ap'
 	option ssid '${SSID}-$freq'
-	option encryption '${ENCR:-mixed-psk}'
+	option encryption '${ENCR:-psk2}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
 	option gtk_rekey '${GTK:-3600}'
 	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
-	option bss_max '16'
+	option bss_max '32'
 
 EOF
 				fi
@@ -206,7 +206,7 @@ config wifi-iface
 	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
-	option bss_max '16'
+	option bss_max '32'
 	option disabled '$GDIS'
 
 EOF
@@ -224,7 +224,7 @@ EOF
 				if [ $vdev == "$wl" ]; then
 					uci -q delete wireless.@wifi-iface[$vn]
 				else
-					uci -q get wireless.@wifi-iface[$vn].bss_max || uci -q set wireless.@wifi-iface[$vn].bss_max=16
+					uci -q get wireless.@wifi-iface[$vn].bss_max || uci -q set wireless.@wifi-iface[$vn].bss_max=32
 				fi
 			done
 		fi
@@ -390,7 +390,7 @@ vif_settings() {
 	config_get wps $cfg wps_pbc "0"
 	config_get wmm_bss_disable $cfg wmm_bss_disable "0"
 	config_get wmf_bss_enable $cfg wmf_bss_enable "0"
-	config_get bss_max $cfg bss_max "16"
+	config_get bss_max $cfg bss_max "32"
 	config_get network $cfg network "lan"
 	config_get hspot $cfg hspot "0"
 
