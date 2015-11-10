@@ -169,6 +169,7 @@ define Package/bcmkernel/install
 	# Install binaries
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/*		$(1)/usr/sbin/
 
+	rm -f $(1)/usr/sbin/bcmmserver
 	rm -f $(1)/usr/sbin/dhcp6c
 	rm -f $(1)/usr/sbin/dhcp6s
 	rm -f $(1)/usr/sbin/dhcpc
@@ -181,6 +182,7 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/send_cms_msg
 	rm -f $(1)/usr/sbin/sshd
 	rm -f $(1)/usr/sbin/ssk
+	rm -f $(1)/usr/sbin/sqlite3
 	rm -f $(1)/usr/sbin/telnetd
 	rm -f $(1)/usr/sbin/tr64c
 	rm -f $(1)/usr/sbin/tr69c
@@ -188,7 +190,11 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/udhcpd
 	rm -f $(1)/usr/sbin/upnp
 	rm -f $(1)/usr/sbin/upnpd
+	rm -f $(1)/usr/sbin/visdata
+	rm -f $(1)/usr/sbin/vis-datacollector
+	rm -f $(1)/usr/sbin/vis-dcon
 	rm -f $(1)/usr/sbin/vodsl
+	rm -f $(1)/usr/sbin/vpmstats
 	rm -f $(1)/usr/sbin/wlmngr
 	rm -f $(1)/usr/sbin/zebra
 
@@ -207,13 +213,22 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
 
 	rm -f $(1)/usr/lib/ld-uClibc.so.0
+	rm -f $(1)/usr/lib/libbdlna-dms-aal.so
+	rm -f $(1)/usr/lib/libbdlna-dms.so
+	rm -f $(1)/usr/lib/libbdlna.so
+	rm -f $(1)/usr/lib/libbmedia.so
+	rm -f $(1)/usr/lib/libb_playback_ip.so
 	rm -f $(1)/usr/lib/libc.so.0
+	rm -f $(1)/usr/lib/libcrypt.so.0
 	rm -f $(1)/usr/lib/libdl.so.0
 	rm -f $(1)/usr/lib/libgcc_s.so.1
-	rm -f $(1)/usr/lib/libpthread.so.0
 	rm -f $(1)/usr/lib/libm.so.0
+	rm -f $(1)/usr/lib/libpthread.so.0
+	rm -f $(1)/usr/lib/libsqlite3.so*
 	rm -f $(1)/usr/lib/libutil.so.0
-	rm -f $(1)/usr/lib/libcrypt.so.0
+	rm -f $(1)/usr/lib/libwifihttp.so
+	rm -f $(1)/usr/lib/libwlvisualization.so
+	rm -f $(1)/usr/lib/libxml2.so*
 
 	rm -f $(1)/usr/lib/libcrypto.so
 	ln -s /usr/lib/libcrypto.so.1.0.0 $(1)/usr/lib/libcrypto.so
