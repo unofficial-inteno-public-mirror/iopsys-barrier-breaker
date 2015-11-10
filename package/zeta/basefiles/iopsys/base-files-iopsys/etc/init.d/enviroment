@@ -75,12 +75,17 @@ handle_openwrtversion() {
 	RELEASE=${IOP_VERSION%-*}; RELEASE=${RELEASE##*_}
 	REVISION=${IOP_VERSION##*-}
 	MODEL=$(db get hw.board.routerModel)
-	sed -i "s/%D/IOPSYS/g" /etc/openwrt_release
-	sed -i "s/%C/$RELEASE/g" /etc/openwrt_release
-	sed -i "s/%V/$RELEASE/g" /etc/openwrt_release
-	sed -i "s/%R/$REVISION/g" /etc/openwrt_release
-	sed -i "s/%S/$MODEL/g" /etc/openwrt_release
-	sed -i "s/%N//g" /etc/openwrt_release
+	HARDWARE=$(db get hw.board.hardware)
+
+	sed -i "s/.*DISTRIB_ID.*/DISTRIB_ID='IOPSYS'/g" /etc/openwrt_release
+	sed -i "s/.*DISTRIB_RELEASE.*/DISTRIB_RELEASE='$RELEASE'/g" /etc/openwrt_release
+	sed -i "s/.*DISTRIB_REVISION.*/DISTRIB_REVISION='$REVISION'/g" /etc/openwrt_release
+	sed -i "s/.*DISTRIB_DESCRIPTION.*/DISTRIB_DESCRIPTION='IOPSYS $REVISION $RELEASE'/g" /etc/openwrt_release
+	sed -i "s/.*DISTRIB_TARGET.*/DISTRIB_TARGET=$MODEL/g" /etc/openwrt_release
+
+	sed -i "s/.*DEVICE_MANUFACTURER.*/DEVICE_MANUFACTURER='INTENO'/g" /etc/device_info
+	sed -i "s/.*DEVICE_PRODUCT.*/DEVICE_PRODUCT='$HARDWARE'/g" /etc/device_info
+	sed -i "s/.*DEVICE_REVISION.*/DEVICE_REVISION='$MODEL'/g" /etc/device_info
 
 	# openwrt defaults are set like this
 	# DISTRIB_ID='OpenWrt'

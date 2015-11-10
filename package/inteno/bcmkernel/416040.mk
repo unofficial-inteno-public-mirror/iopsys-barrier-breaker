@@ -206,20 +206,14 @@ define Package/bcmkernel/install
 	# Install libraries
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
 
-	#rm -f $(1)/usr/lib/ld-uClibc.so.0
-	#rm -f $(1)/usr/lib/libc.so.0
-	#rm -f $(1)/usr/lib/libdl.so.0
-	#rm -f $(1)/usr/lib/libgcc_s.so.1
-	#rm -f $(1)/usr/lib/libpthread.so.0
-	#rm -f $(1)/usr/lib/libm.so.0
-	#rm -f $(1)/usr/lib/libutil.so.0
-	#rm -f $(1)/usr/lib/libcms_boardctl.so
-	#rm -f $(1)/usr/lib/libcms_msg.so
-	#rm -f $(1)/usr/lib/libcms_util.so
-	#rm -f $(1)/usr/lib/libnvram.so
-	#rm -f $(1)/usr/lib/libcrypt.so.0
-	#rm -f $(1)/usr/lib/libbcm_crc.so
-	#rm -f $(1)/usr/lib/libbcm_flashutil.so
+	rm -f $(1)/usr/lib/ld-uClibc.so.0
+	rm -f $(1)/usr/lib/libc.so.0
+	rm -f $(1)/usr/lib/libdl.so.0
+	rm -f $(1)/usr/lib/libgcc_s.so.1
+	rm -f $(1)/usr/lib/libpthread.so.0
+	rm -f $(1)/usr/lib/libm.so.0
+	rm -f $(1)/usr/lib/libutil.so.0
+	rm -f $(1)/usr/lib/libcrypt.so.0
 
 	rm -f $(1)/usr/lib/libcrypto.so
 	ln -s /usr/lib/libcrypto.so.1.0.0 $(1)/usr/lib/libcrypto.so
