@@ -109,11 +109,17 @@ create_and_copy_files()
 	cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
 	echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
 	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
-	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ] && set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
+	[ -n "$PROFILE" ] && {
+		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
+			set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
+		else 
+			echo "ERROR: profile $PROFILE does not exist!"
+		fi
+	}
 	[ -n "$USE_TAG" ] && {
 		local GIT_TAG=$(git describe --abbrev=0 --tags)
 		local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
-		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}r${GIT_REVISION}\"" >> .config
+		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
 	}
     fi
 
