@@ -119,7 +119,7 @@ create_and_copy_files()
 	[ -n "$USE_TAG" ] && {
 		local GIT_TAG=$(git describe --abbrev=0 --tags)
 		local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
-		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}${GIT_REVISION}\"" >> .config
+		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
 	}
     fi
 
