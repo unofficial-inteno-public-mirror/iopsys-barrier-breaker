@@ -215,6 +215,7 @@ add_selected_conffiles() {
 
 add_uci_backup_files() {
 	local file="$1"
+	echo "UCI backup"
 	for item in `uci show backup.services`
 	do
 		CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
@@ -222,7 +223,14 @@ add_uci_backup_files() {
 		1) FILES="$FILES $(uci get backup.$CONFNAME.file)" ;;
 		esac
 	done
-	echo $FILES | tr ' ' '\n' > "$file"
+	FILES=`echo $FILES | tr ' ' '\n'`
+	echo "finding files that differ from base install..."
+	for item in $FILES
+	do
+		if [ -e "$item" ]; then
+			cmp -s "$item" "/rom/$item" || { echo "backing up $item"; echo "$item" >> "$file"; }
+		fi
+	done
 	return 0
 }
 
