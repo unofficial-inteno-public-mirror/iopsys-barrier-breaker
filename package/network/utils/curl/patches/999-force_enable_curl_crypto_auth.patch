@@ -1,0 +1,13 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -3227,8 +3227,8 @@ AC_HELP_STRING([--disable-crypto-auth],[Disable cryptographic authentication]),
+ [ case "$enableval" in
+   no)
+        AC_MSG_RESULT(no)
+-       AC_DEFINE(CURL_DISABLE_CRYPTO_AUTH, 1, [to disable cryptographic authentication])
+-       CURL_DISABLE_CRYPTO_AUTH=1
++       #AC_DEFINE(CURL_DISABLE_CRYPTO_AUTH, 1, [to disable cryptographic authentication])
++       #CURL_DISABLE_CRYPTO_AUTH=1
+        ;;
+   *)   AC_MSG_RESULT(yes)
+        ;;
