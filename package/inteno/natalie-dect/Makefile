@@ -34,7 +34,7 @@ define Package/natalie-dect
   CATEGORY:=Base system
   TITLE:=Dect stack
   URL:=
-  DEPENDS:=+bcmkernel
+  DEPENDS:=bcmkernel
 endef
 
 define Package/natalie-dect/description

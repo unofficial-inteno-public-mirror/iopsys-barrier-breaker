@@ -34,7 +34,7 @@ define Package/dahdi
   CATEGORY:=Base system
   TITLE:=Kernel timer for Asterisk meetme
   URL:=
-  DEPENDS:= +bcmkernel
+  DEPENDS:= bcmkernel
 endef
 
 define Package/dahdi/description

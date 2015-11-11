@@ -19,7 +19,7 @@ define Package/wl-anyfi
   CATEGORY := Kernel modules
   SUBMENU  := Wireless Drivers
   TITLE    := Proprietary BCM43xx Wi-Fi driver with Anyfi.net support
-  DEPENDS  := +bcmkernel
+  DEPENDS  := bcmkernel
 endef
 
 define Package/wl-anyfi/description
