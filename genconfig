@@ -106,6 +106,9 @@ create_and_copy_files()
     if [ $OPEN -eq 1 ]; then
 	[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
     fi
+    
+    # validate the .config against dependency rules.
+    make defconfig
 }
 
 ####### main #####
