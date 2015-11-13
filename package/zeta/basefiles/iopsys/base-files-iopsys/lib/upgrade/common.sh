@@ -705,6 +705,7 @@ default_do_upgrade() {
 				imagewrite -c /dev/mtd$mtd_no $from
 			fi
 		fi
+		sync
 
 		v "Upgrade completed!"
 		rm -f $from

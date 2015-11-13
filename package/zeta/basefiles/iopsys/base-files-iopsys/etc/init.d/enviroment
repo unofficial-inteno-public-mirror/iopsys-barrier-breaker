@@ -9,6 +9,24 @@ handle_threads()
 	smd -s
 }
 
+handle_passwords()
+{
+	local users="admin support user"
+	local user ppwd spwd
+
+	for user in $users; do
+		ppwd=$(sed -ne "/^$user:/s/^$user:\([^:]*\):.*$/\1/p" /etc/passwd)
+		spwd=$(sed -ne "/^$user:/s/^$user:\([^:]*\):.*$/\1/p" /etc/shadow)
+
+		if [ -n "${ppwd#[\!x]}" ] && [ -z "${spwd#[\!x]}" ]; then
+			logger -t migrate-shadow "Moving $user password hash into shadow database"
+			grep -wq $user /etc/shadow || echo "$user:*:0:0:99999:7:::" >>/etc/shadow
+			sed -i -e "s:^$user\:[^\:]*\::$user\:x\::"     /etc/passwd
+			sed -i -e "s:^$user\:[^\:]*\::$user\:$ppwd\::" /etc/shadow
+		fi
+	done
+}
+
 handle_configs()
 {
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
@@ -106,14 +124,15 @@ handle_openwrtversion() {
 	# DISTRIB_TAINTS="%t"
 }
 
-start_service() {
+boot() {
 	handle_upgrade_count
 	handle_threads
 	handle_openwrtversion
+	handle_passwords
 	handle_configs
 }
 
-reload_service() {
+start_service() {
         handle_configs
 }
 
