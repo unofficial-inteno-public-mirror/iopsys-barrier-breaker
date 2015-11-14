@@ -424,6 +424,8 @@ wireless_assoclist()
 	int j = 0;
 	int rssi = 0;
 
+	memset(stas, '\0', sizeof(stas));
+
 	for (i = 0; wireless[i].device; i++) {
 		if (wireless[i].noise > -60) {
 			usleep(10000);
