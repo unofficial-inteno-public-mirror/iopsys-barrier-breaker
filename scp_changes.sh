@@ -14,7 +14,7 @@
 		echo "please run ./scp_changes_reset.sh"
 		exit 1;
 	fi
-	FILES=`diff -rq "$ROOT" "$ROOT_OLD" 2>&1 | sed -ne "s?^Files .* and $ROOT_OLD\\(.*\\) differ?\\1?p" -ne "s?^Only in $ROOT: \\(.*\\)?/\\1?p"`
+	FILES=`diff -rq "$ROOT" "$ROOT_OLD" 2>&1 | sed -ne "s?^Files .* and $ROOT_OLD\\(.*\\) differ?\\1?p" -ne "s?^Only in $ROOT\\(.*\\): \\(.*\\)?\\1/\\2?p"`
 	if [ "$1" = "-p" ]; then
 		echo "files that would be copied:"
 		echo $FILES
