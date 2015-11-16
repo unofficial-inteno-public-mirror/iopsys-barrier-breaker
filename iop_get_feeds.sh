@@ -1,54 +1,7 @@
 ./scripts/feeds update
-./scripts/feeds install asterisk18
+./scripts/feeds install -a 
 ./scripts/feeds uninstall asterisk18
-./scripts/feeds install libexpat
-./scripts/feeds install libflac
-./scripts/feeds install libvorbis
-./scripts/feeds install libogg
-./scripts/feeds install libid3tag
-./scripts/feeds install libexif
-./scripts/feeds install libsqlite3
-./scripts/feeds install libffmpeg
-./scripts/feeds install libjpeg
-./scripts/feeds install libeventlog
-./scripts/feeds install libpng
-./scripts/feeds install liblzo
-./scripts/feeds install miniupnpd
-./scripts/feeds install smap
-./scripts/feeds install smap-to-devinfo
-./scripts/feeds install hd-idle
-./scripts/feeds install ntpclient
-./scripts/feeds install collectd
-./scripts/feeds install p910nd
-./scripts/feeds install polipo
-./scripts/feeds install radvd
-./scripts/feeds install tinyproxy
-./scripts/feeds install transmission-daemon
-./scripts/feeds install ushare
-./scripts/feeds install vnstat
-./scripts/feeds install watchcat
-./scripts/feeds install etherwake
-./scripts/feeds install wshaper
-./scripts/feeds install bind-tools
-./scripts/feeds install logrotate
-./scripts/feeds install ndisc6
-./scripts/feeds install libpcre
-./scripts/feeds install libxml2
-./scripts/feeds install lighttpd
-./scripts/feeds install python
-./scripts/feeds install openswan
-./scripts/feeds install libwrap
-./scripts/feeds install wget
-./scripts/feeds install xxd
-./scripts/feeds install xl2tpd
-./scripts/feeds install screen
-./scripts/feeds install madplay
-./scripts/feeds install alsa-utils
-./scripts/feeds install i2c-tools
-./scripts/feeds install bluez-hcidump
-./scripts/feeds install bluez-libs
-./scripts/feeds install bluez-utils
-./scripts/feeds install boost-system
-./scripts/feeds install collectd
-./scripts/feeds install -a -p juci
-./scripts/feeds install -a -p intenoprivate
+./scripts/feeds install -f -p juci -a
+./scripts/feeds install -f -p intenoprivate
+./scripts/feeds install -p intenoprivate brcm63xx_ref_nand
+./scripts/feeds install -p intenoprivate brcm63xx_ref_nand_arm
