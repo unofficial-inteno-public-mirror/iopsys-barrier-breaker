@@ -436,10 +436,16 @@ sub install_target {
 	my $name = shift;
 
 	$feed = $feed_cache{$feed->[1]}->[2];
-	$feed or return 0;
+	if(!$feed) {
+		printf("Not installing target: feed missing\n"); 
+		return 0;
+	}
 
 	my $target = $feed->{$name};
-	$target or return 0;
+	if(!$target) {
+		printf("Not installing target: target not found\n"); 
+		return 0;
+	}
 
 	warn "Installing target '$name'\n";
 	return do_install_target($target);
@@ -450,10 +456,14 @@ sub install_package {
 	my $name = shift;
 	my $force = shift;
 	my $ret = 0;
-
+	
+	printf("Found package $name \n"); 
 	my $this_feed_target = lookup_target($feed, $name);
 	$this_feed_target and do {
-		$installed_targets{$name} and return 0;
+		if($installed_targets{$name}){
+			warn "Not installing target $name: already exists"; 
+			return 0;
+		}
 		install_target($this_feed_target, $name);
 		return 0;
 	};
@@ -565,6 +575,7 @@ sub install {
 				get_feed($f->[1]);
 				foreach my $name (sort { lc($a) cmp lc($b) } keys %$feed_package) {
 					my $p = $feed_package->{$name};
+					printf(" %$feed_package)\n"); 
 					next if $p->{vdepends};
 					if( $p->{name} ) {
 						install_package($feed, $p->{name}, exists($opts{f})) == 0 or $ret = 1;
