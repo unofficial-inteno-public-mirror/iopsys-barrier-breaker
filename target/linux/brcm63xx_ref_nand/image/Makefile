@@ -11,6 +11,7 @@ IHGSP_BUILD_VERSION:=$(shell echo $(IHGSP_VERSION) | sed s/\"//g)
 BUILD_DIR_ROOT:=$(BUILD_DIR)/root-$(shell echo $(CONFIG_TARGET_BOARD) | sed s/\"//g)
 KERNEL_ENTRY:= $(shell readelf -h $(KDIR)/vmlinux.bcm.elf | grep Entry | awk '{print $$4}')
 
+CFERAM_FILENAME:=cferam.$(CONFIG_TARGET_CFERAM_EXT)
 CFE_BUILT:=
 BOARD_ID:=D301
 
@@ -73,8 +74,8 @@ define Image/Prepare
 	# make kernel jffs2 image (.x.y)
 	mkdir -p $(KDIR)/kernel_fs
 	cp $(KDIR)/vmlinux.lz $(KDIR)/kernel_fs/
-	touch $(KDIR)/kernel_fs/cferam.001
-	echo "/cferam.001" > $(KDIR)/nocomprlist
+	touch $(KDIR)/kernel_fs/$(CFERAM_FILENAME)
+	echo "/$(CFERAM_FILENAME)" > $(KDIR)/nocomprlist
 	echo "/vmlinux.lz" >> $(KDIR)/nocomprlist
 	$(STAGING_DIR_HOST)/bin/mkfs.jffs2 \
 		$(MKFS_JFFS2_ARGS) \
@@ -95,19 +96,19 @@ define Image/Prepare
 	cat $(KDIR)/jffs2_eof_marker_2048 $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
 
 	# these files need to go in a set of erase blocks of their own to minimize the chance of relocation (.w)
-	echo "/cferam.001"    >  $(KDIR)/sortlist
+	echo "/$(CFERAM_FILENAME)"    >  $(KDIR)/sortlist
 	echo "/vmlinux.lz"    >> $(KDIR)/sortlist
 
 	# add the files that should not be compressed (.w)
 	echo -e "/IOP3"       > $(KDIR)/nocomprlist
-	echo -e "/cferam.001" >> $(KDIR)/nocomprlist
+	echo -e "/$(CFERAM_FILENAME)" >> $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
 
 	# add "first boot" marker (.w.x.y)
 	touch $(TARGET_DIR)/IOP3
 
 	# add kernel and cferam flag (.w)
-	touch $(TARGET_DIR)/cferam.001
+	touch $(TARGET_DIR)/$(CFERAM_FILENAME)
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
 
 	# add/set version info (.w.x.y)
@@ -231,7 +232,7 @@ define Image/Build/jffs2-128k
 	# DIRTY! DIRTY! DIRTY! DIRTY! DIRTY! DIRTY! DIRTY!
 	# kernel and cferam flag not needed in UBI file systems!
 	# Take these away in "prepare" when we no longer build JFFS2 rootfs.
-	rm $(TARGET_DIR)/cferam.001
+	rm $(TARGET_DIR)/$(CFERAM_FILENAME)
 	rm $(TARGET_DIR)/vmlinux.lz
 endef
 
