@@ -30,3 +30,10 @@ config TARGET_IBOARDID
 		VG50 -> VG50
 		D201 -> DG201
 
+config TARGET_CFERAM_EXT
+	string
+	prompt "cferam.xxx file extension"
+	default "001"
+	help
+		The extension to use for the root FS /cferam.xxx file, e.g. "001"
+
