@@ -448,18 +448,19 @@ dhcp_option_add() {
 
 dhcp_domain_add() {
 	local cfg="$1"
-	local ip name names record lanaddr family
+	local ip name names record lanaddr family network
 
 	config_get names "$cfg" name "$2"
 	[ -n "$names" ] || return 0
 
+	config_get network "$cfg" network "lan"
 	config_get family "$cfg" family "ipv4"
 	config_get ip "$cfg" ip "$3"
 	if [ -z "$ip" ]; then
 		if [ "$family" == "ipv6" ]; then
-			network_get_ipaddr6 lanaddr "lan"
+			network_get_ipaddr6 lanaddr $network
 		else
-			network_get_ipaddr lanaddr "lan"
+			network_get_ipaddr lanaddr $network
 		fi
 	fi
 	[ -n "$lanaddr" ] && ip=$lanaddr
