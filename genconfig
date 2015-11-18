@@ -72,29 +72,29 @@ create_and_copy_files()
     v "cp  $CONFIGPATH/MASTER/config .config"
     cp  $CONFIGPATH/MASTER/config .config
     if [ $OPEN -eq 0 ]; then
-	if [ ! -d "$CUSTCONF" ]; then
-	    git  clone  git@ihgsp.inteno.se:customerconfigs
-	elif [ $IMPORT -eq 1 ]; then
-	    cd customerconfigs
-	    v "git pull"
-	    git pull
-	    cd ..
-	fi
+		if [ ! -d "$CUSTCONF" ]; then
+			git  clone  git@ihgsp.inteno.se:customerconfigs
+		elif [ $IMPORT -eq 1 ]; then
+			cd customerconfigs
+			v "git pull"
+			git pull
+			cd ..
+		fi
     fi
 
     if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
-	echo "Hardware profile does not exist"
-	exit 0
-    elif  [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
-	echo "Customer profile does not exist"
-	exit 0
+		echo "Hardware profile does not exist"
+		exit 0
+		elif  [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
+		echo "Customer profile does not exist"
+		exit 0
     fi
     v  "Config $BOARDTYPE selected"
     if [ ! -d "$FILEDIR" ]; then
-	mkdir $FILEDIR
-    elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
-	v "rm -rf $FILEDIR*"	
-	rm -rf $FILEDIR*
+		mkdir $FILEDIR
+		elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
+		v "rm -rf $FILEDIR*"	
+		rm -rf $FILEDIR*
     fi
     # first build config based on boardid
     v "cp -rp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
@@ -104,29 +104,34 @@ create_and_copy_files()
     echo $BOARDTYPE > .current_config_file
 
     # second add diff for customer config if if customer code
-    if [ -n "$CUSTOMER" ]; then
+    [ "$CUSTOMER" = "" ] && CUSTOMER="FIELD"; 
 	v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
 	cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
 	echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
 	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
-	[ -n "$PROFILE" ] && {
+
+	if [ -n "$PROFILE" ]; then 
 		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
 			set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
 		else 
 			echo "ERROR: profile $PROFILE does not exist!"
+			exit 1
 		fi
-	}
-	[ -n "$USE_TAG" ] && {
+	else 
+		v "No profile selected! Using default."
+	fi	
+
+	if [ -n "$USE_TAG" ]; then 
 		local GIT_TAG=$(git describe --abbrev=0 --tags)
 		local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
 		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
-	}
-    fi
+		echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
+	fi	
 
 
     ##### if open change to open kernel and remove building of nand tool
     if [ $OPEN -eq 1 ]; then
-	[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
+		[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
     fi
 }
 
