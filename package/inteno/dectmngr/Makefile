@@ -15,7 +15,7 @@ else
 PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=b271b3a63b4fb50eabe736ca2dd75ca8bf05f3e4
+PKG_SOURCE_VERSION:=19308024fd8ed8e1daa69224029a68f834318c99
 PKG_NAME:=dectmngr
 
 
