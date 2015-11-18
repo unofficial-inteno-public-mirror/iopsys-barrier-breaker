@@ -140,7 +140,6 @@ ifeq ($(CONFIG_CWMP_SCRIPTS_FULL),y)
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/icwmp.sh $(1)/usr/sbin/icwmp
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/iwepkeygen $(1)/usr/sbin/iwepkeygen
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/watchicwmpd.sh $(1)/usr/sbin/watchicwmpd
 endif
 endef
 
