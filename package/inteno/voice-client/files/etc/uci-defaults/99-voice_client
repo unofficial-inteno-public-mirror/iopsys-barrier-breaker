@@ -1,0 +1,15 @@
+#!/bin/sh
+
+uci -q get voice_client.RINGING_STATUS >/dev/null && exit 0
+
+uci -q batch <<-EOT
+	add voice_client ringing_status
+	rename voice_client.@ringing_status[-1]=RINGING_STATUS
+	set voice_client.RINGING_STATUS.status=0
+	set voice_client.RINGING_STATUS.enabled=1
+	set voice_client.RINGING_STATUS.shouldring=1
+	commit voice_client
+EOT
+
+exit 0
+
