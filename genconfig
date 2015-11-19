@@ -113,6 +113,12 @@ create_and_copy_files()
 	if [ -n "$PROFILE" ]; then 
 		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
 			set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
+		elif [ -e "$CUSTCONF/$BOARDTYPE/$PROFILE.profile" ]; then 
+			v "Using generic board profile for $PROFILE"
+			set_profile $CUSTCONF/$BOARDTYPE/$PROFILE.profile .config
+		elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
+			v "Using generic profile for $PROFILE"
+			set_profile $CUSTCONF/$PROFILE.profile .config
 		else 
 			echo "ERROR: profile $PROFILE does not exist!"
 			exit 1
