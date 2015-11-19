@@ -19,7 +19,3 @@ config 'interface' 'wan'
 	option 'vendorid' '$HARDWAREID-INTENO'
 	option 'reqopts' '132 133'
 
-config interface wan6
-	option proto dhcpv6
-	option ifname @wan
-
