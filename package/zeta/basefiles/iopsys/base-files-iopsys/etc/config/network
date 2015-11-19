@@ -18,3 +18,8 @@ config 'interface' 'wan'
 	option 'hostname' 'Inteno_$MAC4'
 	option 'vendorid' '$HARDWAREID-INTENO'
 	option 'reqopts' '132 133'
+
+config interface wan6
+	option proto dhcpv6
+	option ifname @wan
+
