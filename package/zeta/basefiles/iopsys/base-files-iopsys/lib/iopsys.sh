@@ -1,6 +1,8 @@
 #!/bin/sh
 # (C) 2015 Inteno Broadband Technology AB
 
+. /lib/functions.sh
+
 copy_mounted_overlay() {
 	if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
 		echo "Copying overlay..."
@@ -228,5 +230,4 @@ iopsys_upgrade_handling() {
 
 	# Never returns here, ubi_fixup.sh will respawn /etc/preinit
 }
-
 
