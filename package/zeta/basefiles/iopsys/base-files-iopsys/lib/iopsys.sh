@@ -25,6 +25,8 @@ copy_config_from() {
 	if [ -e $1/sysupgrade.tgz ]; then
 		echo "Unpacking old config..."
 		tar xvzf $1/sysupgrade.tgz -C /overlay/
+		# we don't want to keep backup file
+		[ -f /overlay/etc/config/backup ] && cp /rom/etc/config/backup /overlay/etc/config/backup
 	else
 		echo "Conservative copy of old config..."
 		local file="$1"
