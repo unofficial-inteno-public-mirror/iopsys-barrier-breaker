@@ -214,7 +214,8 @@ add_selected_conffiles() {
 }
 
 add_uci_backup_files() {
-	FILES=""
+	local FILES=""
+
 	save_selected_backup_files() {
 		config_get keep $1 keep "1"
 		if [ "$keep" == "1" ]; then
@@ -224,6 +225,7 @@ add_uci_backup_files() {
 			done
 		fi
 	}
+
 	echo "UCI backup"
 	config_load backup
 	config_foreach save_selected_backup_files service
