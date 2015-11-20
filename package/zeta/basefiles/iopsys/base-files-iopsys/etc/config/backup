@@ -149,3 +149,8 @@ config service 'wireless'
 	list file '/etc/config/wireless'
 	option user '1'
 
+config service 'iupchecksum'
+	option desc iupchecksum
+	list file '/etc/configchecksums'
+ 	option user '0'			
+

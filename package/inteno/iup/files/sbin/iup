@@ -112,7 +112,12 @@ handle_provisioning() {
 	config_get_bool defaultreset "$config" defaultreset
 	config_get deckey "$config" deckey
 	if [ "$enabled" -eq 1	]; then
-		config_get url "$config" urliup
+		if [ "$config" == "iup" ]; then
+			v "using url from dhcp options"
+			config_get url "$config" urliup
+		else 
+			config_get url "$config" url
+		fi
 		url=${url//\$MAC/$MAC}
 		v "Download from $url"
 		  
