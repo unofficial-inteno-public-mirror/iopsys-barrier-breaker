@@ -9,35 +9,10 @@ copy_mounted_overlay() {
 	fi
 }
 
-add_uci_backup_files() {
-	save_selected_backup_files() {
-		config_get keep $1 keep "1"
-		if [ "$keep" == "1" ]; then
-			config_get file "$1" file
-			for f in $file; do
-				echo $f >> /tmp/selected_backup_files
-			done
-		fi
-	}
-
-	local file="$1"
-	config_load backup
-	config_foreach save_selected_backup_files service
-	FILES=$(cat /tmp/selected_backup_files)
-
-	for item in $FILES
-	do
-		if [ -e "$item" ]; then
-			cmp -s "$item" "/rom/$item" || { echo "backing up $item"; echo "$item" >> "$file"; }
-		fi
-	done
-	return 0
-}
-
 copy_config_from() {
 	save_selected_backup_files() {
 		config_get conservative_keep $1 conservative_keep "0"
-		if [ "$keep" == "1" ]; then
+		if [ "$conservative_keep" == "1" ]; then
 			config_get file "$1" file
 			for f in $file; do
 				FILES="$FILES $f"
@@ -66,7 +41,6 @@ copy_config_from() {
 	fi
 	rm -f /overlay/SAVE_CONFIG
 }
-
 
 copy_old_config() {
 
