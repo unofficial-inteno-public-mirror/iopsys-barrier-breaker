@@ -10,6 +10,8 @@ copy_mounted_overlay() {
 }
 
 copy_config_from() {
+	local FILES=""
+
 	save_selected_backup_files() {
 		config_get conservative_keep $1 conservative_keep "0"
 		if [ "$conservative_keep" == "1" ]; then
@@ -19,7 +21,7 @@ copy_config_from() {
 			done
 		fi
 	}
-	FILES=""
+
 	if [ -e $1/sysupgrade.tgz ]; then
 		echo "Unpacking old config..."
 		tar xvzf $1/sysupgrade.tgz -C /overlay/
