@@ -197,8 +197,8 @@ EOF
 
 save_selected() {
 	local config="$1"
-	config_get service services $config
-	if [ "$service" == "1" ]; then
+	config_get keep $config keep "1"
+	if [ "$keep" == "1" ]; then
 		config_get file "$config" file
 		for f in $file; do
 			echo $f >> /tmp/selected_backup_files
