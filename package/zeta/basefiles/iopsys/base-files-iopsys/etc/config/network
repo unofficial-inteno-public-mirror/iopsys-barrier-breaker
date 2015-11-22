@@ -18,3 +18,4 @@ config 'interface' 'wan'
 	option 'hostname' 'Inteno_$MAC4'
 	option 'vendorid' '$HARDWAREID-INTENO'
 	option 'reqopts' '132 133'
+

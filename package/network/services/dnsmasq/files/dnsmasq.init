@@ -448,13 +448,28 @@ dhcp_option_add() {
 
 dhcp_domain_add() {
 	local cfg="$1"
-	local ip name names record lanaddr
+	local ip name names record
+	local lanaddr family network linklocal device
 
 	config_get names "$cfg" name "$2"
 	[ -n "$names" ] || return 0
 
+	config_get network "$cfg" network "lan"
+	config_get family "$cfg" family "ipv4"
+	config_get linklocal "$cfg" linklocal "0"
 	config_get ip "$cfg" ip "$3"
-	[ -n "$ip" ] || network_get_ipaddr lanaddr "lan"
+	if [ -z "$ip" ]; then
+		if [ "$family" == "ipv6" ]; then
+			if [ "$linklocal" == "1" ]; then
+				network_get_device device $network
+				lanaddr=$(ifconfig $device | grep inet6 | grep Scope:Link | awk '{print$3}' | cut -d'/' -f1)
+			else
+				network_get_ipaddr6 lanaddr $network
+			fi
+		else
+			network_get_ipaddr lanaddr $network
+		fi
+	fi
 	[ -n "$lanaddr" ] && ip=$lanaddr
 	[ -n "$ip" ] || return 0
 

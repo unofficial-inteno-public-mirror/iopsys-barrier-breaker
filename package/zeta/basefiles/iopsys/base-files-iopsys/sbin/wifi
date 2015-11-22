@@ -835,6 +835,7 @@ setup_wifi_device() {
 }
 
 configure_wifi() {
+	nvram unset wlmngr
 	ubus call led.wifi set '{"state":"off"}'
 
 	config_load wireless
@@ -868,6 +869,8 @@ configure_wifi() {
 	nvram set acs_ifnames="$_ACSIFS"
 	wlmngr_startServices
 	wlmngr_startWsc
+
+	nvram set wlmngr="done"
 
 	[ $(nvram get "$_WL2G"_radio) == "1" ] && ubus call led.wifi set '{"state":"ok"}'
 	[ $(nvram get "$_WL5G"_radio) == "1" ] && ubus call led.wifi set '{"state":"eok"}'

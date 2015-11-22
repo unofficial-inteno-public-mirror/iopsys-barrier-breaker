@@ -197,8 +197,8 @@ EOF
 
 save_selected() {
 	local config="$1"
-	config_get service services $config
-	if [ "$service" == "1" ]; then
+	config_get keep $config keep "1"
+	if [ "$keep" == "1" ]; then
 		config_get file "$config" file
 		for f in $file; do
 			echo $f >> /tmp/selected_backup_files
@@ -214,21 +214,26 @@ add_selected_conffiles() {
 }
 
 add_uci_backup_files() {
-	local file="$1"
+	local FILES=""
+
+	save_selected_backup_files() {
+		config_get keep $1 keep "1"
+		if [ "$keep" == "1" ]; then
+			config_get file "$1" file
+			for f in $file; do
+				FILES="$FILES $f"
+			done
+		fi
+	}
+
 	echo "UCI backup"
-	for item in `uci show backup.services`
-	do
-		CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
-		case $(echo $item | sed -n 's/backup\.services\..*=\(.*\)/\1/p') in
-		1) FILES="$FILES $(uci get backup.$CONFNAME.file)" ;;
-		esac
-	done
-	FILES=`echo $FILES | tr ' ' '\n'`
+	config_load backup
+	config_foreach save_selected_backup_files service
 	echo "finding files that differ from base install..."
 	for item in $FILES
 	do
 		if [ -e "$item" ]; then
-			cmp -s "$item" "/rom/$item" || { echo "backing up $item"; echo "$item" >> "$file"; }
+			cmp -s "$item" "/rom/$item" || { echo "backing up $item"; echo "$item" >> "$1"; }
 		fi
 	done
 	return 0

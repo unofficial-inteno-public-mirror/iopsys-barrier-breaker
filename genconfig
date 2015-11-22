@@ -41,7 +41,7 @@ use_local_mirror()
     if wget -T 3 -t 2 -O /dev/null $LOCAL_MIRROR >/dev/null 2>/dev/null
     then
 	echo "mirror [$LOCAL_MIRROR] exists. Using local mirror"
-	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=$LOCAL_MIRROR;" .config
+	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=\"$LOCAL_MIRROR\";" .config
     else
 	echo "mirror [$LOCAL_MIRROR] don't exists. Not using local mirror"
     fi
@@ -139,6 +139,9 @@ create_and_copy_files()
     if [ $OPEN -eq 1 ]; then
 		[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
     fi
+    
+    # validate the .config against dependency rules.
+    make defconfig
 }
 
 ####### main #####

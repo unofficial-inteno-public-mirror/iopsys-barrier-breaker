@@ -1,6 +1,8 @@
 #!/bin/sh
 # (C) 2015 Inteno Broadband Technology AB
 
+. /lib/functions.sh
+
 copy_mounted_overlay() {
 	if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
 		echo "Copying overlay..."
@@ -10,21 +12,28 @@ copy_mounted_overlay() {
 }
 
 copy_config_from() {
+	local FILES=""
+
+	save_selected_backup_files() {
+		config_get conservative_keep $1 conservative_keep "0"
+		if [ "$conservative_keep" == "1" ]; then
+			config_get file "$1" file
+			for f in $file; do
+				FILES="$FILES $f"
+			done
+		fi
+	}
+
 	if [ -e $1/sysupgrade.tgz ]; then
 		echo "Unpacking old config..."
 		tar xvzf $1/sysupgrade.tgz -C /overlay/
+		# we don't want to keep backup file
+		[ -f /overlay/etc/config/backup ] && cp /rom/etc/config/backup /overlay/etc/config/backup
 	else
 		echo "Conservative copy of old config..."
-		for item in `uci show backup.services`
-		do
-			CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
-			case $(echo $item | sed -n 's/backup\.services\..*=\(.*\)/\1/p') in
-			1)
-				case $(uci -q get backup.$CONFNAME.conservative_keep) in
-				1) FILES="$FILES $(uci -q get backup.$CONFNAME.file)" ;;
-				esac
-			esac
-		done
+		local file="$1"
+		config_load backup
+		config_foreach save_selected_backup_files service
 		for file in $FILES
 		do
 			if [ -e $1$file ]; then
@@ -221,5 +230,4 @@ iopsys_upgrade_handling() {
 
 	# Never returns here, ubi_fixup.sh will respawn /etc/preinit
 }
-
 
