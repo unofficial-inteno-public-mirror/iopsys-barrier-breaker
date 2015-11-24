@@ -106,7 +106,7 @@ online_fw_check() {
 	rm -f $verpath
 	rm -f $urlpath
 
-	wget -q $checkurl -O $verpath
+	wget -q -t 3 $checkurl -O $verpath
 
 	[ -f $verpath ] || exit 1
 
