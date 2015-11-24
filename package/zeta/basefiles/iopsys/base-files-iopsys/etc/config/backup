@@ -8,6 +8,10 @@ config service 'cwmp'
 	list file '/etc/config/cwmp'
 	list file '/etc/icwmpd/.icwmpd_backup_session.xml'
 
+config service 'ddns'
+	option desc 'DynDNS'
+	list file '/etc/config/ddns'
+
 config service 'dropbear'
 	option desc 'Dropbear'
 	option conservative_keep 1
@@ -91,6 +95,10 @@ config service 'provisioning'
 	option desc 'Provisioning'
 	list file '/etc/config/provisioning'
 	list file '/etc/configchecksums'
+
+config service 'qos'
+	option desc 'QoS'
+	list file '/etc/config/qos'
 
 config service 'samba'
 	option desc 'Samba'
