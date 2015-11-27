@@ -1930,18 +1930,33 @@ done
 #
 set_line_name()
 {
-	local curname
+	local curname name_ix ix item
 	config_get curname $1 name
 	[ -n "$curname" ] && return
 
-	line_number=${1:4}
-	if [ "$line_number" -lt "$dectCount" ] ; then
-		uci_set voice_client $1 name "DECT $(( $line_number + 1 ))"
-	elif [ "$line_number" -lt "$allCount" ] ; then
-		uci_set voice_client $1 name "Tel $(( $line_number - $dectCount + 1 ))"
-	else
-		uci_set voice_client $1 name $1
+	name_ix=""
+	ix=0
+	for item in $(db get hw.board.VoicePortOrder); do
+		if [ "$item" == "$1" ]; then
+			name_ix=$ix
+			break
+		fi
+		ix=$((ix+1))
+	done
+
+	ix=0
+	if [ -n "$name_ix" ]; then
+		for item in $(db get hw.board.VoicePortNames); do
+			if [ $ix -eq $name_ix ]; then
+				uci_set voice_client $1 name \
+					"$(echo "$item" |tr "[_]" "[ ]")"
+				return
+			fi
+			ix=$((ix+1))
+		done
 	fi
+
+	uci_set voice_client $1 name $1
 }
 
 #
