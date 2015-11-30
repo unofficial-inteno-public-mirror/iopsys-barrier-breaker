@@ -32,12 +32,12 @@ export CONFIG_BCM_KERNEL_PROFILE
 export CONFIG_SECURE_BOOT_CFE
 
 
+IBOARDID = $(shell echo $(CONFIG_TARGET_IBOARDID) |sed s/\"//g)
 BCM_BS_PROFILE = $(shell echo $(CONFIG_BCM_KERNEL_PROFILE) | sed s/\"//g)
 
 BCM_KERNEL_VERSION:=3.4.11-rt19
 BCM_SDK_VERSION:=bcm963xx
 RSTRIP:=true
-
 
 define Package/bcmkernel/removevoice
 	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/endpointdd.ko
@@ -205,6 +205,20 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/init.d/bcm-base-drivers.sh			$(1)/lib/
 	sed -i '/bcm_usb\.ko/d' $(1)/lib/bcm-base-drivers.sh
 	sed -i 's|/kernel/.*/|/|' $(1)/lib/bcm-base-drivers.sh
+
+    ifneq ($(findstring _$(IBOARDID)_,_DG200AL_DG301AL_DG400_VG50_),)
+	# Don't load any DECT drivers (have external voice or no voice at all)
+	sed -i '/dect\.ko/d' $(1)/lib/bcm-base-drivers.sh
+	sed -i '/dectshim\.ko/d' $(1)/lib/bcm-base-drivers.sh
+    else ifneq ($(findstring _$(IBOARDID)_,_D150_DG200_VOX25_),)
+	# Load dectshim driver only (have voice but no dect)
+	sed -i '/dect\.ko/d' $(1)/lib/bcm-base-drivers.sh
+    else ifneq ($(findstring _$(IBOARDID)_,_CG300_CG301_D301_EG300_),)
+	# Load both dect and dectshim driver (have internal dect)
+    else
+	echo Error: Unknown IBOARDID "$(IBOARDID)"!
+	false
+    endif
 
 	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh ]; then $(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh $(1)/etc/; fi;
 
