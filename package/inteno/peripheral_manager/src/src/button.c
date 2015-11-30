@@ -299,7 +299,7 @@ static void button_handler(struct uloop_timeout *timeout)
                                         if (! timer_started(drv_node)) {
                                                 timer_start(drv_node);
                                                 DBG(1, " %s pressed", drv_node->drv->name);
-						button_ubus_interface_event(global_ubus_ctx, node->name, BUTTON_PRESSED);
+//						button_ubus_interface_event(global_ubus_ctx, node->name, BUTTON_PRESSED);
                                         }
 					if(timer_valid(drv_node, node->minpress, 0))
 						led_pressindicator_set();
