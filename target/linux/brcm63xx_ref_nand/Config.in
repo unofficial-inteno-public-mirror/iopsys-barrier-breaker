@@ -37,3 +37,31 @@ config TARGET_CFERAM_EXT
 	help
 		The extension to use for the root FS /cferam.xxx file, e.g. "001"
 
+config TARGET_NO_BLUETOOTH
+	bool "Exclude Bluetooth"
+	default n
+
+config TARGET_NO_DECT
+	bool "Exclude DECT"
+	default n
+
+config TARGET_NO_DHD
+	bool "Exclude DHD"
+	default n
+
+config TARGET_NO_DSL
+	bool "Exclude DSL"
+	default n
+
+config TARGET_NO_DSL_ANNEX_A
+	bool "Exclude DSL Annex A"
+	default n
+
+config TARGET_NO_DSL_ANNEX_B
+	bool "Exclude DSL Annex B"
+	default n
+
+config TARGET_NO_VOICE
+	bool "Exclude Voice"
+	default n
+
