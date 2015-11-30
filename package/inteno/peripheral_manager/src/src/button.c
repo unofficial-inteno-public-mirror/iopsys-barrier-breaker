@@ -12,8 +12,9 @@
 static struct ubus_context *global_ubus_ctx;
 static struct blob_buf bblob;
 
+static void button_ubus_interface_event(struct ubus_context *ubus_ctx, char *button, button_state_t pressed);
 
-void button_ubus_interface_event(struct ubus_context *ubus_ctx, char *button, button_state_t pressed)
+static void button_ubus_interface_event(struct ubus_context *ubus_ctx, char *button, button_state_t pressed)
 {
 	char s[UBUS_BUTTON_NAME_PREPEND_LEN+BUTTON_MAX_NAME_LEN];
 	s[0]=0;
@@ -140,8 +141,8 @@ struct button_status_all {
 static struct button_status_all * read_button_states(void)
 {
 	static struct button_status_all p;
-	p.n=0;
 	struct list_head *i;
+        p.n=0;
 #ifdef HAVE_BOARD_H
 	/* sx9512 driver needs to read out all buttons at once */
 	/* so call it once at beginning of scanning inputs  */
@@ -328,8 +329,9 @@ static void button_handler(struct uloop_timeout *timeout)
 static int button_state_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 	struct ubus_request_data *req, const char *method, struct blob_attr *msg)
 {
+//	button_state_t state = read_button_state(obj->name+UBUS_BUTTON_NAME_PREPEND_LEN);
 	blob_buf_init(&bblob, 0);
-	button_state_t state = read_button_state(obj->name+UBUS_BUTTON_NAME_PREPEND_LEN);
+
 	switch(read_button_state(obj->name+UBUS_BUTTON_NAME_PREPEND_LEN)) {
 	case BUTTON_RELEASED:
 		blobmsg_add_string(&bblob, "state", "released");
@@ -414,7 +416,7 @@ void button_init( struct server_ctx *s_ctx)
 	LIST_HEAD(buttonnames);
         int default_minpress = 0;
         char *s;
-	int i,r;
+	int   r;
 
 	global_ubus_ctx=s_ctx->ubus_ctx;
 
@@ -513,17 +515,20 @@ void button_init( struct server_ctx *s_ctx)
                 list_add(&function->list, &buttons);
 
 		/* register each button with ubus */
-		struct ubus_object *ubo;
-		ubo = malloc(sizeof(struct ubus_object));
-		memset(ubo, 0, sizeof(struct ubus_object));
-		char name[UBUS_BUTTON_NAME_PREPEND_LEN+BUTTON_MAX_NAME_LEN];
-		snprintf(name, UBUS_BUTTON_NAME_PREPEND_LEN+BUTTON_MAX_NAME_LEN, "%s%s", UBUS_BUTTON_NAME_PREPEND, node->val);
-		ubo->name      = strdup(name);
-		ubo->methods   = button_methods;
-		ubo->n_methods = ARRAY_SIZE(button_methods);
-		ubo->type      = &button_object_type;
-		if((r=ubus_add_object(s_ctx->ubus_ctx, ubo)))
-			DBG(1,"Failed to add object: %s", ubus_strerror(r));
+                {
+                        struct ubus_object *ubo;
+                        char name[UBUS_BUTTON_NAME_PREPEND_LEN+BUTTON_MAX_NAME_LEN];
+                        ubo = malloc(sizeof(struct ubus_object));
+                        memset(ubo, 0, sizeof(struct ubus_object));
+
+                        snprintf(name, UBUS_BUTTON_NAME_PREPEND_LEN+BUTTON_MAX_NAME_LEN, "%s%s", UBUS_BUTTON_NAME_PREPEND, node->val);
+                        ubo->name      = strdup(name);
+                        ubo->methods   = button_methods;
+                        ubo->n_methods = ARRAY_SIZE(button_methods);
+                        ubo->type      = &button_object_type;
+                        if((r=ubus_add_object(s_ctx->ubus_ctx, ubo)))
+                                DBG(1,"Failed to add object: %s", ubus_strerror(r));
+                }
         }
 
 	uloop_timeout_set(&button_inform_timer, BUTTON_TIMEOUT);
