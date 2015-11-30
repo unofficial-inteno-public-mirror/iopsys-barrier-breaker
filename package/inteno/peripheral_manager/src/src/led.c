@@ -841,7 +841,7 @@ void led_init( struct server_ctx *s_ctx)
 		if (s) {
 			DBG(1,"Dimming init");
 			for(i=0 ; i < LED_ACTION_MAX ; i++) {
-				if (! strncasecmp(s, fn_actions[i], sizeof(fn_actions[i]))){
+				if (! strncasecmp(s, fn_actions[i], strlen(fn_actions[i]))){
 					dimming_level = i;
 				}
 			}
