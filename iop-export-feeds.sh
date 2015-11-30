@@ -1,28 +1,12 @@
 #!/bin/bash
 
-# this script exports latest changes from this repo into inteno targets and inteno feeds repos. 
-# you can use this script to export latest changes from 3.4 to 3.5
-
-
-git rev-parse --verify devel || { 
-	echo "Devel branch does not exist!" >&2
-	exit 1
-}
-
-iop-cleanup(){
-	git rev-parse --verify "inteno-packages" 2>/dev/null && git branch -D "inteno-packages"
-	git rev-parse --verify "inteno-targets" 2>/dev/null && git branch -D "inteno-targets"
-	git rev-parse --verify "devel-export" 2>/dev/null && git branch -D "devel-export"
-}
-
-git checkout devel 
-iop-cleanup 
-
-git fetch origin 
-git checkout -b "devel-export"
-git reset --hard origin/devel
+git checkout devel
+git branch -D devel-export 2>/dev/null
 
 set -e 
+
+git checkout -b devel-export
+git reset --hard origin/devel
 
 git subtree split --prefix=target/linux -b inteno-targets
 git checkout inteno-targets
@@ -40,4 +24,6 @@ git push intenopackages inteno-packages:from-iop-3.4
 git remote rm intenopackages
 
 git checkout devel
-iop-cleanup
+git branch -D inteno-packages
+git branch -D inteno-targets
+git branch -D devel-export
