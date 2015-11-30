@@ -104,9 +104,11 @@ create_and_copy_files()
     echo $BOARDTYPE > .current_config_file
 
     # second add diff for customer config if if customer code
-    [ "$CUSTOMER" = "" ] && CUSTOMER="FIELD"; 
-	v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
-	cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+    if [ -n "$CUSTOMER" ]; then
+	if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
+	    v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
+	    cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+	fi
 	echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
 	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
 

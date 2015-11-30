@@ -124,11 +124,45 @@ handle_openwrtversion() {
 	# DISTRIB_TAINTS="%t"
 }
 
+handle_backup() {
+	local ISTHERE=0
+
+	compare_with() {
+		local confile="$2"
+		config_get files "$1" file
+		for f in $files; do
+			if [ "$f" == "$confile" ]; then
+				ISTHERE=1
+				return 0
+			fi
+		done
+	}
+
+	config_load backup
+
+	for conf in $(ls /etc/config); do
+		case $conf in
+			backup|boardpanel|dmmap|fstab|hosts|juci|luci|rpcd|speedtest|voice_codecs) continue;
+		esac
+		config_foreach compare_with service "/etc/config/$conf"
+		if [ $ISTHERE -eq 0 ]; then
+			uci set backup.$conf=service
+			uci set backup.$conf.desc=$conf
+			uci set backup.$conf.file="/etc/config/$conf"
+		fi
+		ISTHERE=0
+	done
+
+	uci commit backup
+
+}
+
 boot() {
 	handle_upgrade_count
 	handle_threads
 	handle_openwrtversion
 	handle_passwords
+	handle_backup
 	handle_configs
 }
 
