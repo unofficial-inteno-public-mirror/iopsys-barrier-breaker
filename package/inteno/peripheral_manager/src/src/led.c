@@ -73,6 +73,7 @@ struct function_led {
 	led_action_t state;		/* state of the function led. contain what action is currently set */
 	int dimming;			/* should this led be dimmed */
 	int brightness;			/* Brightness of the led */
+	int timeout;			/* if time is after */
 	int press_indicator;		/* record if this is part of press indictor */
 	struct function_action actions[LED_ACTION_MAX];
 };
@@ -87,6 +88,8 @@ static led_action_t dimming_level;	/* The min level where dimming should not hap
 static int dimming_timeout;		/* The time to turn on leds when we have dimming on     */
 static int dimming_count;		/* as long as this is not zero show all leds */
 
+#define FLASH_TIMEOUT 250		/* this is the delay for the update loop. 4 times a second */
+#define FLASH_HZ (1000/FLASH_TIMEOUT)
 
 int get_index_by_name(const char *const*array, int max, const char *name);
 int get_index_for_function(const char *name);
@@ -347,15 +350,32 @@ static int brightness_function_led(const char* fn_name, int brightness) {
 	return 0;
 }
 
+static int timeout_function_led(const char* fn_name, int timeout) {
+	int led_idx = get_index_for_function(fn_name);
+
+	if(led_idx == -1) {
+		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]", fn_name);
+		return -1;
+	}
+
+	/* store timeout as number of passes on the flash loop */
+	/* in the loop decrement the timeout */
+	leds[led_idx].timeout = FLASH_HZ * timeout;
+
+	return 0;
+}
+
 enum {
 	LED_STATE,
 	LED_BRIGHTNESS,
+	LED_TIMEOUT,
 	__LED_MAX
 };
 
 static const struct blobmsg_policy led_policy[] = {
 	[LED_STATE] = { .name = "state", .type = BLOBMSG_TYPE_STRING },
 	[LED_BRIGHTNESS] = { .name = "brightness", .type = BLOBMSG_TYPE_INT32 },
+	[LED_TIMEOUT] = { .name = "timeout", .type = BLOBMSG_TYPE_INT32 },
 };
 
 static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -364,7 +384,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 {
 	struct blob_attr *tb[__LED_MAX];
 	char* state;
-	int *number;
+	int number;
 	char *fn_name = strchr(obj->name, '.') + 1;
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
@@ -377,12 +397,19 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 	}
 
 	if (tb[LED_BRIGHTNESS]) {
-		number = blobmsg_data(tb[LED_BRIGHTNESS]);
-		DBG(1,"set brightness [%s]->[%d]", fn_name, *number);
-		if (brightness_function_led(fn_name, *number) ){
+		number = blobmsg_get_u32(tb[LED_BRIGHTNESS]);
+		DBG(1,"set brightness [%s]->[%x]", fn_name, number);
+		if (brightness_function_led(fn_name, number) ){
 			return UBUS_STATUS_NO_DATA;
 		}
 	}
+
+	if (tb[LED_TIMEOUT]) {
+		number = blobmsg_get_u32(tb[LED_TIMEOUT]);
+		DBG(1,"set timeout [%s]->[%x]", fn_name, number);
+		timeout_function_led(fn_name, number);
+	} else // remove timeout
+		 timeout_function_led(fn_name, 0);
 
 	return 0;
 }
@@ -485,8 +512,6 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "leds",	        .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },
 };
 
-
-#define FLASH_TIMEOUT 250
 static void flash_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout flash_inform_timer = { .cb = flash_handler };
 
@@ -535,6 +560,15 @@ static void flash_handler(struct uloop_timeout *timeout)
 					if (!dimming_count){
 						if (action_state < dimming_level)
 							action_state = LED_OFF;
+					}
+				}
+
+				/* is there a timeout on this led ?*/
+				if (leds[i].timeout) {
+					leds[i].timeout--;
+					/* if it has timedout set state to OFF */
+					if (! leds[i].timeout) {
+						leds[i].state  = LED_OFF;
 					}
 				}
 
