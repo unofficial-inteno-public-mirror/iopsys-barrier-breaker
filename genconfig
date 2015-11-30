@@ -135,7 +135,7 @@ create_and_copy_files()
 		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
 		echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
 	fi	
-
+    fi
 
     ##### if open change to open kernel and remove building of nand tool
     if [ $OPEN -eq 1 ]; then
