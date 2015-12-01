@@ -127,7 +127,7 @@ define Image/Prepare
     ifeq ($(CONFIG_TARGET_NO_DSL),y)
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/adsldd.ko
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko
+		#rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko
 		rm -rf $(BUILD_DIR_ROOT)/etc/dsl
     endif
 
