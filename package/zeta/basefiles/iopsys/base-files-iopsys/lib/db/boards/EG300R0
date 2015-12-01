@@ -243,7 +243,7 @@ config led_map led_map
        list dimming 		status
        list dimming		wan	
        list dimming		internet
-       list dimming		voic1
+       list dimming		voice1
        list dimming 		dect
        list dimming 		ext
 
