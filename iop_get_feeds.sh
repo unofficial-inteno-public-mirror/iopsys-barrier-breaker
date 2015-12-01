@@ -1,6 +1,7 @@
 ./scripts/feeds update
 ./scripts/feeds install -a 
 ./scripts/feeds uninstall asterisk18
+./scripts/feeds uninstall libmicroxml
 ./scripts/feeds uninstall libzstream
 ./scripts/feeds uninstall zstream
 ./scripts/feeds install -f -p juci -a
