@@ -2,7 +2,7 @@
 ./scripts/feeds install -a 
 ./scripts/feeds uninstall asterisk18
 ./scripts/feeds uninstall libmicroxml
-./scripts/feeds uninstall libzstream
+./scripts/feeds uninstall libqrencode
 ./scripts/feeds uninstall zstream
 ./scripts/feeds install -f -p juci -a
 ./scripts/feeds install -f -p intenoprivate -a
