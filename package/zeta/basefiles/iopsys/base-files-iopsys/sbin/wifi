@@ -487,6 +487,13 @@ vif_settings() {
 
 	# create QR code of the Wi-Fi network
 	create_qr_code "$iface" "$ssid" "$qr_enc" "$qr_key" "$qr_hidden"
+
+	case $network in
+		guest*)
+			nvram set wl_guestmgr_ifname="$iface"
+			nvram set wl_guestmgr_cfgno="$cfg"
+		;;
+	esac
 }
 
 configure_vif() {
@@ -874,6 +881,10 @@ configure_wifi() {
 
 	[ $(nvram get "$_WL2G"_radio) == "1" ] && ubus call led.wifi set '{"state":"ok"}'
 	[ $(nvram get "$_WL5G"_radio) == "1" ] && ubus call led.wifi set '{"state":"eok"}'
+
+	nvram set wl_2g_radio="$_WL2G"
+	nvram set wl_5g_radio="$_WL5G"
+	nvram set wl_main_ifnames="$_WL5G $_WL2G"
 }
 
 is_in_network() {
