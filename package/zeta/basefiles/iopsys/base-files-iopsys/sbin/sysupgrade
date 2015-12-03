@@ -23,6 +23,7 @@ export HELP=0
 export FORCE=0
 export TEST=0
 export PROVFILE=provisioning.conf
+export SYSCONFILE=/etc/sysupgrade.conf
 export TMPDIR=/tmp
 USB=0
 ONLINE=0
@@ -106,7 +107,7 @@ online_fw_check() {
 	rm -f $verpath
 	rm -f $urlpath
 
-	wget -q $checkurl -O $verpath
+	wget -q -t 3 $checkurl -O $verpath
 
 	[ -f $verpath ] || exit 1
 
@@ -197,6 +198,7 @@ EOF
 
 add_uci_backup_files() {
 	local FILES=""
+	local f=""
 
 	save_selected_backup_files() {
 		config_get keep $1 keep "1"
@@ -211,6 +213,16 @@ add_uci_backup_files() {
 	echo "UCI backup"
 	config_load backup
 	config_foreach save_selected_backup_files service
+
+	echo "Read from $SYSCONFILE"
+	while read -r f
+	do
+		case $f in
+			/*) FILES="$FILES $f";;
+		esac
+	done < "$SYSCONFILE"
+	FILES="$FILES $SYSCONFILE"
+
 	echo "finding files that differ from base install..."
 	for item in $FILES
 	do

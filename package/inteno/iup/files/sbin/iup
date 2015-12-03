@@ -158,7 +158,15 @@ handle_Downloaded_file()
 	local KEY
 	[ -n "$1" ] && DECKEY=$(echo $1 | hexdump -e '16/1 "%02x"')
 	KEY=${DECKEY:-$DESKEY}
-	if [ "$(brcm_fw_tool -i check "$IUPCONFFILES")" == "UNKNOWN" ] ; then
+	local img_type
+	case "$(get_image_type "$IUPCONFFILES")" in                                  
+                "INTENO") img_type=2 ;;                                      
+                "CFE+FS") img_type=1 ;;                                         
+                "FS")     img_type=0 ;;                                      
+                *)      img_type="UNKNOWN";;                                
+        esac                                                                                     
+                                                                                                 
+        if [ "$img_type" == "UNKNOWN" ] ; then
 		case "$(hexdump -v -n 2 -e '1/1 "%02x"' $IUPCONFFILES)" in
 			1f8b)
 				v "Found Config"

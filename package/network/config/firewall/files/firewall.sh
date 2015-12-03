@@ -30,6 +30,7 @@ check_forward(){
 		used8888=1;;
 	esac
 }
+
 check_rule(){
 	local target src dest_port hidden port
 	port=$2
@@ -43,6 +44,7 @@ check_rule(){
 		uci -q commit firewall
 	fi
 }
+
 check_includes_for_rule(){
 	local path port
 	port=$2
@@ -50,6 +52,7 @@ check_includes_for_rule(){
 	temp_file_name="./$(basename $0).$$.tmp" 
 	[ -z $path ] || [ -f $path ] && awk -e '/iptables/ && /-I zone_wan_input/ && /-p tcp/ && /--dport 80/ && /-j ACCEPT/ { gsub("--dport 80 ", "--dport '${port}' ")} { print}' $path > $temp_file_name && mv $temp_file_name $path
 }
+
 change_webserver_listen_port(){
 	local port 
 	port=$1
@@ -79,6 +82,7 @@ EOF
 		fi
 	fi
 }
+
 change_webserver_listen_port_uci(){
 	local port listenports
 	port=$1
@@ -128,6 +132,7 @@ http_port_management(){
 	[ -f /etc/lighttpd/lighttpd.conf ] && change_webserver_listen_port $port
 	change_webserver_listen_port_uci $port
 }
+
 rematch_duidip6()
 {
 	duid_to_ip6() {
@@ -140,6 +145,7 @@ rematch_duidip6()
 	}
 	config_foreach duid_to_ip6 rule
 }
+
 reindex_dmzhost()
 {
 	uci -q get firewall.dmzhost >/dev/null || return
@@ -154,6 +160,7 @@ reindex_dmzhost()
 	uci -q set firewall.dmzhost.path="$path"
 	uci -q set firewall.dmzhost.reload="1"
 }
+
 reconf_parental()
 {
 	local parental
@@ -169,15 +176,16 @@ reconf_parental()
 	}
 	config_foreach reconf rule
 }
+
 update_enabled() {                              
 	config_get name "$1" name             
 	local section=$1
-	echo "Name: $name, section: $section";
+	#echo "Name: $name, section: $section";
 	if [ "$name" == "wan" ]; then
 		if [ "$(uci -q get firewall.settings.disabled)" == "1" ]; then
-			uci -q set firewall.$section.input="ACCEPT";
-		else
-			uci -q set firewall.$section.input="REJECT";
+			uci -q set firewall.$section.input="ACCEPT"
+		elif [ "$(uci -q set firewall.$section.input)" == "ACCEPT" ]; then
+			uci -q set firewall.$section.input="REJECT"
 		fi                             
 		uci -q commit firewall            
 	fi                                               

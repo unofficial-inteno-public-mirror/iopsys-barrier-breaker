@@ -22,7 +22,7 @@ uci -q batch <<-EOF >/dev/null
 	set network.wan6=interface
 	set network.wan6.proto=dhcpv6
 	set network.wan6.ifname=@wan
-	set network.wan6.reqaddress=none
+	set network.wan6.reqaddress=try
 	set network.wan6.reqprefix=auto
 	commit network
 EOF

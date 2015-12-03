@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=icwmp
-PKG_VERSION:=3.0-2015-11-10
+PKG_VERSION:=3.0-2015-11-23
 PKG_FIXUP:=autoreconf
 ifeq ($(CONFIG_BCM_OPEN),y)
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/freecwmp.git
@@ -16,7 +16,7 @@ else
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/freecwmp.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=019763820601eca898c08a05778168be882f76c3
+PKG_SOURCE_VERSION:=e9e5f9f5f0c913fdc185f24aa9bca17e28155ab8
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
@@ -140,7 +140,6 @@ ifeq ($(CONFIG_CWMP_SCRIPTS_FULL),y)
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/icwmp.sh $(1)/usr/sbin/icwmp
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/iwepkeygen $(1)/usr/sbin/iwepkeygen
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/watchicwmpd.sh $(1)/usr/sbin/watchicwmpd
 endif
 endef
 

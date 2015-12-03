@@ -9,7 +9,8 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 
 CC_CHECK_FLAGS_APPEND([with_cflags], [CFLAGS], [\
-        -pipe \
+        -std=gnu11 \
+	-pipe \
         -Wall \
         -Wextra \
         -Wno-inline \

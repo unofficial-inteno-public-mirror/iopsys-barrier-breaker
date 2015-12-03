@@ -9,6 +9,24 @@ handle_threads()
 	smd -s
 }
 
+handle_passwords()
+{
+	local users="admin support user"
+	local user ppwd spwd
+
+	for user in $users; do
+		ppwd=$(sed -ne "/^$user:/s/^$user:\([^:]*\):.*$/\1/p" /etc/passwd)
+		spwd=$(sed -ne "/^$user:/s/^$user:\([^:]*\):.*$/\1/p" /etc/shadow)
+
+		if [ -n "${ppwd#[\!x]}" ] && [ -z "${spwd#[\!x]}" ]; then
+			logger -t migrate-shadow "Moving $user password hash into shadow database"
+			grep -wq $user /etc/shadow || echo "$user:*:0:0:99999:7:::" >>/etc/shadow
+			sed -i -e "s:^$user\:[^\:]*\::$user\:x\::"     /etc/passwd
+			sed -i -e "s:^$user\:[^\:]*\::$user\:$ppwd\::" /etc/shadow
+		fi
+	done
+}
+
 handle_configs()
 {
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
@@ -106,14 +124,49 @@ handle_openwrtversion() {
 	# DISTRIB_TAINTS="%t"
 }
 
-start_service() {
+handle_backup() {
+	local ISTHERE=0
+
+	compare_with() {
+		local confile="$2"
+		config_get files "$1" file
+		for f in $files; do
+			if [ "$f" == "$confile" ]; then
+				ISTHERE=1
+				return 0
+			fi
+		done
+	}
+
+	config_load backup
+
+	for conf in $(ls /etc/config); do
+		case $conf in
+			backup|boardpanel|dmmap|fstab|hosts|juci|luci|rpcd|speedtest|voice_codecs) continue;
+		esac
+		config_foreach compare_with service "/etc/config/$conf"
+		if [ $ISTHERE -eq 0 ]; then
+			uci set backup.$conf=service
+			uci set backup.$conf.desc=$conf
+			uci set backup.$conf.file="/etc/config/$conf"
+		fi
+		ISTHERE=0
+	done
+
+	uci commit backup
+
+}
+
+boot() {
 	handle_upgrade_count
 	handle_threads
 	handle_openwrtversion
+	handle_passwords
+	handle_backup
 	handle_configs
 }
 
-reload_service() {
+start_service() {
         handle_configs
 }
 

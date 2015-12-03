@@ -19,9 +19,9 @@ start_service() {
 	cat /proc/nvram/bcm_def_freq | tr -d ' ' | atohx > /tmp/bcm_def_freq
 	DECTANTDIV=`db get hw.board.DectAntennaDiversity`
 	case "$DECTANTDIV" in
-		1|off) echo -e "\x01" > /tmp/dect_antenna_diversity ;;
-		2) echo -e "\x02" > /tmp/dect_antenna_diversity ;;
-		*) echo -e "\x00" > /tmp/dect_antenna_diversity ;;
+		1|off) echo -ne "\x01" > /tmp/dect_antenna_diversity ;;
+		2) echo -ne "\x02" > /tmp/dect_antenna_diversity ;;
+		*) echo -ne "\x00" > /tmp/dect_antenna_diversity ;;
 	esac
 
 	if [ ! -f /etc/dect/nvs ]; then
@@ -29,7 +29,7 @@ start_service() {
 		dd of=/etc/dect/nvs if=/tmp/rfpi conv=notrunc bs=1 seek=0
 		dd of=/etc/dect/nvs if=/tmp/fixed_emc conv=notrunc bs=1 seek=10
 		dd of=/etc/dect/nvs if=/tmp/bcm_def_freq conv=notrunc bs=1 seek=6
-		dd of=/etc/dect/nvs if=/tmp/dect_antenna_diversity conv=notrunc bs=1 seek=34
+		dd of=/etc/dect/nvs if=/tmp/dect_antenna_diversity conv=notrunc bs=1 seek=32
 	fi
 	
 	# init dectproxy

@@ -16,7 +16,7 @@ PKG_RELEASE:=1
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=8ad4bbc5479a2b0d0de9a6334f4f5c9ed4f7df53
+PKG_SOURCE_VERSION:=288b8b0d8716202dc29a7c52dfcc1f497cfe14e4
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 endif
 
@@ -32,12 +32,12 @@ export CONFIG_BCM_KERNEL_PROFILE
 export CONFIG_SECURE_BOOT_CFE
 
 
+IBOARDID = $(shell echo $(CONFIG_TARGET_IBOARDID) |sed s/\"//g)
 BCM_BS_PROFILE = $(shell echo $(CONFIG_BCM_KERNEL_PROFILE) | sed s/\"//g)
 
 BCM_KERNEL_VERSION:=3.4.11-rt19
 BCM_SDK_VERSION:=bcm963xx
 RSTRIP:=true
-
 
 define Package/bcmkernel/removevoice
 	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/endpointdd.ko
@@ -169,6 +169,7 @@ define Package/bcmkernel/install
 	# Install binaries
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/*		$(1)/usr/sbin/
 
+	rm -f $(1)/usr/sbin/bcmmserver
 	rm -f $(1)/usr/sbin/dhcp6c
 	rm -f $(1)/usr/sbin/dhcp6s
 	rm -f $(1)/usr/sbin/dhcpc
@@ -181,6 +182,7 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/send_cms_msg
 	rm -f $(1)/usr/sbin/sshd
 	rm -f $(1)/usr/sbin/ssk
+	rm -f $(1)/usr/sbin/sqlite3
 	rm -f $(1)/usr/sbin/telnetd
 	rm -f $(1)/usr/sbin/tr64c
 	rm -f $(1)/usr/sbin/tr69c
@@ -188,7 +190,11 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/udhcpd
 	rm -f $(1)/usr/sbin/upnp
 	rm -f $(1)/usr/sbin/upnpd
+	rm -f $(1)/usr/sbin/visdata
+	rm -f $(1)/usr/sbin/vis-datacollector
+	rm -f $(1)/usr/sbin/vis-dcon
 	rm -f $(1)/usr/sbin/vodsl
+	rm -f $(1)/usr/sbin/vpmstats
 	rm -f $(1)/usr/sbin/wlmngr
 	rm -f $(1)/usr/sbin/zebra
 
@@ -200,6 +206,20 @@ define Package/bcmkernel/install
 	sed -i '/bcm_usb\.ko/d' $(1)/lib/bcm-base-drivers.sh
 	sed -i 's|/kernel/.*/|/|' $(1)/lib/bcm-base-drivers.sh
 
+    ifneq ($(findstring _$(IBOARDID)_,_DG200AL_DG301AL_DG400_VG50_),)
+	# Don't load any DECT drivers (have external voice or no voice at all)
+	sed -i '/dect\.ko/d' $(1)/lib/bcm-base-drivers.sh
+	sed -i '/dectshim\.ko/d' $(1)/lib/bcm-base-drivers.sh
+    else ifneq ($(findstring _$(IBOARDID)_,_D150_DG200_VOX25_),)
+	# Load dectshim driver only (have voice but no dect)
+	sed -i '/dect\.ko/d' $(1)/lib/bcm-base-drivers.sh
+    else ifneq ($(findstring _$(IBOARDID)_,_CG300_CG301_D301_EG300_),)
+	# Load both dect and dectshim driver (have internal dect)
+    else
+	echo Error: Unknown IBOARDID "$(IBOARDID)"!
+	false
+    endif
+
 	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh ]; then $(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh $(1)/etc/; fi;
 
 
@@ -207,13 +227,22 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
 
 	rm -f $(1)/usr/lib/ld-uClibc.so.0
+	rm -f $(1)/usr/lib/libbdlna-dms-aal.so
+	rm -f $(1)/usr/lib/libbdlna-dms.so
+	rm -f $(1)/usr/lib/libbdlna.so
+	rm -f $(1)/usr/lib/libbmedia.so
+	rm -f $(1)/usr/lib/libb_playback_ip.so
 	rm -f $(1)/usr/lib/libc.so.0
+	rm -f $(1)/usr/lib/libcrypt.so.0
 	rm -f $(1)/usr/lib/libdl.so.0
 	rm -f $(1)/usr/lib/libgcc_s.so.1
-	rm -f $(1)/usr/lib/libpthread.so.0
 	rm -f $(1)/usr/lib/libm.so.0
+	rm -f $(1)/usr/lib/libpthread.so.0
+	rm -f $(1)/usr/lib/libsqlite3.so*
 	rm -f $(1)/usr/lib/libutil.so.0
-	rm -f $(1)/usr/lib/libcrypt.so.0
+	rm -f $(1)/usr/lib/libwifihttp.so
+	rm -f $(1)/usr/lib/libwlvisualization.so
+	rm -f $(1)/usr/lib/libxml2.so*
 
 	rm -f $(1)/usr/lib/libcrypto.so
 	ln -s /usr/lib/libcrypto.so.1.0.0 $(1)/usr/lib/libcrypto.so
