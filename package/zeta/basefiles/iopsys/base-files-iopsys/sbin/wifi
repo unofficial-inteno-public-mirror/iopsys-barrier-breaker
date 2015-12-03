@@ -728,7 +728,7 @@ wdev_settings() {
 	config_get maxassoc $cfg maxassoc "32"
 	config_get reg_mode $cfg reg_mode "h"
 	config_get acs_dfs $cfg dfsc "1"
-	config_get beamforming $cfg beamforming "0"
+	config_get beamforming $cfg beamforming "1"
 	config_get rxchain_pwrsave_enable $cfg rxchainps "1"
 	config_get rxchain_pwrsave_pps $cfg rxchainps_qt "10"
 	config_get rxchain_pwrsave_quiet_time $cfg rxchainps_pps "10"
@@ -744,6 +744,7 @@ wdev_settings() {
 		freq=2
 		nband=2
 		reg_mode=off
+		beamforming=0
 		_WL2G=$device
 	fi
 
