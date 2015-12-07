@@ -180,6 +180,8 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/racoon
 	rm -f $(1)/usr/sbin/ripd
 	rm -f $(1)/usr/sbin/send_cms_msg
+	rm -f $(1)/usr/sbin/smbd
+	rm -f $(1)/usr/sbin/smbpasswd
 	rm -f $(1)/usr/sbin/sshd
 	rm -f $(1)/usr/sbin/ssk
 	rm -f $(1)/usr/sbin/sqlite3
