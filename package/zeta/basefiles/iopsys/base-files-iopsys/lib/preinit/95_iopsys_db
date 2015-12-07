@@ -34,6 +34,10 @@ iopsys_initialize_db() {
 	else
 		echo "Setting up static db"
 		BOARDID=`cat /proc/nvram/BoardId`
+		if [ "$BOARDID" == "96362ADVNgr" ]; then
+			BOARDID="DG150R0"
+			echo $BOARDID > /proc/nvram/BoardId
+		fi
 		[ -d "/lib/db/config" ] || mkdir /lib/db/config
 		cp /lib/db/boards/$BOARDID /lib/db/config/hw
 
