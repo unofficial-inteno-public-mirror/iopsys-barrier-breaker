@@ -8,13 +8,12 @@ PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 include $(INCLUDE_DIR)/package.mk
 
 define Package/port-management
-  CATEGORY:=Base system
+  CATEGORY:=Utilities
   TITLE:=Port management tool
 endef
 
 define Package/port-management/description
-	port-management contains necessary tools to create
-	layer2 interfaces
+	Port configuration utility
 endef
 
 define Build/Prepare

@@ -7,8 +7,8 @@ PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 include $(INCLUDE_DIR)/package.mk
 
 define Package/power-management
-  CATEGORY:=Base system
-  TITLE:=Port management tool
+  CATEGORY:=Utilities
+  TITLE:=Power management tool
 endef
 
 define Package/power-management/description
