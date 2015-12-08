@@ -1,0 +1,43 @@
+#!/bin/sh /etc/rc.common
+
+START=13
+USE_PROCD=1
+
+. /lib/functions.sh
+
+parsebool() {
+	[ "$1" = "1" ] && echo "on" || echo "off"
+}
+
+start_service() {
+	config_load power_mgmt
+
+	local speed
+	config_get speed power_mgmt cpuspeed
+	pwrctl config --cpuspeed $speed
+
+	local cpur4kwait
+	config_get cpur4kwait power_mgmt cpur4kwait
+	pwrctl config --cpur4kwait $(parsebool $cpur4kwait)
+
+	local sr
+	config_get sr power_mgmt sr
+	pwrctl config --sr $(parsebool $sr)
+
+	local ethapd
+	config_get ethapd power_mgmt ethapd
+	pwrctl config --ethapd $(parsebool $ethapd)
+
+	local eee
+	config_get eee power_mgmt eee
+	pwrctl config --eee $(parsebool $eee)
+
+	local avs
+	config_get avs power_mgmt avs
+	pwrctl config --avs $avs
+}
+
+service_triggers() {
+	procd_add_reload_trigger power_mgmt
+}
+
