@@ -242,7 +242,79 @@ read_lines()
 {
 	local lines=""
 	local call_lines
+	local fsxIdx fsxEpt dectIdx dectEpt
+
+	# Are lines already set by user conf?
 	config_get call_lines $1 call_lines
+
+	# Otherwise set default depending on board HW. This
+	# is only done at very first boot or a default reset.
+	if test -z "$call_lines"; then
+		# Get all FSX voice endpoints. Translate to uppercase with awk
+		# due to tr [:upper:] doesn't work in our BusyBox.
+		voicePorts=$(db get hw.board.VoicePortOrder | \
+			awk '{ print toupper($0) }' | \
+			sed  -e "s/\([[:alpha:]]*\)\([[:digit:]]\)/\1\/\2/g")
+		voiceNames=$(db get hw.board.VoicePortNames)
+		hasVoice=0
+
+		if test $(db get hw.board.hasVoice) = "1"; then
+			# Get the first FSX voice endpoint index by
+			# searching for the name usually used.
+			fsxIdx=$(echo $voiceNames | \
+				awk -e '{
+					i = 1;
+					while(i <= NF && tolower($i) !~ /^tel.*$/) {
+						i++;
+					}
+					print i;
+				}
+			')
+	
+			# Convert index to endpoint ID
+			if test $fsxIdx -gt 0; then
+				fsxEpt=$(echo $voicePorts | awk '{ print $'$fsxIdx' }')
+			fi
+
+			hasVoice=1
+		fi
+	
+		if test $(db get hw.board.hasDect) = "1"; then
+			# Get the first Dect voice endpoint index by
+			# searching for the name usually used.
+			dectIdx=$(echo $voiceNames | \
+				awk -e '{
+					i = 1;
+					while(i <= NF && tolower($i) !~ /^dect.*$/) {
+						i++;
+					}
+					print i;
+				}
+			')
+
+			if test $dectIdx -gt 0; then
+				dectEpt=$(echo $voicePorts | awk '{ print $'$dectIdx' }')
+			fi
+
+			hasVoice=1
+		fi
+
+		if test $hasVoice -eq 1; then
+			call_lines="$dectEpt $fsxEpt"
+
+			# If we didn't find any endpoint ID we
+			# fallback to activate them all.
+			if test -z "$call_lines"; then
+				call_lines="$voicePorts"
+			fi
+		fi
+
+		# Save the endpoint IDs we found where the
+		# GUI expects to find them.
+		uci_set voice_client "${1}" "call_lines" "$call_lines"
+		uci_commit voice_client
+	fi
+
 	for i in $call_lines ; do
 		case $i in
 			''|*[!0-9]*)	lines=$lines"$i&" ;;
@@ -1503,7 +1575,7 @@ configure_extensions_provider()
 	call_filter_macro=$(get_call_filter $1 incoming)
 	echo "exten => $user,1,$call_filter_macro" >>						$tmp
 
-	local call_lines call_ivr call_queue extension
+	local call_ivr call_queue extension
 	echo "exten => $user,n,Set(__TRANSFER_CONTEXT=\${CHANNEL(peername)}-transfer)" >>	$tmp
 
         # replace prefix '+' with '00'
@@ -1511,12 +1583,11 @@ configure_extensions_provider()
 	echo "exten => $user,n(rewrite),Set(CALLERID(num)=\"00\${CALLERID(num):1}\"))" >>		$tmp
 	echo "exten => $user,n(norewrite),NoOp()">>							$tmp
 
-	config_get call_lines $1 call_lines
+	# read a list of lines that should be dialled on incoming calls
+	incoming_lines=$(read_lines $1)
 	config_get call_queue $1 call_queue
 	config_get call_ivr $1 call_ivr
-	if ! [ -z "$call_lines" ] ; then
-		# read a list of lines that should be dialled on incoming calls
-		incoming_lines=$(read_lines $1)
+	if [ -n "$incoming_lines" ]; then
 		echo "exten => $user,n,Dial($incoming_lines,$(get_voicemail_timeout),tF(hangup,h,2))" >>		$tmp
 		echo "exten => $user,n,GotoIf($[\"\${DIALSTATUS}\"=\"ANSWER\"]?endcall)" >>		$tmp
 		echo "exten => $user,n,GotoIf($[\"\${DIALSTATUS}\"=\"BUSY\"]?noanswer)" >>		$tmp
