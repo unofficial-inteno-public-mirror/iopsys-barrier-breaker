@@ -1,0 +1,26 @@
+#!/bin/sh /etc/rc.common
+#
+# Copyright (C) 2015 inteno.org
+#
+
+START=71
+USE_PROCD=1
+
+. /lib/functions.sh
+
+start_service() {
+	local enable=0
+        local filter=0
+
+        config_load catv
+        config_get enable catv enable
+        config_get filter catv filter
+	ubus call catv set-enable "{\"enable\":\"$enable\"}"
+	ubus call catv set-filter "{\"filter\":\"$filter\"}"
+
+}
+
+service_triggers() {
+        procd_add_reload_trigger catv
+}
+
