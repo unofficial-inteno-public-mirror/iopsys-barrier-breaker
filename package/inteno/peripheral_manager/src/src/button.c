@@ -414,7 +414,7 @@ void button_init( struct server_ctx *s_ctx)
 {
 	struct ucilist *node;
 	LIST_HEAD(buttonnames);
-        int default_minpress = 0;
+	int default_minpress = 100;
         char *s;
 	int   r;
 

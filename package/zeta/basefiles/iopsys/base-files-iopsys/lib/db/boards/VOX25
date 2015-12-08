@@ -65,11 +65,10 @@ config 3220_button 3220_touch_far
 ############### function buttons used on board.
 config button_map button_map
 	list buttonnames RESET
-	list buttonnames WPS
 	list buttonnames WIFI
 	list buttonnames TOUCH_NEAR
 	list buttonnames TOUCH_FAR
-	option minpress 100
+	option minpress 1000
 
 
 ############### mapping function button to driver button
@@ -78,15 +77,11 @@ config button_map RESET
 	option minpress 5000
 	option hotplug resetbutton
 
-config button_map WPS
-	list button gpio_wps
-	option hotplug wpsbutton
-	option longpress 3000
-
 config button_map WIFI
 	list button gpio_wps
 	option hotplug wifibutton
-
+	option hotplug_long wpsbutton
+	option longpress 3000
 
 config button_map TOUCH_NEAR
 	list button 3220_touch_near
