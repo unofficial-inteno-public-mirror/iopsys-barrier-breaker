@@ -210,11 +210,11 @@ add_uci_backup_files() {
 		fi
 	}
 
-	echo "UCI backup"
+	#echo "UCI backup"
 	config_load backup
 	config_foreach save_selected_backup_files service
 
-	echo "Read from $SYSCONFILE"
+	#echo "Read from $SYSCONFILE"
 	while read -r f
 	do
 		case $f in
@@ -223,11 +223,14 @@ add_uci_backup_files() {
 	done < "$SYSCONFILE"
 	FILES="$FILES $SYSCONFILE"
 
-	echo "finding files that differ from base install..."
+	#echo "finding files that differ from base install..."
 	for item in $FILES
 	do
 		if [ -e "$item" ]; then
-			cmp -s "$item" "/rom/$item" || { echo "backing up $item"; echo "$item" >> "$1"; }
+			cmp -s "$item" "/rom/$item" || {
+				#echo "backing up $item"
+				echo "$item" >> "$1"
+			}
 		fi
 	done
 	return 0
@@ -379,7 +382,7 @@ do_save_conffiles_uci() {
 	uci export > $TMPDIR/$PROVFILE
 	
 
-	v "Saving UCI export ..."
+	#v "Saving UCI export ..."
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	tar c${TAR_V}zf "$conf_tar" -C $TMPDIR $PROVFILE 2>/dev/null
 	rm -rf $TMPDIR/$PROVFILE
