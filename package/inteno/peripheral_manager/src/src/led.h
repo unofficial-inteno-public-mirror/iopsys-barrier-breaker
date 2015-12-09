@@ -24,6 +24,12 @@ typedef enum {
 	WHITE,
 } led_color_t;
 
+typedef enum {
+	PRESS_NONE,
+	PRESS_SHORT,
+	PRESS_LONG,
+} press_t;
+
 struct led_drv;
 
 struct led_drv_func{
@@ -46,7 +52,6 @@ void led_add( struct led_drv *);
 void led_init(struct server_ctx *);
 
 void led_dimming(void);
-void led_pressindicator_set(void);
-void led_pressindicator_clear(void);
+void led_pressindicator_set(press_t type);
 
 #endif /* LED_H */

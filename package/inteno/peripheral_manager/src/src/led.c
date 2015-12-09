@@ -81,8 +81,8 @@ struct function_led {
 struct function_led *leds;		/* Array of functions, LED_FUNCTIONS + super_functions */
 static int total_functions;		/* number of entries in leds array */
 
-static leds_state_t global_state;	/* global state for the leds,overrids individual states */
-static leds_state_t press_state;	/* global state for the press indicator */
+static leds_state_t	global_state;	/* global state for the leds,overrids individual states */
+static press_t		press_state;	/* global state for the press indicator */
 
 static led_action_t dimming_level;	/* The min level where dimming should not happen on led */
 static int dimming_timeout;		/* The time to turn on leds when we have dimming on     */
@@ -294,7 +294,7 @@ static void super_update(void)
 					}
 					if (status){
 						leds[i].state = j;
-						DBG(1,"\tSet super function [%s] to action [%s]",leds[i].name, fn_actions[j]);
+						DBG(3,"\tSet super function [%s] to action [%s]",leds[i].name, fn_actions[j]);
 					}
 				}
 			}
@@ -537,11 +537,15 @@ static void flash_handler(struct uloop_timeout *timeout)
 	    global_state == LEDS_INFO ) {
 		for (i = 0; i < total_functions ; i++) {
 			struct led *led;
-			if (leds[i].press_indicator & press_state) {
+			if (leds[i].press_indicator && (press_state != PRESS_NONE) ) {
 //				DBG(1,"INDICATE_PRESS on %s",leds[i].name);
 				list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
-					if (led->drv)
-						led->drv->func->set_state(led->drv, fast);
+					if (led->drv){
+						if (press_state == PRESS_LONG)
+							led->drv->func->set_state(led->drv, ON);
+						else
+							led->drv->func->set_state(led->drv, fast);
+					}
 				}
 
 				/* normal operation, flash else reset state */
@@ -609,12 +613,13 @@ static void flash_handler(struct uloop_timeout *timeout)
 	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
 }
 
-void led_pressindicator_set(void){
-	press_state = 1;
-}
+void led_pressindicator_set(press_t type){
 
-void led_pressindicator_clear(void){
-	press_state = 0;
+	/* press long has prio over short so if it's already set to long do not change */
+	if (type == PRESS_SHORT && press_state == PRESS_LONG)
+		return;
+
+	press_state = type;
 }
 
 void led_dimming(void){

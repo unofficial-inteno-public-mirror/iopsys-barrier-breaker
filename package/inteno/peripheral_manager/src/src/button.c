@@ -285,7 +285,7 @@ static void button_handler(struct uloop_timeout *timeout)
 #endif
 
         /* clean out indicator status, set by any valid press again if we find it */
-        led_pressindicator_clear();
+        led_pressindicator_set(PRESS_NONE);
 
 	list_for_each(i, &buttons) {
                 struct list_head *j;
@@ -294,6 +294,7 @@ static void button_handler(struct uloop_timeout *timeout)
                 list_for_each(j, &node->drv_list) {
                         struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
                         if (drv_node->drv) {
+                                button_press_type_t time_type;
                                 button_state_t st = drv_node->drv->func->get_state(drv_node->drv);
 
                                 if (st == BUTTON_PRESSED ) {
@@ -302,8 +303,12 @@ static void button_handler(struct uloop_timeout *timeout)
                                                 DBG(1, " %s pressed", drv_node->drv->name);
 //						button_ubus_interface_event(global_ubus_ctx, node->name, BUTTON_PRESSED);
                                         }
-					if(timer_valid(drv_node, node->minpress, 0))
-						led_pressindicator_set();
+
+                                        time_type = timer_valid(drv_node, node->minpress, node->longpress);
+					if( time_type == BUTTON_PRESS_LONG )
+						led_pressindicator_set(PRESS_LONG);
+					if( time_type == BUTTON_PRESS_SHORT )
+						led_pressindicator_set(PRESS_SHORT);
                                 }
 
                                 if (st == BUTTON_RELEASED ) {
@@ -313,6 +318,7 @@ static void button_handler(struct uloop_timeout *timeout)
 							button_ubus_interface_event(global_ubus_ctx, node->name, BUTTON_RELEASED);
 							if(node->dimming)
 								led_dimming();
+                                                        DBG(1, " %s released timer_valid=%d", drv_node->drv->name,r);
 							button_hotplug_cmd(node->name, r==BUTTON_PRESS_LONG);
 						}
                                         }
