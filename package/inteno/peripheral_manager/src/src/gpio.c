@@ -32,10 +32,14 @@ int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_
 	IoctlParms.offset = offset;
 	IoctlParms.action = action;
 	IoctlParms.buf    = (char*)"";
+	IoctlParms.result = 0;
 
-	if ( ioctl(brcmboard, ioctl_id, &IoctlParms) < 0 ) {
-		syslog(LOG_ERR, "ioctl: %d failed", ioctl_id);
-		return(-255);
+	if (brcmboard != -1){
+		if ( ioctl(brcmboard, ioctl_id, &IoctlParms) < 0 ) {
+			syslog(LOG_ERR, "ioctl: %d failed", ioctl_id);
+			return(-255);
+		}
+
 	}
 	return IoctlParms.result;
 }
@@ -45,7 +49,6 @@ gpio_state_t gpio_get_state(gpio_t gpio)
 {
 	return board_ioctl(BOARD_IOCTL_GET_GPIO, 0, 0, NULL, gpio, 0);
 }
-
 
 void gpio_set_state(gpio_t gpio, gpio_state_t state)
 {
