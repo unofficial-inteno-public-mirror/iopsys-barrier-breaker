@@ -246,6 +246,34 @@ check_crc() {
 	fi
 }
 
+check_sig() {
+	local from=$1
+	local len
+
+	if is_inteno_image $from; then
+	    len=$(($(get_inteno_tag_val $from cfe) +
+		   $(get_inteno_tag_val $from vmlinux) +
+		   $(get_inteno_tag_val $from ubifs) ))
+
+	    # get pubkey from cert.
+	    openssl x509 -in /etc/ssl/certs/opkg.pem -pubkey -noout >/tmp/pubkey
+
+	    # extract signature data from firmware image.
+	    dd if=$from bs=1 skip=$((1024+len)) count=256 2>/dev/null >/tmp/sig
+
+	    result=$(dd if=$from bs=1024 skip=1 2>/dev/null | \
+		     head -c $len | \
+		     openssl dgst -sha256 \
+			     -verify /tmp/pubkey \
+			     -signature /tmp/sig )
+	    rm /tmp/pubkey
+	    rm /tmp/sig
+
+	    [ "$result" == "Verified OK" ] && return 0
+	fi
+	return 1
+}
+
 get_flash_type() {
 	if is_inteno_image $1; then
 		echo "NAND"

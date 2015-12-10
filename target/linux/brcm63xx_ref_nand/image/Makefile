@@ -177,6 +177,9 @@ define Image/Build/Header
 	echo "cfe $$$$(ls -l $(KDIR)/$(2) | awk '{print $$$$5}')" >> $(KDIR)/hdr
 	echo "vmlinux $$$$(ls -l $(KDIR)/$(3) | awk '{print $$$$5}')" >> $(KDIR)/hdr
 	echo "ubifs $$$$(ls -l $(KDIR)/$(4) | awk '{print $$$$5}')" >> $(KDIR)/hdr
+    ifeq ($(CONFIG_SMIMEOPT),y)
+	echo "sig 256" >> $(KDIR)/hdr
+    endif
 	cat $(KDIR)/hdr /dev/zero | head --bytes=1024 > $(KDIR)/$(1)
 endef
 
@@ -280,6 +283,16 @@ define Image/Build/ubi
 	    $(KDIR)/cfe$(CONFIG_BCM_CHIP_ID)_nand.v \
 	    $(KDIR)/vmlinux.jffs2 \
 	    $(KDIR)/root.ubifs > $(BIN_DIR)/$(IHGSP_BUILD_VERSION).y
+
+# If build is signed also sign the cfe,kernel,fs part of the image.
+    ifeq ($(CONFIG_SMIMEOPT),y)
+	cat $(KDIR)/cfe$(CONFIG_BCM_CHIP_ID)_nand.v \
+	    $(KDIR)/vmlinux.jffs2 \
+	    $(KDIR)/root.ubifs | \
+	openssl dgst -sha256 -sign $(CONFIG_OPKGSMIME_KEY) \
+	-passin file:$(call qstrip,$(CONFIG_OPKGSMIME_PASSFILE)) \
+		>> $(BIN_DIR)/$(IHGSP_BUILD_VERSION).y
+    endif
 
 	# Attach checksum to combined image (.y)
 	md5sum $(BIN_DIR)/$(IHGSP_BUILD_VERSION).y |awk '{printf "%s",$$$$1}' \

@@ -36,6 +36,13 @@ platform_check_image() {
 	fi
 	echo $img_type > /tmp/CFE_FS
 
+	if [ -e /etc/ssl/certs/opkg.pem ]; then
+	    if ! check_sig "$from"; then
+		echo "Signature of file is wrong. Aborting!" > /dev/console
+		return 1
+	    fi
+	fi
+
 	case "$(get_flash_type "$from")" in
 		"NAND")
 			echo 1 > /tmp/IS_NAND
