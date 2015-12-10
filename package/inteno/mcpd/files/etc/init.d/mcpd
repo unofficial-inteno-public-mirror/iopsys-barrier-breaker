@@ -46,7 +46,7 @@ mcpd_configure() {
 
         for proxif in $igmp_proxy_interfaces; do
                 json_load "$(ifstatus $proxif)"
-                json_get_var device device
+                json_get_var device l3_device
 		case "$device" in
 			br-*)
 				bridged=1
