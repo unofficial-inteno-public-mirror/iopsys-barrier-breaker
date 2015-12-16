@@ -9,3 +9,13 @@
  
  	if (node_old) {
  		if (!(route_old->flags & DEVADDR_EXTERNAL) && route_old->enabled && !keep)
+@@ -614,8 +614,7 @@ interface_update_proto_route(struct vlist_tree *tree,
+ 		bool _enabled = enable_route(ip, route_new);
+ 
+ 		if (!(route_new->flags & DEVADDR_EXTERNAL) && !keep && _enabled)
+-			if (system_add_route(dev, route_new))
+-				route_new->failed = true;
++			system_add_route(dev, route_new);
+ 
+ 		route_new->iface = iface;
+ 		route_new->enabled = _enabled;
