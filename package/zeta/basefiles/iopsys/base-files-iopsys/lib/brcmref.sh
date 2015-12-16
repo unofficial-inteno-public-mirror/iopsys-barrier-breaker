@@ -15,8 +15,8 @@ bcm_dsl_annex() {
                         echo "DSL Annex B detected"
                         ln -s /etc/dsl/b_adsl_phy.bin /etc/adsl/adsl_phy.bin
                 else
-                        echo "DSL Annex A default"
-                        ln -s /etc/dsl/a_adsl_phy.bin /etc/adsl/adsl_phy.bin
+                        echo "DSL Annex B default"
+                        ln -s /etc/dsl/b_adsl_phy.bin /etc/adsl/adsl_phy.bin
                 fi
         fi
 }
