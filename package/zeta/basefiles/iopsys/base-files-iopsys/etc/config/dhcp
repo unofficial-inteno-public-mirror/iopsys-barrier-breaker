@@ -23,6 +23,7 @@ config domain
 	list name 'www.login.lan'
 	list name 'login.lan'
 	list name 'login'
+	list name 'inteno.lan'
 
 config dhcp 'lan'
 	option interface 'lan'
