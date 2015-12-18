@@ -274,6 +274,7 @@ assign_network() {
 		local interface=$1
 		local vif=$2
 		local found=0
+		local cfgno="$(nvram get "$vif"_cfgno)"
 		local ifname="$(uci -q get network.$interface.ifname)"
 		local net="$(nvram get "$vif"_network)"
 		local enabled=$(nvram get "$vif"_bss_enabled)
@@ -300,7 +301,8 @@ assign_network() {
 		if [ $found -eq 0 ]; then
 			if [ $interface == $net ]; then
 				#echo "wifi: add $vif to $interface" >/dev/console
-				uci -q set network.$interface.ifname="$ifname $vif"
+				[ -n "$ifname" ] && ifname="$ifname $vif" || ifname="$vif"
+				uci -q set network.$interface.ifname="$ifname"
 			fi
 		fi
 	}
@@ -462,6 +464,7 @@ vif_settings() {
 		;;
 	esac
 
+	nvram set "$iface"_cfgno="$vif"
 	nvram set "$iface"_ap_isolate=$isolate
 	nvram set "$iface"_bss_enabled=$bss_enabled
 	nvram set "$iface"_bss_maxassoc=$bss_max
@@ -924,11 +927,15 @@ toggle_wifi_iface() {
 	[ "${vif:0:2}" == "wl" ] || exit
 	local ssid="$(nvram get "$vif"_ssid)"
 	if [ "$action" == "disable" ]; then
+		uci -q set wireless.$(nvram get "$vif"_cfgno).disabled=1
+		uci commit wireless
 		nvram set  "$vif"_bss_enabled=0
 		wlctl -i $vif ssid ""
 		wlctl -i $vif bss down
 		exit
 	else
+		uci -q set wireless.$(nvram get "$vif"_cfgno).disabled=0
+		uci commit wireless
 		if $(is_in_network $vif); then
 			nvram set  "$vif"_bss_enabled=1
 			wlctl -i $vif ssid "$ssid"
