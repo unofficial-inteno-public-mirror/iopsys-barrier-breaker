@@ -6,6 +6,6 @@ boot()
 {
     if [ "$(db get hw.board.hardware)" == "EG300" ]
     then
-        /sbin/monitor&
+        /sbin/monitorwan&
     fi
 }
