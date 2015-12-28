@@ -51,5 +51,7 @@
 ./scripts/feeds install boost-system
 ./scripts/feeds install collectd
 ./scripts/feeds install dhcp-forwarder
+./scripts/feeds install zoneinfo-core
+./scripts/feeds install zoneinfo-europe
 ./scripts/feeds install -a -p juci
 ./scripts/feeds install -a -p intenoprivate
