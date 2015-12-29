@@ -904,37 +904,78 @@ update_from_nvram() {
 	vif_list_to_update() {
 		local vif="$1"
 		local mode autoconf ifname
+		local client=0
 		config_get mode $vif mode "ap"
 		config_get autoconf $vif autoconf "0"
 		config_get ifname $vif ifname
 
-		[ $mode == "wet" ] && STAIF=$ifname
+		case $mode in
+			wet|sta)
+				client=1
+				STAIF=$ifname
+			;;
+		esac
 
-		if [ $mode == "wet" -o $autoconf == "1" ]; then
+		if [ "$client" == "1" -o $autoconf == "1" ]; then
 			VIFS="$VIFS $vif"
 		fi
+	}
+
+	update_uci_from_sta() {
+		NEWSSID="$(nvram get "$STAIF"_ssid)"
+		NEWENC="$(nvram get "$STAIF"_akm)"
+		case "$NEWENC" in
+			psk*) [ "$NEWENC" == "psk psk2" ] && NEWENC="mixed-psk" ;;
+			*) NEWENC="none" ;;
+		esac
+		if [ "$NEWENC" != "none" ]; then
+			NEWCIPHER="$(nvram get "$STAIF"_crypto | sed 's/aes/ccmp/g')"
+			NEWKEY="$(nvram get "$STAIF"_wpa_psk)"
+		fi
+
+		for vif in $VIFS; do
+			uci -q set wireless.$vif.ssid="$NEWSSID"
+			uci -q set wireless.$vif.encryption="$NEWENC"
+			uci -q set wireless.$vif.cipher="$NEWCIPHER"
+			uci -q set wireless.$vif.key="$NEWKEY"
+		done
+	}
+
+	nvram_to_uci() {
+		local vif="$1"
+		local newssid=
+		local newenc=
+		local newcipher=
+		local newkey=
+		config_get ifname $vif ifname
+
+		[ -n $ifname ] || return 0
+
+		newssid="$(nvram get "$ifname"_ssid)"
+		newenc="$(nvram get "$ifname"_akm)"
+		case "$newenc" in
+			psk*) [ "$newenc" == "psk psk2" ] && newenc="mixed-psk" ;;
+			*) newenc="none" ;;
+		esac
+		if [ "$newenc" != "none" ]; then
+			newcipher="$(nvram get "$ifname"_crypto | sed 's/aes/ccmp/g')"
+			newkey="$(nvram get "$ifname"_wpa_psk)"
+		fi
+
+		uci -q set wireless.$vif.ssid="$newssid"
+		uci -q set wireless.$vif.encryption="$newenc"
+		uci -q set wireless.$vif.cipher="$newcipher"
+		uci -q set wireless.$vif.key="$newkey"
 	}
 
 	config_load wireless
 	config_foreach vif_list_to_update wifi-iface
 
-	NEWSSID="$(nvram get "$STAIF"_ssid)"
-	NEWENC="$(nvram get "$STAIF"_akm)"
-	case "$NEWENC" in
-		psk*) [ "$NEWENC" == "psk psk2" ] && NEWENC="mixed-psk" ;;
-		*) NEWENC="none" ;;
-	esac
-	if [ "$NEWENC" != "none" ]; then
-		NEWCIPHER="$(nvram get "$STAIF"_crypto | sed 's/aes/ccmp/g')"
-		NEWKEY="$(nvram get "$STAIF"_wpa_psk)"
+	if [ -n "$STAIF" ]; then
+		update_uci_from_sta
+	else
+		config_foreach nvram_to_uci wifi-iface
 	fi
-
-	for vif in $VIFS; do
-		uci -q set wireless.$vif.ssid="$NEWSSID"
-		uci -q set wireless.$vif.encryption="$NEWENC"
-		uci -q set wireless.$vif.cipher="$NEWCIPHER"
-		uci -q set wireless.$vif.key="$NEWKEY"
-	done
 
 	uci commit wireless
 }
