@@ -891,6 +891,54 @@ configure_wifi() {
 	nvram set wl_main_ifnames="$_WL5G $_WL2G"
 }
 
+update_from_nvram() {
+	local NEWSSID=
+	local NEWENC=
+	local NEWCIPHER=
+	local NEWKEY=
+	local STAIF=
+	local VIFS=
+
+	[ "$_ACTION" == "nvram" ] || return 0
+
+	vif_list_to_update() {
+		local vif="$1"
+		local mode autoconf ifname
+		config_get mode $vif mode "ap"
+		config_get autoconf $vif autoconf "0"
+		config_get ifname $vif ifname
+
+		[ $mode == "wet" ] && STAIF=$ifname
+
+		if [ $mode == "wet" -o $autoconf == "1" ]; then
+			VIFS="$VIFS $vif"
+		fi
+	}
+
+	config_load wireless
+	config_foreach vif_list_to_update wifi-iface
+
+	NEWSSID="$(nvram get "$STAIF"_ssid)"
+	NEWENC="$(nvram get "$STAIF"_akm)"
+	case "$NEWENC" in
+		psk*) [ "$NEWENC" == "psk psk2" ] && NEWENC="mixed-psk" ;;
+		*) NEWENC="none" ;;
+	esac
+	if [ "$NEWENC" != "none" ]; then
+		NEWCIPHER="$(nvram get "$STAIF"_crypto | sed 's/aes/ccmp/g')"
+		NEWKEY="$(nvram get "$STAIF"_wpa_psk)"
+	fi
+
+	for vif in $VIFS; do
+		uci -q set wireless.$vif.ssid="$NEWSSID"
+		uci -q set wireless.$vif.encryption="$NEWENC"
+		uci -q set wireless.$vif.cipher="$NEWCIPHER"
+		uci -q set wireless.$vif.key="$NEWKEY"
+	done
+
+	uci commit wireless
+}
+
 is_in_network() {
 	local vif=$1
 	local interface=$(nvram get "$vif"_network)
@@ -1100,6 +1148,7 @@ case "$_ACTION" in
 		_RELOAD=1
 	;;
 	nvram|on)
+		update_from_nvram
 		_NVRAM=1
 		_RELOAD=1
 	;;
