@@ -3,14 +3,11 @@
 START=10
 USE_PROCD=1
 
-[ -f /etc/config/netmode ] || exit 0
-
 local modedir=$(uci -q get netmode.setup.dir)
 [ -n "$modedir" ] || modedir="/etc/netmodes"
 
-[ -d $modedir ] || exit 0
-
 populate_netmodes() {
+	[ -f /etc/config/netmode -a -d $modedir ] || return
 
 	delete_netmode() {
 		uci delete netmode.$1
@@ -41,6 +38,8 @@ populate_netmodes() {
 }
 
 switch_netmode() {
+	[ -f /etc/config/netmode -a -d $modedir ] || return
+
 	config_load netmode
 
 	config_get curmode setup curmode
