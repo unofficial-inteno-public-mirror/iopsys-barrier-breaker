@@ -123,20 +123,23 @@ parse_matching_rule() {
 				append "$var" "-m comment --comment '$value'"
 			;;
 			*:tos)
-                                add_insmod xt_dscp
-                                case "$value" in
-                                        !*) append "$var" "-m tos ! --tos $value";;
-                                        *) append "$var" "-m tos --tos $value"
-                                esac
+				for vl in $value; do
+		                        case "$vl" in
+		                                !*) append "$var" "-m tos ! --tos $vl";;
+		                                *) append "$var" "-m tos --tos $vl";;
+		                        esac
+				done
                         ;;
 			*:dscp)
                                 add_insmod xt_dscp
 				dscp_option="--dscp"
-                                [ -z "${value%%[EBCA]*}" ] && dscp_option="--dscp-class"
-				case "$value" in
-                                       	!*) append "$var" "-m dscp ! $dscp_option $value";;
-                                       	*) append "$var" "-m dscp $dscp_option $value"
-                                esac
+				for vl in $value; do
+		                        [ -z "${vl%%[EBCA]*}" ] && dscp_option="--dscp-class"
+					case "$vl" in
+						!*) append "$var" "-m dscp ! $dscp_option $vl";;
+						*) append "$var" "-m dscp $dscp_option $vl";;
+		                        esac
+				done
                         ;;
 			*:direction)
 				value="$(echo "$value" | sed -e 's,-,:,g')"
