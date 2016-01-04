@@ -15,9 +15,9 @@
  //TODO: must be combined with 'sname' and 'file' handling:
 -	{ OPTION_STRING_HOST                      , 0x42 }, /* DHCP_TFTP_SERVER_NAME */
 -	{ OPTION_STRING                           , 0x43 }, /* DHCP_BOOT_FILE     */
-+	{ OPTION_OPTION43  | OPTION_REQ           , 0x2b }, /* Option 43   vendor specifick  Information */
-+	{ OPTION_STRING_HOST | OPTION_REQ		  , 0x42 }, /* DHCP_TFTP_SERVER_NAME */
-+	{ OPTION_STRING | OPTION_REQ			  , 0x43 }, /* DHCP_BOOT_FILE     */
++	{ OPTION_OPTION43                         , 0x2b }, /* Option 43 vendor specific information */
++	{ OPTION_STRING		  		  , 0x42 }, /* DHCP_TFTP_SERVER_NAME */
++	{ OPTION_STRING			          , 0x43 }, /* DHCP_BOOT_FILE */
  //TODO: not a string, but a set of LASCII strings:
  //	{ OPTION_STRING                           , 0x4D }, /* DHCP_USER_CLASS    */
  #if ENABLE_FEATURE_UDHCP_RFC3397
