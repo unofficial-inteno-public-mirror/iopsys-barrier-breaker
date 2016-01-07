@@ -1,0 +1,26 @@
+--- a/mxml-file.c
++++ b/mxml-file.c
+@@ -2782,7 +2782,7 @@ mxml_write_node(mxml_node_t     *node,	/* I - Node to write */
+ 
+ 	  if (attr->value)
+ 	    width += strlen(attr->value) + 3;
+-
++#if 0
+ 	  if (global->wrap > 0 && (col + width) > global->wrap)
+ 	  {
+ 	    if ((*putc_cb)('\n', p) < 0)
+@@ -2792,11 +2792,14 @@ mxml_write_node(mxml_node_t     *node,	/* I - Node to write */
+ 	  }
+ 	  else
+ 	  {
++#endif
+ 	    if ((*putc_cb)(' ', p) < 0)
+ 	      return (-1);
+ 
+ 	    col ++;
++#if 0
+ 	  }
++#endif
+ 
+ 	  if (mxml_write_name(attr->name, p, putc_cb) < 0)
+ 	    return (-1);
