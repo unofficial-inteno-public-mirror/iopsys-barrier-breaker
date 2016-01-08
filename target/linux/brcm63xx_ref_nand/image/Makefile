@@ -147,7 +147,7 @@ define Image/Prepare
 
     ifeq ($(CONFIG_TARGET_NO_DECT),y)
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
+		#rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
     endif
 
     ifeq ($(CONFIG_TARGET_NO_DHD),y)
