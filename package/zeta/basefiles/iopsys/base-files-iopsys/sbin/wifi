@@ -953,7 +953,7 @@ update_from_nvram() {
 		[ -n $ifname ] || return 0
 
 		newssid="$(nvram get "$ifname"_ssid)"
-		newenc="$(nvram get "$ifname"_akm | tr -d ' ')"
+		newenc="$(nvram get "$ifname"_akm)"
 		case "$newenc" in
 			psk2*) newenc="psk2" ;;
 			psk*) [ "$newenc" == "psk psk2" ] && newenc="mixed-psk" ;;
