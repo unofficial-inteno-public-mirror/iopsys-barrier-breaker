@@ -1,0 +1,261 @@
+# Library routines for generating raw nand images.
+#
+# Raw nand images are used when programming nand flash devices in production
+# prior to mounting them on a pcb. The raw images contains both actual data
+# and the out-of-band (OOB) data. The OOB data contains precalculated ECC,
+# JFFS2 clean markers and is the place where bad block markers are stored.
+#
+# An image for each partition of the Inteno UBIFS based flash file system can
+# be generated. The possible partitions and corresponding image names are:
+# 0: Boot sector - cfe.out
+# 1: NVRAM data - nvram.out
+# 2: Boot FS 0 - kernel0.out
+# 3: Boot FS 1 - kernel1.out
+# 4: UBI volumes - ubi.out
+# 5: Production test FS - itt.out
+#
+# Depending on what format the input data is, different sets of images are
+# needed:
+#
+# a) Both the production test FS and the release FS are UBIFS.
+# In this case images 0, 1, 2, 3 and 4 are needed however it requires that
+# UBIFS data for the production test FS is available and that the production
+# kernel is compatible with the Inteno UBIFS lay-out.
+#
+# b) The release FS is UBIFS but the production test FS is "old-style" JFFS2.
+# In this case images 0, 1, 2, 4 and 5 are needed.
+#
+# In both scenarios the cferam.xxx file shall be .000 for the production test
+# FS and .001 for the release FS. The script will pre-configure the NVRAM data
+# to boot on "previous" (= production test) image. When production test is
+# done, it's possible to switch to the release file system just by changing an
+# nvram parameter. Note that in the (b) scenario, rebooting into the latest
+# partition will cause the production test FS to be erased and the UBI volume
+# to be expanded to fill up the flash.
+#
+# A usage description with example can be found in the make_nand_image.sh test
+# script/template.
+#
+# (C) 2016, Inteno Broadband AB
+#
+
+# Terminate program with error message
+die () {
+	echo "Error: $1, Aborting!"
+	exit 1
+}
+
+# Check for missing or invalid variables, set defaults and
+# calculate tool options
+check_options () {
+
+	# Tools
+	[ -x "$MKFS_JFFS2" ] || die "Invalid MKFS_JFFS2"
+	[ -x "$UBINIZE" ] || die "Invalid UBINIZE"
+	[ -x "$EDITNVRAM" ] || die "Invalid EDITNVRAM"
+	[ -x "$CREATENFIMG" ] || die "Invalid CREATENFIMG"
+
+	# Input image files
+	[ -r "$CFE" ] || die "Can't read CFE"
+	[ -r "$KERNEL0" ] || die "Can't read KERNEL0"
+	[ -r "$UBIFS0" ] || die "Can't read UBIFS0"
+	if [ "$ITTIMG" != "none" ]; then
+		[ -r "$ITTIMG" ] || die "Can't read ITTIMG"
+		[ "$KERNEL1" == "none" ] || die "Can't have both ITTIMG and KERNEL1"
+		[ "$UBIFS1" == "none" ] || die "Can't have both ITTIMG and UBIFS1"
+	elif [ "$KERNEL1" != "none" -a "$UBIFS1" != "none" ]; then
+		[ -r "$KERNEL1" ] || die "Can't read KERNEL1"
+		[ -r "$UBIFS1" ] || die "Can't read UBIFS1"
+	else
+		[ "$KERNEL1" != "none" -o "$UBIFS1" != "none" ] && \
+			die "Can't have KERNEL1 without UBIFS1 or v.v."
+	fi
+
+	# Working directory
+	[ -d "$WORK_DIR" ] || die "Invalid WORK_DIR"
+
+	# Output file
+	[ -d "$OUT_DIR" ] || die "Invalid OUT_DIR"
+	[ -z "$OUT_FILE" ] && die "OUT_FILE not defined"
+
+	# NVRAM data
+	[ -z "$BOARDID" ] && die "BOARDID not defined"
+	[ -z "$VOICEBOARDID" ] && die "VOICEBOARDID not defined"
+
+	[ -z "$NUMMACADDR" ] && NUMMACADDR=8
+	[ -z "$MACADDR" ] && MACADDR="00:22:07:00:00:00"
+	[ -z "$TPNUM" ] && TPNUM=0
+	[ -z "$PSISIZE" ] && PSISIZE=24
+	[ -z "$LOGSIZE" ] && LOGSIZE=0
+	[ -z "$BACKUPPSI" ] && BACKUPPSI=0
+	[ -z "$GPONSN" ] && GPONSN=""
+	[ -z "$GPONPW" ] && GPONPW=""
+	[ -z "$BOOTSTR" ] && \
+	    BOOTSTR="e=192.168.1.1:ffffff00 h=192.168.1.100 g= r=f f=vmlinux i=bcm963xx_fs_kernel d=1 p=1 c= a= "
+	[ -z "$BOARDSTUFF" ] && BOARDSTUFF=0
+	[ -z "$NVRAMOFS" ] && NVRAMOFS=0x580
+
+	# Tool options
+	if [ "$KERNEL1" != "none" ]; then
+		IVERSION=4
+		LEBS_PER_VOL=445
+	else
+		IVERSION=3
+		LEBS_PER_VOL=396
+	fi
+
+	PEB_SIZE="$((128*1024))"
+	LEB_SIZE="$((124*1024))"
+
+	case $BOARDID in
+	CG300R0|CG301R0|DG150R0|DG301R0|DG301ALR0|EG300R0|VG50R0|VOX25R0)
+		# endian=big, ecc=hamming
+		MKFS_JFFS2_EXTRA_OPTS="--big-endian"
+		CREATENFIMG_EXTRA_OPTS="-l 0 -b 1"
+		;;
+	DG200R0)
+		# endian=big, ecc=bch-4
+		MKFS_JFFS2_EXTRA_OPTS="--big-endian"
+		CREATENFIMG_EXTRA_OPTS="-l 0 -b 4 -m 13"
+		;;
+	DG400R0)
+		# endian=little, ecc=bch-4
+		MKFS_JFFS2_EXTRA_OPTS="--little-endian"
+		CREATENFIMG_EXTRA_OPTS="-l 1 -b 4 -m 13"
+		;;
+	*)
+		die "Unknown BOARDID '$BOARDID'"
+	esac
+
+	MKFS_JFFS2_OPTS="-v -e $LEB_SIZE --squash --no-cleanmarkers --pad $MKFS_JFFS2_EXTRA_OPTS"
+	UBINIZE_OPTS="-v -m 2048 -p $PEB_SIZE"
+	CREATENFIMG_OPTS="-n 64 -p 2048 -c 512 -r 16 $CREATENFIMG_EXTRA_OPTS"
+}
+
+# Print number of whole erase blocks and remainder
+check_file_size () {
+	local fn=$(readlink -f $1)
+
+	size=$(ls -l $fn | awk '{print $5}')
+	echo "$fn sizecheck $(($size / $PEB_SIZE)):$(($size % $PEB_SIZE))"
+}
+
+# Create an empty NVRAM image
+create_nvram_image () {
+	local target=$1
+
+	echo 'NVRAM' > $target
+}
+
+# Create a JFFS2 image containing a kernel and an upgrade marker
+create_kernel_jffs2_image () {
+	local target=$1
+	local cferam_filename=$2
+	local kernel=$3
+
+	local kernel_fs_dir=$WORK_DIR/kernel_fs
+
+	mkdir -p $kernel_fs_dir
+	rm -rf $kernel_fs_dir/*
+	cp $kernel $kernel_fs_dir/
+	touch $kernel_fs_dir/$cferam_filename
+	echo "/$cferam_filename" > $WORK_DIR/nocomprlist
+	echo "/$(basename $kernel)" >> $WORK_DIR/nocomprlist
+	$MKFS_JFFS2 \
+		$MKFS_JFFS2_OPTS \
+		-v -e 128KiB --squash --no-cleanmarkers \
+		--pad -N $WORK_DIR/nocomprlist \
+		-d $kernel_fs_dir -o $target
+}
+
+# Create a configuration file for the ubinize tool
+create_ubinize_cfg () {
+	local target=$1
+	local vol_lebs=$2
+	local img0=$3
+	local img1=$4
+
+	cat <<- EOF > $target
+		[rootfs0-volume]
+		mode=ubi
+		image=$img0
+		vol_id=0
+		vol_size=$(($vol_lebs * $LEB_SIZE))
+		vol_type=dynamic
+		vol_name=rootfs_0
+		vol_alignment=1
+	EOF
+
+	[ "$img1" == "none" ] && return
+
+	cat <<- EOF >> $target
+		[rootfs1-volume]
+		mode=ubi
+	EOF
+	[ -n "$img1" ] && echo "image=$img1" >> $target
+	cat <<- EOF >> $target
+		vol_id=1
+		vol_size=$(($vol_lebs * $LEB_SIZE))
+		vol_type=dynamic
+		vol_name=rootfs_1
+		vol_alignment=1
+	EOF
+}
+
+### Main function, to be ccalled from client script ###
+create_images () {
+
+	echo "### Check options ###"
+	check_options
+	cd $WORK_DIR
+
+	echo "### Create cfe image ###"
+	check_file_size $CFE
+	$EDITNVRAM -b $BOARDID -c $VOICEBOARDID -n $NUMMACADDR -m "$MACADDR" \
+        	   -t $TPNUM -p $PSISIZE -l $LOGSIZE -k $BACKUPPSI \
+		   -z $((PEB_SIZE/1024)) -a 0 -s "$GPONSN" -w "$GPONPW" \
+ 		   -B "$BOOTSTR" -S $BOARDSTUFF -V $IVERSION \
+		   -O $NVRAMOFS $CFE cfe.tmp
+	$CREATENFIMG $CREATENFIMG_OPTS -j 1 -t 0 -i cfe.tmp
+
+	echo "### Create nvram image ###"
+	create_nvram_image nvram.bin
+	check_file_size nvram.bin
+	$CREATENFIMG $CREATENFIMG_OPTS -j 0 -t 0 -i nvram.bin
+
+	echo "### Create kernel0 image ###"
+	create_kernel_jffs2_image kernel0.jffs2 cferam.001 $KERNEL0
+	check_file_size kernel0.jffs2
+	$CREATENFIMG $CREATENFIMG_OPTS -j 1 -i kernel0.jffs2
+
+	if [ "$KERNEL1" != "none" ]; then
+		echo "### Create kernel1 image ###"
+		create_kernel_jffs2_image kernel1.jffs2 cferam.000 $KERNEL1
+		check_file_size kernel1.jffs2
+		$CREATENFIMG $CREATENFIMG_OPTS -j 1 -i kernel1.jffs2
+	fi
+
+	echo "### Create ubi image ###"
+	create_ubinize_cfg ubinize.cfg $LEBS_PER_VOL $UBIFS0 $UBIFS1
+	$UBINIZE $UBINIZE_OPTS -o root.ubi ubinize.cfg
+	check_file_size root.ubi
+	$CREATENFIMG $CREATENFIMG_OPTS -j 0 -i root.ubi
+	mv root.out ubi.out
+
+	if [ "$ITTIMG" != "none" ]; then
+		echo "### Create itt image ###"
+		check_file_size $ITTIMG
+		$CREATENFIMG $CREATENFIMG_OPTS -j 1 -i $ITTIMG
+		mv ${ITTIMG%.*}.out itt.out
+	fi
+
+	echo "### Create tar file of all images ###"
+	tar czf $OUT_DIR/$OUT_FILE \
+	    cfe.out \
+	    nvram.out \
+	    kernel0.out \
+	    $([ "$KERNEL1" != "none" ] && echo "kernel1.out") \
+	    ubi.out \
+	    $([ "$ITTIMG" != "none" ] && echo "itt.out")
+}
+
