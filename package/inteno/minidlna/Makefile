@@ -21,6 +21,7 @@ PKG_MAINTAINER:=Knyazkov Dmitry <medavedik@gmail.com>
 
 PKG_BUILD_PARALLEL:=0
 PKG_BUILD_DEPENDS:=util-linux
+PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
