@@ -1,4 +1,4 @@
-#!/bin/sh
+!/bin/sh
 
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
@@ -272,6 +272,12 @@ if [ $software ]; then
 	local sysinfo=$(ubus call router quest "{ \"info\": \"system\" }")
 	json_load "$sysinfo"
 	json_get_var firmware firmware
+	json_get_var filesystem filesystem                                  
+        if [ "$filesystem" == "JFFS2" ] ; then                               
+                firmware=$firmware.w                                                                                                           
+        else                                                                 
+                firmware=$firmware.y                                         
+        fi     
 	if [ "$sofwareminuspath" == "${sofwareminuspath/$firmware/}" ] ; then
 		echo $software
 		handle_provisioning uppgradeserver
