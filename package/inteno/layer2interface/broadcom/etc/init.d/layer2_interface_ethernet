@@ -75,7 +75,7 @@ boot() {
 				echo "ERROR: porttminit $interf failed!" > /dev/kmsg
 		done
 	fi
-
+	echo '1' > /proc/sys/net/ipv6/conf/$baseifname/disable_ipv6
 	ifconfig $baseifname up
 }
 
