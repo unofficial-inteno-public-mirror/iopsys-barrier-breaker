@@ -364,7 +364,7 @@ vif_settings() {
 	local iface=$2
 	local device ifname enabled isolate mode ssid closed network hspot
 	local encryption cipher key key1 key2 key3 key4 gtk_rekey
-	local macmode maclist wps wmf_bss_enable bss_max bss_enabled
+	local macfilter macmode maclist wps wmf_bss_enable bss_max bss_enabled
 	local radius_server radius_port radius_secret net_reauth
 	local qr_enc="nopass"
 	local qr_hidden="false"
@@ -389,7 +389,7 @@ vif_settings() {
 	config_get radius_port $cfg radius_port "1812"
 	config_get radius_secret $cfg radius_secret
 	config_get net_reauth $cfg key net_reauth "36000"
-	config_get macmode $cfg macmode "0"
+	config_get macfilter $cfg macfilter "0"
 	maclist="$(uci -q get wireless.$cfg.maclist)"
 	config_get wps $cfg wps_pbc "0"
 	config_get wmm_bss_disable $cfg wmm_bss_disable "0"
@@ -401,6 +401,12 @@ vif_settings() {
 	[ "$disabled" == "1" ] && bss_enabled=0 || bss_enabled=1
 	[ "$wps" == "1" ] && wps_mode=enabled || wps_mode=disabled
 	[ "$closed" == "1" ] && qr_hidden="true"
+
+	case $macfilter in
+		1) macmode=deny ;;
+		2) macmode=allow ;;
+		*) macmode=disabled ;;
+	esac
 
 	nvram set "$iface"_auth=0
 	nvram set "$iface"_auth_mode="*DEL*"
