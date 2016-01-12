@@ -49,6 +49,10 @@ init_iup() {
 	fi
 }
 
+boot() {
+	init_iup
+}
+
 start_service() {
 	init_iup
 
@@ -59,7 +63,10 @@ start_service() {
 }
 
 stop_service() {
-	killall -9 /sbin/iup
+	if [ -f "/tmp/run/iup.pid" ]; then
+		kill -9 $(cat /tmp/run/iup.pid)
+		rm -rf /tmp/run/iup.pid
+	fi
 }
 
 reload_service() {

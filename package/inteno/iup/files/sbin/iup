@@ -1,5 +1,5 @@
 #!/bin/sh
-
+echo $$ > /var/run/iup.pid
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 
@@ -294,3 +294,4 @@ if [ "$reboot" == "on" ]; then
 	v "Reboot Signaled"
 	/sbin/reboot
 fi
+rm -rf /var/run/iup.pid
