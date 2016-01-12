@@ -19,7 +19,7 @@ case "$ACTION" in
 				for br in $(ifconfig -a | grep br- | awk '{print$1}'); do
 					for dev in $(brctl showbr $br | grep -v "STP enabled" | awk '{print$NF}'); do
 						if [ $dev == $INTERFACE ]; then
-							local mac=$(ifconfig eth0.1 | grep HWaddr | awk '{print$NF}')
+							local mac=$(ifconfig $dev | grep HWaddr | awk '{print$NF}')
 							ifconfig $br hw ether $mac 2>/dev/null
 						fi
 					done
