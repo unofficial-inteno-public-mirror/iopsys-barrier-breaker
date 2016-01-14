@@ -49,7 +49,7 @@ check_includes_for_rule(){
 	local path port
 	port=$2
 	config_get path $1 path
-	temp_file_name="./$(basename $0).$$.tmp" 
+	temp_file_name="/tmp/$(basename $0).$$.tmp" 
 	[ -z $path ] || [ -f $path ] && awk -e '/iptables/ && /-I zone_wan_input/ && /-p tcp/ && /--dport 80/ && /-j ACCEPT/ { gsub("--dport 80 ", "--dport '${port}' ")} { print}' $path > $temp_file_name && mv $temp_file_name $path
 }
 
