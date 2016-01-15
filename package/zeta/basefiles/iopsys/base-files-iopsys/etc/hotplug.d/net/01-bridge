@@ -15,7 +15,7 @@ case "$ACTION" in
 			;;
 			# if an uplink device belongs to a bridge
 			# make sure brige macaddress becomes its macaddress
-			*[0-255].[0-255])
+			*.*)
 				for br in $(ifconfig -a | grep br- | awk '{print$1}'); do
 					for dev in $(brctl showbr $br | grep -v "STP enabled" | awk '{print$NF}'); do
 						if [ $dev == $INTERFACE ]; then
