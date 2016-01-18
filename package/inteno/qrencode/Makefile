@@ -10,19 +10,31 @@ PKG_NAME:=qrencode
 PKG_VERSION:=3.0.3
 PKG_RELEASE:=1
 
+PKG_SOURCE_VERSION:=2f575b43703c801f4f7bfac65e8845ce967c3d9e
+PKG_SOURCE_PROTO:=git
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_SOURCE_URL:=http://public.inteno.se/qrencode
+else
+PKG_SOURCE_URL:=git@public.inteno.se:qrencode
+endif
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+
 include $(INCLUDE_DIR)/package.mk
 
 TARGET_LDFLAGS+= \
-        -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
-		-Wl,-rpath-link=$(STAGING_DIR)/lib -lpng
+	-Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
+	-Wl,-rpath-link=$(STAGING_DIR)/lib -lpng
 
 TARGET_CFLAGS += $(FPIC)
 
 define Package/qrencode
-  CATEGORY:=Utilities
-  DEPENDS:=+libpng
-  TITLE:=QRcode encoder library
-  URL:=http://megaui.net/fukuchi/works/qrencode/index.en.html
+	CATEGORY:=Utilities
+	DEPENDS:=+libpng
+	TITLE:=QRcode encoder library
+	URL:=http://megaui.net/fukuchi/works/qrencode/index.en.html
 endef
 
 define Package/qrencode/description
@@ -30,11 +42,6 @@ define Package/qrencode/description
 	kind of 2D symbology that can be scanned by handy terminals such as
 	a mobile phone with CCD. The capacity of QR Code is up to 7000
 	digits or 4000 characters, and is highly robust.
-endef
-
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
 define Build/Compile

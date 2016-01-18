@@ -1,35 +1,42 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tptest
-PKG_RELEASE:=0
 PKG_VERSION:=1.3
+PKG_RELEASE:=0
+
+PKG_SOURCE_VERSION:=4dfab45a92328226c8182347df50e86a5d72ca5f
+PKG_SOURCE_PROTO:=git
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_SOURCE_URL:=http://public.inteno.se/tptest
+else
+PKG_SOURCE_URL:=git@public.inteno.se:tptest
+endif
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
 TARGET_LDFLAGS+= \
-        -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
-		-Wl,-rpath-link=$(STAGING_DIR)/lib
+	-Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
+	-Wl,-rpath-link=$(STAGING_DIR)/lib
 
 TARGET_CFLAGS+= \
-		-DUNIX -DLINUX
+	-DUNIX -DLINUX
 
 MAKE_OPTS:= \
-    ARCH="$(LINUX_KARCH)" \
-    CROSS_COMPILE="$(TARGET_CROSS)" \
-    SUBDIRS="$(PKG_BUILD_DIR)" \
+	ARCH="$(LINUX_KARCH)" \
+	CROSS_COMPILE="$(TARGET_CROSS)" \
+	SUBDIRS="$(PKG_BUILD_DIR)" \
 
 define Package/tptest
-  CATEGORY:=Utilities
-  TITLE:=TPTEST speed test utility
+	CATEGORY:=Utilities
+	TITLE:=TPTEST speed test utility
 endef
 
 define Package/tptest/description
 	TPTEST speed test utility
-endef
-
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
 define Build/Compile

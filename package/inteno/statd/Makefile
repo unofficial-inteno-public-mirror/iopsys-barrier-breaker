@@ -8,30 +8,37 @@ PKG_NAME:=statd
 PKG_VERSION:=0.0.1
 PKG_RELEASE:=1
 
+PKG_SOURCE_VERSION:=54125a06399b378a27db31f722d891a5b23baf2d
+PKG_SOURCE_PROTO:=git
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_SOURCE_URL:=http://public.inteno.se/statd
+else
+PKG_SOURCE_URL:=git@public.inteno.se:statd
+endif
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+
 include $(INCLUDE_DIR)/package.mk
 
 target=$(firstword $(subst -, ,$(BOARD)))
 
 TARGET_LDFLAGS+= \
-        -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
-		-Wl,-rpath-link=$(STAGING_DIR)/lib -luci -lubus -lblobmsg_json
+	-Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
+	-Wl,-rpath-link=$(STAGING_DIR)/lib -luci -lubus -lblobmsg_json
 
 TARGET_CFLAGS += $(FPIC) -Dtarget_$(target)=1 -Wall
 MAKE_FLAGS += TARGET="$(target)"
 
 define Package/statd
-  CATEGORY:=Utilities
-  TITLE:=Statistics manager
-  DEPENDS:=+libuci +ubus +libblobmsg-json
+	CATEGORY:=Utilities
+	TITLE:=Statistics manager
+	DEPENDS:=+libuci +ubus +libblobmsg-json
 endef
 
 define Package/statd/description
 	Application that listen on ubus events to be sent on syslog or snmp
-endef
-
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
 define Build/Compile
