@@ -983,6 +983,7 @@ update_from_nvram() {
 		update_uci_from_sta
 	else
 		config_foreach nvram_to_uci wifi-iface
+		_NVRAM=1 # use existing nvram config instead of reading from uci
 	fi
 
 	uci commit wireless
@@ -1198,7 +1199,6 @@ case "$_ACTION" in
 	;;
 	nvram|on)
 		update_from_nvram
-		_NVRAM=1
 		_RELOAD=1
 	;;
 #	*)
