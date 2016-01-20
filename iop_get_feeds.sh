@@ -4,6 +4,7 @@
 ./scripts/feeds uninstall libmicroxml
 ./scripts/feeds uninstall libqrencode
 ./scripts/feeds uninstall zstream
+./scripts/feeds uninstall lighttpd
 ./scripts/feeds install -f -p juci -a
 ./scripts/feeds install -f -p intenoprivate -a
 ./scripts/feeds install -f -p intenotargets -a
