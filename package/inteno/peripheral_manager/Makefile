@@ -12,7 +12,7 @@ PKG_NAME:=peripheral_manager
 PKG_VERSION:=1.0.0
 PKG_RELEASE:=1
 
-PKG_SOURCE_VERSION:=33e6a0266eb3459de56b31858e4eb797623cfd5c
+PKG_SOURCE_VERSION:=9c3e0825db6a5e8c4ecd950ebf850a6d3c87a556
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_BCM_OPEN),y)
 PKG_SOURCE_URL:=http://public.inteno.se/peripheral_manager
