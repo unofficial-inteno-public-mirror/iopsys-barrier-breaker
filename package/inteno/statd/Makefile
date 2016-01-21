@@ -47,8 +47,8 @@ define Build/Compile
 endef
 
 define Package/statd/install
-	$(INSTALL_DIR) $(1)/sbin
 	$(CP) ./files/* $(1)/
+	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/statd $(1)/sbin/
 endef
 

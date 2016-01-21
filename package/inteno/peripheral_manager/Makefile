@@ -53,14 +53,12 @@ TARGET_CPPFLAGS := \
 	$(TARGET_CPPFLAGS)
 
 define Package/peripheral_manager/install
+	$(CP) ./files/* $(1)/
 	$(INSTALL_DIR) $(1)/etc/
 	$(INSTALL_DIR) $(1)/etc/init.d/
-
 	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/peripheral_manager $(1)/sbin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/gpio_test $(1)/sbin/
-
-	$(CP)  ./files/etc/init.d/* $(1)/etc/init.d/
 endef
 
 $(eval $(call BuildPackage,peripheral_manager))

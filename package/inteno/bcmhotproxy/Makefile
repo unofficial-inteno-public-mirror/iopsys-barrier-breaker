@@ -44,10 +44,10 @@ MAKE_FLAGS += TARGET="$(target)"
 TARGET_CFLAGS += -Dtarget_$(target)=1 -Wall
 
 define Package/bcmhotproxy/install
+	$(CP) ./files/* $(1)/
 	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_DIR) $(1)/etc/
 	$(INSTALL_DIR) $(1)/etc/init.d/
-
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/bcmhotproxy $(1)/sbin/
 endef
 

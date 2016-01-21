@@ -46,10 +46,10 @@ define Package/questd/description
 endef
 
 define Package/questd/install
+	$(CP) ./files/* $(1)/
 	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_DIR) $(1)/tmp
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/questd $(1)/sbin/
-	$(CP) ./files/* $(1)/
 endef
 
 $(eval $(call BuildPackage,questd))
