@@ -1,7 +1,4 @@
 include $(TOPDIR)/rules.mk
-include $(INCLUDE_DIR)/kernel.mk
-
-#export BUILD_DIR
 
 PKG_NAME:=broadcom-utils
 PKG_VERSION:=0
