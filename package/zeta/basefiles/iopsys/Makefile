@@ -188,7 +188,7 @@ define Package/inteno-base-juci
         +PACKAGE_firewall:juci-firewall-fw3 \
         +PACKAGE_igmpproxy:juci-igmpinfo \
         +PACKAGE_inteno-base:juci-inteno-router \
-        +juci-jquery-console \
+#        +juci-jquery-console \
         +PACKAGE_inteno-base:juci-macdb \
         +PACKAGE_minidlna:juci-minidlna \
         +juci-mod-status \
@@ -204,6 +204,7 @@ define Package/inteno-base-juci
 		+PACKAGE_uhttpd:juci-uhttpd \
 		+juci-ethernet \
 		+juci-natalie-dect \
+		+juci-utils \
         +USB_SUPPORT:juci-usb 
 	TITLE:=Preselected packages for juci
 endef

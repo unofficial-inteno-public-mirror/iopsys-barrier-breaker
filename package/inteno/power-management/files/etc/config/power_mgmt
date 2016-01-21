@@ -1,6 +1,0 @@
-config power_mgmt 'power_mgmt'
-	option avs 'stopped'
-	option cpuspeed '0'
-	option cpur4kwait '0'
-	option ethapd '0'
-	option eee '0'

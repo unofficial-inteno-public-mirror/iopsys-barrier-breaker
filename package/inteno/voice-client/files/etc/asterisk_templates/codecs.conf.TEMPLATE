@@ -1,3 +1,0 @@
-[plc]
-genericplc = |PLC| ;Enables packet loss concealment [yes/no]
-
