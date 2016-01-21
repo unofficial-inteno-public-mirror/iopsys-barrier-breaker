@@ -47,6 +47,8 @@ endef
 define Package/tptest/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tptest $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/etc/config
+	$(CP) ./files/speedtest.config $(1)/etc/config/speedtest
 endef
 
 $(eval $(call BuildPackage,tptest))
