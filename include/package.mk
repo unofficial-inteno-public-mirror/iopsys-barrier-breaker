@@ -59,6 +59,7 @@ include $(INCLUDE_DIR)/package-dumpinfo.mk
 include $(INCLUDE_DIR)/package-ipkg.mk
 include $(INCLUDE_DIR)/package-bin.mk
 include $(INCLUDE_DIR)/autotools.mk
+include $(INCLUDE_DIR)/inteno.mk
 
 override MAKEFLAGS=
 CONFIG_SITE:=$(INCLUDE_DIR)/site/$(REAL_GNU_TARGET_NAME)
