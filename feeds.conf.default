@@ -1,3 +1,7 @@
+src-git-full intenoprivate git@iopsys.inteno.se:inteno-private-feed.git
+src-git-full juci https://github.com/mkschreder/mks-openwrt-feed.git;v2.16.01
+src-git-full inteno git@iopsys.inteno.se:inteno-packages.git;v3.5
+src-git-full intenotargets git@iopsys.inteno.se:inteno-targets.git;v3.5
 src-git packages https://github.com/openwrt/packages.git;for-14.07
 #src-git luci http://git.openwrt.org/project/luci.git;luci-0.12
 #src-git luci2 git://git.openwrt.org/project/luci2/ui.git
@@ -13,7 +17,4 @@ src-git oldpackages http://git.openwrt.org/14.07/packages.git
 #src-svn xfce svn://svn.openwrt.org/openwrt/feeds/xfce
 #src-svn lxde svn://svn.openwrt.org/openwrt/feeds/lxde
 #src-link custom /usr/src/openwrt/custom-feed
-src-git-full intenoprivate git@iopsys.inteno.se:inteno-private-feed.git
-src-git-full juci https://github.com/mkschreder/mks-openwrt-feed.git;v2.16.01
-src-git-full inteno git@iopsys.inteno.se:inteno-packages.git;v3.5
-src-git-full intenotargets git@iopsys.inteno.se:inteno-targets.git;v3.5
+
