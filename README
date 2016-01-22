@@ -32,3 +32,23 @@ Sunshine!
 	http://openwrt.org
 
 
+
+---------------------------------
+
+Iopsys instructions
+
+
+Start by running ./scripts/iop_bootstrap.sh.
+
+This downloads all feed repositories and installs the packages from those repositories. feeds.conf has been modified to point to a commit hash for each feed and each package makefile points to a distinct commit. This gives us two improvements. Fist, running ./scripts/feeds update will not update the feeds without the user being explicitly aware of the change. Second, we always build in a deterministic manner and can always recreate the build at a later date. 
+
+To make this workable, a utility script has been developed. When you have created a new commit in the package repo in the build directory this commit needs to be pushed to two places. First the package makefile in the feed needs to be repointed to the new commit. This in turn creates a new commit in the feed and feeds.conf needs to be repointed to that commit.
+
+First you need to set the EDITOR environmental variable to your favorite editor.
+
+Then run ./scripts/update_package.sh
+
+This script will check if any git repo in the build differs from the commit in the package makefile. If it finds a diff it asks to update the package makefile and autogenerates a commit message from the commits between the old and the new commit point. The same then happens for the commit on feeds.conf. 
+
+To prevent an invalid state, the script pushes the new commits to the remote repos. The script needs to know what branches to push to. For that reason, always make sure to check out remote tracking branches, for example with git checkout -t origin/mybranch.
+
