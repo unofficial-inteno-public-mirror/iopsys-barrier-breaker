@@ -103,12 +103,13 @@ create_and_copy_files()
     [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
     echo $BOARDTYPE > .current_config_file
 
-    # second add diff for customer config if if customer code
-    [ "$CUSTOMER" = "" ] && CUSTOMER="FIELD"; 
-	v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
-	cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
-	echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
-	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+	# second add diff for customer config if if customer code
+	if [ -n "$CUSTOMER" ]; then
+		v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
+		cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+		echo "$BOARDTYPE $CUSTOMER" > .current_config_file
+		[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+	fi
 
 	if [ -n "$PROFILE" ]; then 
 		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
