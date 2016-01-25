@@ -147,6 +147,12 @@ branch_uptodate()
      REMOTE=$(git rev-parse @{u})
      BASE=$(git merge-base @ @{u})
 
+     if [ -z "$REMOTE" ]; then
+	 BRANCH=$(basename $(git symbolic-ref -q HEAD))
+	 echo "You need to setup a tracking branch for $BRANCH"
+	 exit 99
+     fi
+
      if [ $LOCAL = $REMOTE ]; then
 	 return
      elif [ $LOCAL = $BASE ]; then
