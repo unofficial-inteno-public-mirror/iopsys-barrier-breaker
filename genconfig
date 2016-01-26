@@ -97,18 +97,27 @@ create_and_copy_files()
 		rm -rf $FILEDIR*
     fi
     # first build config based on boardid
-    v "cp -rp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
-    cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
-    v "cp -rp $CONFIGPATH/$BOARDTYPE/* $FILEDIR"
-    [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
+    if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
+        v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
+        cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
+    fi
+    if [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ]; then
+        v "Apply $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff"
+        generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
+    fi
     echo $BOARDTYPE > .current_config_file
 
 	# second add diff for customer config if if customer code
 	if [ -n "$CUSTOMER" ]; then
-		v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
-		cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
 		echo "$BOARDTYPE $CUSTOMER" > .current_config_file
-		[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+		if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
+			v "cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
+			cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+		fi
+		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ]; then
+			v "Apply $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff"
+			generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+		fi
 	fi
 
 	if [ -n "$PROFILE" ]; then 
