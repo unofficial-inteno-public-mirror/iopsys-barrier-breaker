@@ -84,10 +84,10 @@ create_and_copy_files()
 
     if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
 		echo "Hardware profile does not exist"
-		exit 0
-		elif  [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
+		exit 1
+    elif [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
 		echo "Customer profile does not exist"
-		exit 0
+		exit 1
     fi
     v  "Config $BOARDTYPE selected"
     if [ ! -d "$FILEDIR" ]; then
