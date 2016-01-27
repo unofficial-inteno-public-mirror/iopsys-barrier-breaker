@@ -13,3 +13,5 @@
 ./scripts/feeds uninstall zstream
 ./scripts/feeds uninstall qrencode
 ./scripts/feeds install -f -p intenopackages qrencode
+./scripts/feeds uninstall lighttpd
+./scripts/feeds install -f -p packages lighttpd
