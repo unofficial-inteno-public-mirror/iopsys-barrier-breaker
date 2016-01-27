@@ -122,6 +122,8 @@ config button_map DECT
 config button_map WPS
        list button 9512_wps
        option hotplug wpsbutton
+       option hotplug_long wpscbutton
+       option longpress 4000
 
 config button_map Wireless
        list button 9512_wireless

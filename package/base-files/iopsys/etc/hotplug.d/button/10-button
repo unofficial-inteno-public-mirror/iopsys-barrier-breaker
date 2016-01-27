@@ -28,7 +28,35 @@ wifibutton_action() {
 wpsbutton_action () {
 	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
 	[ "$bten" == "0" ] && return
-        killall -USR2 wps_monitor
+	killall -USR2 wps_monitor
+}
+
+get_wifi_wet_interface() {
+	handle_interface() {
+		config_get mode "$1" mode
+		if [ "$mode" == "wet" ] ; then
+			config_get ifname "$1" ifname
+			echo "$ifname"
+		fi
+	}
+	config_load wireless
+	config_foreach handle_interface wifi-iface "$device"
+}
+
+wpscbutton_action () {
+	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
+	[ "$bten" == "0" ] && return
+	[ "$(uci get netmode.setup.curmode)" == "repeater" ] && {
+		wet_iface="$(get_wifi_wet_interface)"
+		for iface in $(nvram show | grep _wps_mode | sed -n -r 's/(.*)_wps_mode=.*/\1/p'); do
+			[ "$iface" != "$wet_iface" ] && nvram set ${iface}_wps_mode=disabled
+		done
+		nvram set ${wet_iface}_wps_mode=enabled
+		killall -q -15 wps_monitor 2>/dev/null # Kill Child Thread first, -15: SIGTERM to force to remove WPS IE
+		sleep 1
+		printf "wps_monitor STA oneshot mode\n" > /dev/console
+		wps_monitor oneshot > /dev/console && wifi reload &
+	}
 }
 
 infobutton_action() {
@@ -59,6 +87,10 @@ case "$ACTION" in
 	        printf "\n\nWPS button is pressed\n\n" > /dev/console
 		wpsbutton_action
         }
+	[ "wpscbutton" == "$INTERFACE" ] && {
+		printf "\n\nWPS client button is pressed\n\n" > /dev/console
+		wpscbutton_action
+	}
         [ "dectshort" == "$INTERFACE" ] && {
 	        printf "\n\nDECT button is pressed\n" > /dev/console
 		/usr/bin/dect -b 1 | logger -t hotplug -p user.info
