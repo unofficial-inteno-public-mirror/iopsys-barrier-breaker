@@ -198,6 +198,8 @@ branch_uptodate()
      else
 	 echo "Diverged. not sure what you did but there is no tracking branch. "
 	 echo "repo at [ $1 ]. fix it so that there is a tracking branch remote."
+	 echo "Often this is related to sombody having commited to the same branch"
+	 echo "on the server so a simple push wont work, try a 'git rebase'."
 	 exit 99
      fi
     )
