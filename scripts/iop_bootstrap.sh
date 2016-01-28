@@ -6,6 +6,8 @@
 ./scripts/feeds install -f -p intenoprivate -a
 ./scripts/feeds install -f -p intenotargets -a
 ./scripts/feeds install -f -p intenopackages -a
+./scripts/feeds install -f -p intenobroadcom -a
+./scripts/feeds install -f -p intenoopenwrt -a
 ./scripts/feeds install -f -p intenotargets brcm63xx_ref_nand
 ./scripts/feeds install -f -p intenotargets brcm63xx_ref_nand_arm
 ./scripts/feeds install -a 
