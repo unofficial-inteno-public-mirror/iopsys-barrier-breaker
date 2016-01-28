@@ -1,0 +1,17 @@
+. /lib/functions/network.sh
+
+[ ifup = "$ACTION" -a -n "$INTERFACE" ] && {
+	local device mtusize curmtu
+
+	mtusize=$(uci -q get network.$INTERFACE.mtu)
+	mtusize=${mtusize:-1500}
+
+	network_get_device device $INTERFACE
+
+	[ "$device" == "lo" ] && return
+
+	curmtu=$(ifconfig $device | grep -o 'MTU:*[0-9]*' | cut -d':' -f2)
+
+	[ "$curmtu" == "$mtusize" ] || ifconfig $device mtu $mtusize
+}
+
