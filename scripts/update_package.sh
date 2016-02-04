@@ -30,8 +30,12 @@ done
 
 if [ -z "$EDITOR" ]
 then
-    echo "env variable EDITOR needs to be set"
-    exit 1
+    if [ -f /usr/bin/vi ]; then
+	EDITOR=vi
+    else
+	echo "env variable EDITOR needs to be set"
+	exit 1
+    fi
 fi
 
 
