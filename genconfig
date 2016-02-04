@@ -7,7 +7,7 @@ export CONFIGPATH="configs"
 export CUSTCONF="customerconfigs"
 export VERBOSE=0
 export TMPDIR="/tmp/builder/"
-LOCAL_MIRROR="http://10.10.1.31/mirror"
+LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
