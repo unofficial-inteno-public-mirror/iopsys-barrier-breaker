@@ -1,3 +1,4 @@
+
 ############### mapping function button to driver button
 config button RESET
 	list button gpio_reset
@@ -11,13 +12,13 @@ config button WIFI
 	option minpress 1000
 	option longpress 3000
 
-config button TOUCH_NEAR
-	list button 3220_touch_near
-	option hotplug touch_near
-	option minpress 0
-	option dimming	on
+#config button TOUCH_NEAR
+#	list button 3220_touch_near
+#	option hotplug touch_near
+#	option minpress 0
+#	option dimming	on
 
-config button TOUCH_FAR
-	list button 3220_touch_far
-	option hotplug touch_far
-	option minpress 0
+#config button TOUCH_FAR
+#	list button 3220_touch_far
+#	option hotplug touch_far
+#	option minpress 0

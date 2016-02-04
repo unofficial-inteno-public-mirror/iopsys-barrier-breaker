@@ -13,6 +13,8 @@
 ./scripts/feeds install -a 
 ./scripts/feeds uninstall asterisk18
 ./scripts/feeds uninstall zstream
+./scripts/feeds uninstall mtd-utils
+./scripts/feeds install -f -p intenopackages mtd-utils
 ./scripts/feeds uninstall qrencode
 ./scripts/feeds install -f -p intenopackages qrencode
 ./scripts/feeds uninstall lighttpd

@@ -1,5 +1,5 @@
-############### mapping function button to driver button
 
+############### mapping function button to driver button
 config button RESET
 	list button gpio_reset
 	option minpress 5000
@@ -22,12 +22,12 @@ config button Wireless
 	option hotplug ecobutton
 	option minpress 1000
 
-config button THOUCH_NEAR
-	list button 9512_touch_near
-	option hotplug touch_near
-	option minpress 1000
+#config button THOUCH_NEAR
+#	list button 9512_touch_near
+#	option hotplug touch_near
+#	option minpress 1000
 
-config button THOUCH_FAR
-	list button 9512_touch_far
-	option hotplug touch_far
-	option minpress 1000
+#config button THOUCH_FAR
+#	list button 9512_touch_far
+#	option hotplug touch_far
+#	option minpress 1000

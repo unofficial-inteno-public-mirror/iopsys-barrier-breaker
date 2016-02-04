@@ -1,0 +1,7 @@
+config p910nd
+        option device '/dev/printer0'
+        option port '0'
+        option bidirectional '1'
+        option enabled '1'
+        option interface 'lan'
+

@@ -29,12 +29,12 @@ config button EXT
 	option hotplug extbutton
 	option minpress 1000
 
-config button TOUCH_NEAR
-	list button 9512_touch_near
-	option hotplug touch_near
-	option minpress 100
+#config button THOUCH_NEAR
+#	list button 9512_touch_near
+#	option hotplug touch_near
+#	option minpress 1000
 
-config button TOUCH_FAR
-	list button 9512_touch_far
-	option hotplug touch_far
-	option minpress 100
+#config button THOUCH_FAR
+#	list button 9512_touch_far
+#	option hotplug touch_far
+#	option minpress 1000
