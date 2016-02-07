@@ -1,7 +1,4 @@
 ./scripts/feeds update
-#./scripts/feeds uninstall libmicroxml
-#./scripts/feeds uninstall libqrencode
-#./scripts/feeds uninstall net-snmp
 ./scripts/feeds install -f -p juci -a
 ./scripts/feeds install -f -p intenoprivate -a
 ./scripts/feeds install -f -p intenotargets -a
@@ -17,5 +14,3 @@
 ./scripts/feeds install -f -p intenopackages mtd-utils
 ./scripts/feeds uninstall qrencode
 ./scripts/feeds install -f -p intenopackages qrencode
-./scripts/feeds uninstall lighttpd
-./scripts/feeds install -f -p packages lighttpd

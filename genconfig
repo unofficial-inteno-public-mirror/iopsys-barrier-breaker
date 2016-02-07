@@ -7,7 +7,7 @@ export CONFIGPATH="configs"
 export CUSTCONF="customerconfigs"
 export VERBOSE=0
 export TMPDIR="/tmp/builder/"
-LOCAL_MIRROR="http://10.10.1.31/mirror"
+LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
@@ -139,9 +139,11 @@ create_and_copy_files()
 
 	if [ -n "$USE_TAG" ]; then 
 		local GIT_TAG=$(git describe --abbrev=0 --tags)
-		local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
-		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
-		echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
+		#local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
+		#echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
+		#echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
+		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}\"" >> .config
+		echo "Set version to \"${GIT_TAG}\""
 	fi	
 
 
