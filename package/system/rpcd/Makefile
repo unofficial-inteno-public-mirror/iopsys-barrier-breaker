@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013-2014 OpenWrt.org
+# Copyright (C) 2013-2015 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,15 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rpcd
-PKG_VERSION:=2014-07-04
+PKG_VERSION:=2015-01-10
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://nbd.name/luci2/rpcd.git
+PKG_SOURCE_URL:=git@public.inteno.se:rpcd
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-PKG_SOURCE_VERSION:=7fd4564b8acb60254817cb341b84c6468c8c6440
+PKG_SOURCE_VERSION:=e5de9f4f2d1c02a7b6d158b19c836a23c6bbcd1e
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
-PKG_MAINTAINER:=Jo-Philipp Wich <jow@openwrt.org>
 
 PKG_LICENSE:=ISC
 PKG_LICENSE_FILES:=
@@ -92,5 +91,6 @@ define BuildPlugin
 endef
 
 $(eval $(call BuildPackage,rpcd))
-$(eval $(call BuildPlugin,file,,Provides ubus calls for file and directory operations.))
-$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
+#$(eval $(call BuildPlugin,file,,Provides ubus calls for file and directory operations.))
+#$(eval $(call BuildPlugin,rpcsys,,Provides ubus calls for sysupgrade and password changing.))
+#$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
