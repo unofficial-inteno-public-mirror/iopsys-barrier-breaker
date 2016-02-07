@@ -1,0 +1,70 @@
+#!/bin/sh
+
+set_iup_reqopts() {
+	### Ask for IUP related DHCP options only if IUP is enabled ###
+	local enabled="$(uci -q get provisioning.iup.enabled)"
+	local newreqopts=
+	local baseopts=
+	local reqopts="$(uci -q get network.wan.reqopts)"
+	local proto="$(uci -q get network.wan.proto)"
+	local iupopts="66 67 128"
+	local ropt iopt
+	for ropt in $reqopts; do
+		case $ropt in
+			66|67|128) ;;
+			*) baseopts="$baseopts $ropt" ;;
+		esac
+	done
+	ropt=""
+	reqopts="$baseopts $iupopts"
+	for ropt in $reqopts; do
+		case $ropt in
+			66|67|128) [ $enabled == "on" ] && newreqopts="$newreqopts $ropt" ;;
+			*) newreqopts="$newreqopts $ropt" ;;
+		esac
+	done
+	if [ $proto == "dhcp" ]; then
+		newreqopts="$(echo $newreqopts | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//')"
+		uci -q set network.wan.reqopts="$newreqopts"
+		uci commit network
+	fi
+}
+
+set_cwmp_reqopts() {
+	### Ask for DHCP Option 43 only if CWMP is enabled ###
+	local wan=$(uci -q get cwmp.cpe.default_wan_interface)
+	local dhcp_discovery=$(uci -q get cwmp.acs.dhcp_discovery)
+	local discovery=0
+	case $dhcp_discovery in
+		enable|1) discovery=1 ;;
+	esac
+
+	local newreqopts=
+	local baseopts=
+	local reqopts="$(uci -q get network.$wan.reqopts)"
+	local proto="$(uci -q get network.$wan.proto)"
+	local tropts="43"
+	local ropt iopt
+	for ropt in $reqopts; do
+		case $ropt in
+			43) ;;
+			*) baseopts="$baseopts $ropt" ;;
+		esac
+	done
+	ropt=""
+	reqopts="$baseopts $tropts"
+	for ropt in $reqopts; do
+		case $ropt in
+			43) [ $discovery -eq 1 ] && newreqopts="$newreqopts $ropt" ;;
+			*) newreqopts="$newreqopts $ropt" ;;
+		esac
+	done
+	if [ $proto == "dhcp" ]; then
+		newreqopts="$(echo $newreqopts | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//')"
+		uci -q set network.$wan.reqopts="$newreqopts"
+		uci commit network
+	fi
+}
+
+set_iup_reqopts
+set_cwmp_reqopts
