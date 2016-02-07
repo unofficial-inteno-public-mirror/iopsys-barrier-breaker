@@ -1,11 +1,9 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2010 Jo-Philipp Wich
 
-START=50
+START=99
 
 USE_PROCD=1
-METHOD=""
-STATUS=""
 
 UHTTPD_BIN="/usr/sbin/uhttpd"
 PX5G_BIN="/usr/sbin/px5g"
@@ -19,23 +17,6 @@ append_arg() {
 
 	config_get val "$cfg" "$var"
 	[ -n "$val" -o -n "$def" ] && procd_append_param command "$opt" "${val:-$def}"
-}
-
-get_list_method(){
-	[ -z "$METHOD" ] && METHOD=$1 || METHOD=$METHOD","$1
-}
-get_list_status(){
-	[ -z "$STATUS" ] && STATUS=$1 || STATUS=$STATUS","$1
-}
-
-append_conf(){
-	local cfg="$1"
-	config_list_foreach "$cfg" "ubus_status" get_list_status
-	config_list_foreach "$cfg" "ubus_method" get_list_method
-	[ -z "$STATUS" ] && STATUS="noarg"
-	[ -z "$METHOD" ] && METHOD="noarg"
-	procd_append_param command "-G" "$STATUS"
-	procd_append_param command "-g" "$METHOD"
 }
 
 append_bool() {
@@ -85,7 +66,6 @@ start_instance()
 	procd_set_param respawn
 	procd_set_param stderr 1
 	procd_set_param command "$UHTTPD_BIN" -f
-	append_conf "logopts"
 
 	append_arg "$cfg" home "-h"
 	append_arg "$cfg" realm "-r" "${realm:-OpenWrt}"
@@ -100,6 +80,7 @@ start_instance()
 	[ -f /usr/lib/uhttpd_ubus.so ] && {
 		append_arg "$cfg" ubus_prefix "-u"
 		append_arg "$cfg" ubus_socket "-U"
+		append_bool "$cfg" ubus_cors "-X" 0
 	}
 	append_arg "$cfg" script_timeout "-t"
 	append_arg "$cfg" network_timeout "-T"
@@ -113,6 +94,11 @@ start_instance()
 	append_bool "$cfg" no_symlinks "-S" 0
 	append_bool "$cfg" no_dirlists "-D" 0
 	append_bool "$cfg" rfc1918_filter "-R" 0
+
+	config_get alias_list "$cfg" alias
+	for alias in $alias_list; do
+		procd_append_param command -y "$alias"
+	done
 
 	config_get http "$cfg" listen_http
 	for listen in $http; do
@@ -151,11 +137,6 @@ start_instance()
 	}
 
 	procd_close_instance
-
-	# Check if daemon is running, if not then
-	# re-execute in foreground to display error.
-#	sleep 1 && service_check $UHTTPD_BIN || \
-#		$UHTTPD_BIN -f $UHTTPD_ARGS
 }
 
 service_triggers()
