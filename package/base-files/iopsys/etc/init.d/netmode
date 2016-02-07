@@ -1,0 +1,63 @@
+#!/bin/sh /etc/rc.common
+
+START=10
+USE_PROCD=1
+
+local modedir=$(uci -q get netmode.setup.dir)
+[ -n "$modedir" ] || modedir="/etc/netmodes"
+
+populate_netmodes() {
+	[ -f /etc/config/netmode -a -d $modedir ] || return
+
+	delete_netmode() {
+		uci delete netmode.$1
+	}
+
+	config_load netmode
+
+	config_foreach delete_netmode netmode
+	uci commit netmode
+
+	for conf in $(ls $modedir); do
+		case $conf in
+			config_*)
+				mode="${conf:7}"
+				uci set netmode.$mode=netmode
+				uci set netmode.$mode.conf=$conf
+				desc=$(cat $modedir/$conf/DETAILS 2>/dev/null | grep -w "DESC:" | awk -F  "DESC:" '{print$2}')
+				desc=${desc:-"$mode"}
+				uci set netmode.$mode.desc="$desc"
+				exp=$(cat $modedir/$conf/DETAILS 2>/dev/null | grep -w "EXP:" | awk -F  "EXP:" '{print$2}')
+				uci set netmode.$mode.exp="$exp"
+				cred=$(cat $modedir/$conf/DETAILS 2>/dev/null | grep -w "CRED:" | awk -F  "CRED:" '{print$2}' | tr -d ' ')
+				uci set netmode.$mode.askcred="$cred"
+ 			;;
+		esac
+	done
+	uci commit netmode
+}
+
+switch_netmode() {
+	[ -f /etc/config/netmode -a -d $modedir ] || return
+
+	config_load netmode
+
+	config_get curmode setup curmode
+	config_get conf $curmode conf
+	cp /etc/netmodes/$conf/* /etc/config/
+	rm -f /etc/config/DETAILS
+}
+
+start_service() {
+	populate_netmodes
+}
+
+reload_service() {
+        switch_netmode
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger netmode
+}
+

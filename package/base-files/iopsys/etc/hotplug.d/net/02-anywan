@@ -1,0 +1,24 @@
+include /lib/network
+
+[ ${INTERFACE:0:2} == "wl" ] && exit
+
+if [ "$INTERFACE" != "${INTERFACE/./}" ]; then
+	networkname=$(get_network_of "$INTERFACE")
+	for net in $networkname; do
+		type=$(uci get network."$net".type)
+		if [ "$type" == "anywan" ]; then
+			json_load "$(ifstatus $net)"
+			json_get_var device device
+			case "$ACTION" in
+				add|register)
+					json_get_var up up
+					[[ "$INTERFACE" != "$device" && "$up" == "0" ]] && /sbin/ifup "$net"
+				;;
+				remove|unregister)
+					[ "$INTERFACE" == "$device" ] && /sbin/ifup "$net"
+				;;
+			esac
+		fi
+	done
+fi
+

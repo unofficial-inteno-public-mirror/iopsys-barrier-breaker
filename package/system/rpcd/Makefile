@@ -11,8 +11,8 @@ PKG_NAME:=rpcd
 PKG_VERSION:=2015-05-17
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/mkschreder/juci-rpcd.git
-PKG_SOURCE_VERSION:=10cb71fd6fd2a7135f0d4ddc08918a14d6c11068
+PKG_SOURCE_URL:=git://nbd.name/luci2/rpcd.git
+PKG_SOURCE_VERSION:=3d655417ab44d93aad56a6d4a668daf24b127b84
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_SOURCE_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Jo-Philipp Wich <jow@openwrt.org>
@@ -94,4 +94,4 @@ endef
 
 $(eval $(call BuildPackage,rpcd))
 $(eval $(call BuildPlugin,file,,Provides ubus calls for file and directory operations.))
-#$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
+$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))

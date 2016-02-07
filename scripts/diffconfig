@@ -1,0 +1,15 @@
+#!/bin/bash
+# Martin Schröder
+# $1 = config1 $2 = config2
+
+if [ "$1" = "" -o "$2" = "" ]; then
+	echo "diffconfig <conf1> <conf2>"
+	exit 1
+fi
+
+# filter both and calculate diff
+grep "CONFIG" "$1" | sed 's/^# //g' | sort > .diffconfig1
+grep "CONFIG" "$2" | sed 's/^# //g' | sort > .diffconfig2
+
+diff .diffconfig1 .diffconfig2
+rm -f .diffconfig1 .diffconfig2

@@ -1,0 +1,19 @@
+#!/bin/sh
+
+usage () {
+	echo "Usage: ledctl [normal|test|allon|alloff|production]"
+	exit 1
+}
+
+[ $# -ne 1 ] && usage
+local state=$(echo $1 | tr '[A-Z]' '[a-z]')
+
+case $state in
+	normal|test|allon|alloff|production)
+		ubus call leds set  "{\"state\" : \"$state\"}"
+		;;
+	*)
+		usage
+		;;
+esac
+

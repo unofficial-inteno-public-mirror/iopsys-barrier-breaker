@@ -7,7 +7,7 @@ export CONFIGPATH="configs"
 export CUSTCONF="customerconfigs"
 export VERBOSE=0
 export TMPDIR="/tmp/builder/"
-LOCAL_MIRROR="http://10.10.1.31/mirror"
+LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
@@ -20,6 +20,8 @@ usage() {
 	echo "  -v,  verbose"
 	echo "  -o, use openbroadcom kernel"
 	echo "  -u, Update customer config before applying"  
+	echo "	-p, set profile (if exists)"
+	echo "	-t, use latest git tag and number of commits since as version for the build"
 	echo 
         echo "BoardConfig ex "
 	ls -1 configs
@@ -55,6 +57,14 @@ generate_config()
     done < $DIFFFILE
 }
 
+set_profile(){
+	local PROFILE="$1"; 
+	local MASTERFILE="$2"; 
+	echo "setting profile: $PROFILE"; 
+	cat "$PROFILE" >> "$MASTERFILE"
+	make defconfig > /dev/null
+}
+
 create_and_copy_files()
 {
     local BOARDTYPE=$1
@@ -62,51 +72,84 @@ create_and_copy_files()
     v "cp  $CONFIGPATH/MASTER/config .config"
     cp  $CONFIGPATH/MASTER/config .config
     if [ $OPEN -eq 0 ]; then
-	if [ ! -d "$CUSTCONF" ]; then
-	    git  clone  git@ihgsp.inteno.se:customerconfigs
-	elif [ $IMPORT -eq 1 ]; then
-	    cd customerconfigs
-	    v "git pull"
-	    git pull
-	    cd ..
-	fi
+		if [ ! -d "$CUSTCONF" ]; then
+			git  clone  git@ihgsp.inteno.se:customerconfigs
+		elif [ $IMPORT -eq 1 ]; then
+			cd customerconfigs
+			v "git pull"
+			git pull
+			cd ..
+		fi
     fi
 
     if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
-	echo "Hardware profile does not exist"
-	exit 0
-    elif  [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
-	echo "Customer profile does not exist"
-	exit 0
+		echo "Hardware profile does not exist"
+		exit 1
+    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
+		echo "Customer profile does not exist"
+		exit 1
     fi
     v  "Config $BOARDTYPE selected"
     if [ ! -d "$FILEDIR" ]; then
-	mkdir $FILEDIR
-    elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
-	v "rm -rf $FILEDIR*"	
-	rm -rf $FILEDIR*
+		mkdir $FILEDIR
+		elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
+		v "rm -rf $FILEDIR*"	
+		rm -rf $FILEDIR*
     fi
     # first build config based on boardid
-    v "cp -rp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
-    cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
-    v "cp -rp $CONFIGPATH/$BOARDTYPE/* $FILEDIR"
-    [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
+    if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
+        v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
+        cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
+    fi
+    if [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ]; then
+        v "Apply $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff"
+        generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
+    fi
     echo $BOARDTYPE > .current_config_file
 
-    # second add diff for customer config if if customer code
-    if [ -n "$CUSTOMER" ]; then
-	if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
-	    v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
-	    cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+	# second add diff for customer config if if customer code
+	if [ -n "$CUSTOMER" ]; then
+		echo "$BOARDTYPE $CUSTOMER" > .current_config_file
+		if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
+			v "cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
+			cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+		fi
+		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ]; then
+			v "Apply $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff"
+			generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+		fi
 	fi
-	echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
-	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
-    fi
+
+	if [ -n "$PROFILE" ]; then 
+		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
+			set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
+		elif [ -e "$CUSTCONF/$BOARDTYPE/$PROFILE.profile" ]; then 
+			v "Using generic board profile for $PROFILE"
+			set_profile $CUSTCONF/$BOARDTYPE/$PROFILE.profile .config
+		elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
+			v "Using generic profile for $PROFILE"
+			set_profile $CUSTCONF/$PROFILE.profile .config
+		else 
+			echo "ERROR: profile $PROFILE does not exist!"
+			exit 1
+		fi
+	else 
+		v "No profile selected! Using default."
+	fi	
+
+	if [ -n "$USE_TAG" ]; then 
+		local GIT_TAG=$(git describe --abbrev=0 --tags)
+		#local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
+		#echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
+		#echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
+		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}\"" >> .config
+		echo "Set version to \"${GIT_TAG}\""
+	fi	
 
 
     ##### if open change to open kernel and remove building of nand tool
     if [ $OPEN -eq 1 ]; then
-	[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
+		[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
     fi
     
     # validate the .config against dependency rules.
@@ -128,6 +171,8 @@ else
 	    -u) export IMPORT=1;;
 	    -o) export OPEN=1;;
 	    -v) export VERBOSE="$(($VERBOSE + 1))";;
+		-p) export PROFILE="$2"; shift;; 
+		-t) export USE_TAG=1;; 
 	    -h) usage;;
 	    -*)
 		echo "Invalid option: $1 "

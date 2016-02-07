@@ -1,8 +1,0 @@
-[general]
-queue_log = no
-event_log = no
-
-[logfiles]
-console => |CONSOLE|
-messages => |MESSAGES|
-syslog.|SYSLOG_FACILITY| => |SYSLOG|
