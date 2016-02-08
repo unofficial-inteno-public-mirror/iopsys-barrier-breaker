@@ -94,6 +94,11 @@ prereq: $(target/stamp-prereq) tmp/.prereq_packages
 prepare: .config $(tools/stamp-install) $(toolchain/stamp-install)
 world: prepare $(target/stamp-compile) $(package/stamp-cleanup) $(package/stamp-compile) $(package/stamp-install) $(package/stamp-rootfs-prepare) $(target/stamp-install) FORCE
 	$(_SINGLE)$(SUBMAKE) -r package/index
+ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
+	@$(SCRIPT_DIR)/git_mirror.sh >&8
+else
+	@$(SCRIPT_DIR)/git_mirror.sh
+endif
 
 # update all feeds, re-create index files, install symlinks
 package/symlinks:

@@ -457,6 +457,10 @@ menuconfig DEVEL
 		string "Local mirror for source packages" if DEVEL
 		default ""
 
+	config GITMIRROR
+		string "Git mirror for source packages" if DEVEL
+		default "git@public.inteno.se"
+
 	config AUTOREBUILD
 		bool "Automatic rebuild of packages" if DEVEL
 		default y
