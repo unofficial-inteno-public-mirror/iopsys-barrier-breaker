@@ -253,7 +253,8 @@ check_sig() {
 	if is_inteno_image $from; then
 	    len=$(($(get_inteno_tag_val $from cfe) +
 		   $(get_inteno_tag_val $from vmlinux) +
-		   $(get_inteno_tag_val $from ubifs) ))
+		   $(get_inteno_tag_val $from ubifs) +
+		   $(get_inteno_tag_val $from ubi) ))
 
 	    # get pubkey from cert.
 	    openssl x509 -in /etc/ssl/certs/opkg.pem -pubkey -noout >/tmp/pubkey
@@ -491,6 +492,8 @@ create_springboard_preinit() {
 	local k_sz=$4
 	local ubifs_ofs=$5
 	local ubifs_sz=$6
+	local ubi_ofs=$7
+	local ubi_sz=$8
 
 	local mtd_no=1
 
@@ -503,11 +506,18 @@ create_springboard_preinit() {
 		imagewrite -s 0 -b 3 /dev/mtd$mtd_no /lib/upgrade/nvram2.img
 		echo "Wipe kernel areas..."
 		imagewrite -s 3 -b 80 /dev/mtd$mtd_no
-		echo "Write UBI image..."
-		imagewrite -s 83 -b 0 \
+		if [ $ubi_sz -gt 0 ]; then
+			echo "Write UBI image..."
+			imagewrite -s 83 -b 0 \
+			   -k $ubi_ofs -l $ubi_sz \
+			   /dev/mtd$mtd_no $from
+		else
+			echo "Write UBIFS image..."
+			imagewrite -s 83 -b 0 \
 			   -k $ubifs_ofs -l $ubifs_sz \
 			   --ubi -n 0 -S -20 --vol-name=rootfs_0 \
 			   /dev/mtd$mtd_no $from
+		fi
 		echo "Write kernel..."
 		imagewrite -c -s 3 -b 40 -k $k_ofs -l $k_sz \
 			   /dev/mtd$mtd_no $from
@@ -541,20 +551,24 @@ inteno_image_upgrade() {
 	ubifs_sz="$(get_inteno_tag_val $from ubifs)"
 	[ $ubifs_sz -gt 0 ] && v "- ubifs: offset=$ubifs_ofs, size=$ubifs_sz"
 
-	if [ $(( $ubifs_ofs + $ubifs_sz )) -gt \
+	ubi_ofs=$(( $ubifs_ofs + $ubifs_sz ))
+	ubi_sz="$(get_inteno_tag_val $from ubi)"
+	[ $ubi_sz -gt 0 ] && v "- ubi: offset=$ubi_ofs, size=$ubi_sz"
+
+	if [ $(( $ubi_ofs + $ubi_sz )) -gt \
 	     $(ls -l $from |awk '{print $5}') ]; then
 		echo "Image file too small, upgrade aborted!" >&2
 		return
 	fi
 
-	if [ $cfe_sz -gt 0 -a $k_sz -eq 0 -a $ubifs_sz -eq 0 ]; then
+	if [ $cfe_sz -gt 0 -a $k_sz -eq 0 -a $ubifs_sz -eq 0 -a $ubi_sz -eq 0 ]; then
 
 		# CFE only upgrade
 
 		v "Writing CFE image to nvram (boot block) partition ..."
 		cfe_image_upgrade $from $cfe_ofs $cfe_sz
 
-	elif [ $k_sz -gt 0 -a $ubifs_sz -gt 0 ]; then
+	elif [ $k_sz -gt 0 -a $ubifs_sz -gt 0 -o $k_sz -gt 0 -a $ubi_sz -gt 0 ]; then
 
 		# Kernel + filesystem upgrade
 
@@ -579,10 +593,23 @@ inteno_image_upgrade() {
 			mtd_no=$(find_mtd_no "kernel_$upd_vol")
 			imagewrite -b 8 /dev/mtd$mtd_no || return 1
 
-			v "Writing UBIFS data to rootfs_$upd_vol volume ..."
 			umount -f /dev/ubi0_$upd_vol
-			ubiupdatevol /dev/ubi0_$upd_vol \
-				     --size=$ubifs_sz --skip=$ubifs_ofs $from || return 1
+			if [ $ubi_sz -gt 0 ]; then
+				v "Writing UBI data to rootfs_$upd_vol volume ..."
+				ubifs_sz=$(deubinize -p 128KiB -n rootfs_0 \
+				    --length=$ubi_sz --skip=$ubi_ofs $from |\
+				    wc -c)
+				deubinize -p 128KiB -n rootfs_0 \
+				    --length=$ubi_sz --skip=$ubi_ofs $from |\
+				    ubiupdatevol /dev/ubi0_$upd_vol \
+				        --size=$ubifs_sz - \
+				    || return 1
+			else
+				v "Writing UBIFS data to rootfs_$upd_vol volume ..."
+				ubiupdatevol /dev/ubi0_$upd_vol \
+				    --size=$ubifs_sz --skip=$ubifs_ofs $from \
+				    || return 1
+			fi
 
 			v "Writing kernel image to kernel_$upd_vol partition ..."
 			mtd_no=$(find_mtd_no "kernel_$cur_vol")
@@ -610,7 +637,7 @@ inteno_image_upgrade() {
 				create_springboard_preinit \
 					$newroot/etc/preinit \
 					/lib/upgrade/image.bin \
-					$k_ofs $k_sz $ubifs_ofs $ubifs_sz
+					$k_ofs $k_sz $ubifs_ofs $ubifs_sz $ubi_ofs $ubi_sz
 				update_sequence_number \
 					$from $(($seqn+1)) $k_ofs $k_sz
 				mv $from $newroot/lib/upgrade/image.bin
@@ -644,11 +671,18 @@ inteno_image_upgrade() {
 				v "Wipe kernel areas..."
 				imagewrite -s 3 -b 80 /dev/mtd$mtd_no
 
-				v "Write UBI image..."
-				imagewrite -s 83 -b 0 \
+				if [ $ubi_sz -gt 0 ]; then
+					v "Write UBI image..."
+					imagewrite -s 83 -b 0 \
+					   -k $ubi_ofs -l $ubi_sz \
+					   /dev/mtd$mtd_no $from
+				else
+					v "Write UBIFS image..."
+					imagewrite -s 83 -b 0 \
 					   -k $ubifs_ofs -l $ubifs_sz \
 					   --ubi -n 0 -S -20 --vol-name=rootfs_0 \
 					   /dev/mtd$mtd_no $from
+				fi
 
 				v "Write kernel..."
 				update_sequence_number $from 0 $k_ofs $k_sz
