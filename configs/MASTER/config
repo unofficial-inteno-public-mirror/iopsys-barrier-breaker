@@ -3997,7 +3997,7 @@ CONFIG_PACKAGE_libjson-script=y
 # CONFIG_PACKAGE_mount-utils is not set
 # CONFIG_PACKAGE_mountd is not set
 CONFIG_PACKAGE_mtd-utils=y
-# CONFIG_PACKAGE_mtd-utils-deubinize is not set
+CONFIG_PACKAGE_mtd-utils-deubinize=y
 # CONFIG_PACKAGE_mtd-utils-doc-loadbios is not set
 # CONFIG_PACKAGE_mtd-utils-docfdisk is not set
 # CONFIG_PACKAGE_mtd-utils-flash-erase is not set
