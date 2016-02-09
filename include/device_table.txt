@@ -80,6 +80,7 @@
 /etc/passwd	f	644	0	0	-	-	-	-	-
 /etc/shadow	f	600	0	0	-	-	-	-	-
 /etc/dropbear/authorized_keys	f	600	0	0	-	-	-	-	-
+/etc/logrotate.d/messages	f	644	0	0	-	-	-	-	-
 #/bin/tinylogin	f	4755	0	0	-	-	-	-	-
 
 # SCSI Devices
