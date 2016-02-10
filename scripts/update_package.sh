@@ -510,5 +510,32 @@ check_feeds()
     done
 }
 
+feeds_at_top()
+{
+    git remote update 2>/dev/null 1>/dev/null
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse @{u})
+
+    if [ $LOCAL = $REMOTE ]
+    then
+	return
+    fi
+
+    local_name=$(git rev-parse --abbrev-ref @ )
+    remote_name=$(git rev-parse --abbrev-ref @{u} )
+    
+    echo "Top repo local branch \"$local_name\" is not at same point as remote \"$remote_name\""
+    echo "This update script will update the feeds.conf file and for that to work it needs to"
+    echo "be up to date with the remote."
+    echo ""
+    echo "please run:"
+    echo "  git pull"
+    echo "  scripts/iop_bootstrap.sh"
+    echo ""
+    echo "do not forget the bootstrap. but do not run make it can delete your package in build"
+    exit 0
+}
+
+feeds_at_top
 check_packages
 check_feeds
