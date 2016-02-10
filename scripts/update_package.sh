@@ -500,7 +500,7 @@ check_feeds()
 
 	    case $answer in
 		n|N)
-		    exit 0;;
+		    continue;;
 	    esac
 	    branch_uptodate feeds/${feed}
 	    create_feed_message ${feed} $feed_hash $in_git  >tmp/msg
