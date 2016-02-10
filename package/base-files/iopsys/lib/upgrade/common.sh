@@ -221,8 +221,11 @@ is_inteno_image() {
 get_inteno_tag_val() {
 	local from="$1"
 	local tag="$2"
+	local val
 
-	head -c 1024 $from |awk "/^$tag / {print \$2}"
+	val=$(head -c 1024 $from |awk "/^$tag / {print \$2}")
+	[ -z "$val" ] && val=0
+	echo $val
 }
 
 check_crc() {
