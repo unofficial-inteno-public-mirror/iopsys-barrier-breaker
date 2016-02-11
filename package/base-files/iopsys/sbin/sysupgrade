@@ -359,6 +359,7 @@ do_save_selected_conffiles() {
 		local btgz="backup-$(cat /proc/sys/kernel/hostname)-$(date +%Y-%m-%d).tar.gz"
 		if [ -n "$mntdir" ] && [ "$mntdir" != "/mnt/" ] && [ -d $mntdir ]; then
 			tar c${TAR_V}z "$conf_tar" -T /tmp/selected_backup_files -f $mntdir$btgz 2>/dev/null
+			sync
 		fi
 		rm -f /tmp/backup_target_mntdir
 	else
