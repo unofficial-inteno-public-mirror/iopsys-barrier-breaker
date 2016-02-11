@@ -21,7 +21,7 @@ then
     if [[ $URL != *inteno.se* ]]
     then
 	echo "trying to clone from mirror ${MIRROR}/${repo}"
-	if git clone ${MIRROR}/${repo} ${SUBDIR} --recursive
+	if git clone ${MIRROR}:${repo} ${SUBDIR} --recursive
 	then
 	    old="$PWD"
 	    cd ${SUBDIR}
