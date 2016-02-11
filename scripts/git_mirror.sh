@@ -45,6 +45,7 @@ add the following to the files
 
 ---
 Do not miss that the config needs to end with an empty line.
+and remove the .git from the repo name to avoid a warning.
 EOF
 }
 
