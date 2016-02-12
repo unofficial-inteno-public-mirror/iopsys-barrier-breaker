@@ -2,6 +2,7 @@
 export CLEAN=0
 export IMPORT=0
 export OPEN=0
+export SRCTREEOVERR=0
 export FILEDIR="files/"
 export CONFIGPATH="configs"  
 export CUSTCONF="customerconfigs"
@@ -14,7 +15,7 @@ v() {
 }
 usage() {
         echo
-        echo 1>&2 "Usage:  [OPTION]  $0 BoardConfig Customerconfig"
+        echo 1>&2 "Usage: $0 [OPTIONS] BoardConfig Customerconfig"
         echo
 	echo "  -c,  remove all files under ./files and import from config "
 	echo "  -v,  verbose"
@@ -22,6 +23,7 @@ usage() {
 	echo "  -u, Update customer config before applying"  
 	echo "	-p, set profile (if exists)"
 	echo "	-t, use latest git tag and number of commits since as version for the build"
+	echo "  -s, enable 'Package source tree override'"
 	echo 
         echo "BoardConfig ex "
 	ls -1 configs
@@ -152,6 +154,10 @@ create_and_copy_files()
 		[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
     fi
     
+    # Enable Pckage source tree override if selected
+    [ $SRCTREEOVERR -eq 1 ] && \
+        sed -i 's/# CONFIG_SRC_TREE_OVERRIDE.*/CONFIG_SRC_TREE_OVERRIDE=y/' .config
+
     # validate the .config against dependency rules.
     make defconfig
 }
@@ -173,6 +179,7 @@ else
 	    -v) export VERBOSE="$(($VERBOSE + 1))";;
 		-p) export PROFILE="$2"; shift;; 
 		-t) export USE_TAG=1;; 
+	    -s) export SRCTREEOVERR=1;;
 	    -h) usage;;
 	    -*)
 		echo "Invalid option: $1 "
