@@ -82,6 +82,10 @@ tmp/.prereq_packages: .config
 	touch $@
 endif
 
+tmp/.feeds_conf.stamp: feeds.conf
+	@scripts/iop_bootstrap.sh
+	@touch $@
+
 # check prerequisites before starting to build
 prereq: $(target/stamp-prereq) tmp/.prereq_packages
 	@if [ ! -f "$(INCLUDE_DIR)/site/$(REAL_GNU_TARGET_NAME)" ]; then \
@@ -91,7 +95,7 @@ prereq: $(target/stamp-prereq) tmp/.prereq_packages
 		exit 1; \
 	fi
 
-prepare: .config $(tools/stamp-install) $(toolchain/stamp-install)
+prepare: .config $(tools/stamp-install) $(toolchain/stamp-install) tmp/.feeds_conf.stamp
 world: prepare $(target/stamp-compile) $(package/stamp-cleanup) $(package/stamp-compile) $(package/stamp-install) $(package/stamp-rootfs-prepare) $(target/stamp-install) FORCE
 	$(_SINGLE)$(SUBMAKE) -r package/index
 ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
