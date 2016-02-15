@@ -75,6 +75,7 @@ update_this_pkg()
     if [ "$mk_hash" != "${PKG_SOURCE_VERSION}" ]
     then
 	echo "${PKG_NAME}:"
+	echo "	build dir     = ${PKG_BUILD_DIR}"
 	echo "	feed makefile = ${mk_hash}"
 	echo "	stale hash    = ${PKG_SOURCE_VERSION}"
 	echo "	build git     = $(cd ${PKG_BUILD_DIR}; git rev-parse HEAD)"
@@ -96,6 +97,8 @@ update_this_pkg()
     fi
 
     echo "${PKG_NAME}:"
+    echo "	build dir     = ${PKG_BUILD_DIR}"
+    echo "	pkg dir       = ${PKG_DIR}"
     echo "	feed makefile = ${PKG_SOURCE_VERSION}"
     echo "	build git     = $(cd ${PKG_BUILD_DIR}; git rev-parse HEAD)"
     echo "	package is at a different git commit in build compared to feed"
@@ -211,12 +214,14 @@ branch_uptodate()
 
 on_a_branch()
 {
+    local repo=$1
+    local type=$2
     (
-	cd $1
+	cd $repo
 	name=$(git symbolic-ref -q HEAD)
 	if [ -z "$name" ]
 	then
-	    echo "git repo [ $1 ] is detached."
+	    echo "git $type repo [ $repo ] is detached."
 
 	    branches=($(git branch -r --contains $(git rev-parse HEAD)))
 	    if [ 0 == ${#branches[@]} ]
@@ -256,7 +261,7 @@ on_a_branch()
 	    then
 		echo -e "${Color_Off}"
 		echo "update_git aborting! something was wrong changing to branch ${branches[$answer]}"
-		echo "go to [ $1 ] and fix it."
+		echo "go to [ $repo ] and fix it."
 		exit 99
 	    fi
 	    echo -e "${Color_Off}"
@@ -266,9 +271,9 @@ on_a_branch()
 
 git_repos_uptodate()
 {
-    on_a_branch ${PKG_BUILD_DIR}
-    on_a_branch ${PKG_DIR}
-    on_a_branch ${PWD}
+    on_a_branch ${PKG_BUILD_DIR} package
+    on_a_branch ${PKG_DIR} feed
+    on_a_branch ${PWD} top
     branch_uptodate ${PKG_BUILD_DIR}
     branch_uptodate ${PKG_DIR} do_pull
     branch_uptodate ${PWD} do_pull
@@ -405,6 +410,10 @@ insert_hash_in_feeds_config()
 
 check_packages()
 {
+    echo -e "${Green}_______________________________________________________________________________${Color_Off}"
+    echo "Now checking cheking if any changes has ben done to the packages."
+    echo -e "${Green}_______________________________________________________________________________${Color_Off}"
+
     # First scan all files in build dir for packages that have .git directories.
     all_pkgs=$(find build_dir/ -name ".git")
 
@@ -418,13 +427,15 @@ check_packages()
 	    source ${pkg}/.git_update
 	fi
 
+#	print_git_update
+
 	if [ -n "${PKG_NAME}" ]
 	then
 	    if ! is_git_same
 	    then
 		if update_this_pkg
 		then
-		    #		print_git_update
+		    #  print_git_update
 		    git_repos_uptodate
 		    insert_hash_in_feed_makefile
 		    create_message >tmp/msg
@@ -484,8 +495,15 @@ Date: %ai%n\
     done
 }
 
+
+
+
 check_feeds()
 {
+    echo -e "${Green}_______________________________________________________________________________${Color_Off}"
+    echo "Now checking cheking if any changes has ben done to the feeds."
+    echo -e "${Green}_______________________________________________________________________________${Color_Off}"
+
     feeds=$(grep -v "^#" feeds.conf| awk '{print $2}')
     for feed in `echo $feeds`
     do
@@ -494,7 +512,31 @@ check_feeds()
 
 	if [ "$feed_hash" != "$in_git" ]
 	then
-	    echo "Feed feeds/${feed} is at a git commit which is different from feeds.conf"
+
+	    name=$(cd feeds/$feed;git symbolic-ref -q HEAD)
+	    if [ -z "$name" ]
+	    then
+		echo "Feed feeds/${feed} is at a git commit which is different from feeds.conf"
+		on_a_branch feeds/${feed} feed
+
+		#redo the test here and see if the feeds.conf and git is still different.
+		in_git=$(cd feeds/$feed; git rev-parse HEAD)
+		if [ "$feed_hash" = "$in_git" ]
+		then
+		    continue
+		fi
+	    fi
+
+	    LOCAL=$(cd feeds/$feed;git rev-parse @)
+	    REMOTE=$(cd feeds/$feed;git rev-parse @{u})
+	    BASE=$(cd feeds/$feed;git merge-base @ @{u})
+
+	    # if we are behind the remote automatically do a pull
+	    if [ $LOCAL = $BASE ]; then
+		$(cd feeds/$feed ; git pull)
+	    fi
+
+	    echo "Feed feeds/${feed} is at different commit than what is in feeds.conf"
 	    echo -n "Should we update feeds.conf to reflect the new version ? [y/N]:"
 	    read answer
 
