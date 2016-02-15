@@ -534,6 +534,13 @@ check_feeds()
 	    # if we are behind the remote automatically do a pull
 	    if [ $LOCAL = $BASE ]; then
 		$(cd feeds/$feed ; git pull)
+
+		#redo the test here and see if the feeds.conf and git is still different.
+		in_git=$(cd feeds/$feed; git rev-parse HEAD)
+		if [ "$feed_hash" = "$in_git" ]
+		then
+		    continue
+		fi
 	    fi
 
 	    echo "Feed feeds/${feed} is at different commit than what is in feeds.conf"
