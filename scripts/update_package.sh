@@ -80,7 +80,7 @@ update_this_pkg()
 	echo "	build git     = $(cd ${PKG_BUILD_DIR}; git rev-parse HEAD)"
 	echo "	Git hash in package makefile and the git hash recorded from last compile of"
 	echo "	package is different. You probably want to recompile the package"
-	echo "	to get an up to date version in ${PKG_BUILD_DIR}.git_update"
+	echo "	to get an up to date version in ${PKG_BUILD_DIR}/.git_update"
 	echo ""
 
 	echo -n "	skip this package now ? [Y/n]:"
