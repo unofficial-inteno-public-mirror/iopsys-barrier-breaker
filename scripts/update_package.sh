@@ -83,14 +83,14 @@ update_this_pkg()
 	echo "	to get an up to date version in ${PKG_BUILD_DIR}/.git_update"
 	echo ""
 
-	echo -n "	skip this package now ? [Y/n]:"
+	echo -n "	Shold we continue with the update anyway? [y/N]:"
 	read answer
 	echo ""
 
 	case $answer in
-	    n|N)
+	    y|Y)
 		;;
-	    y|Y|*)
+	    n|N|*)
 		return 1;;
 	esac
     fi
@@ -240,11 +240,11 @@ on_a_branch()
 	    done
 
 	    echo ""
-	    echo -n "Select what branch to checkout. Q/q to quit? "
+	    echo -n "Select what branch to checkout. Q/q or N/n to quit? "
 	    read answer
 
 	    case $answer in
-		q|Q)
+		q|Q|n|N)
 		    echo "Aborting!"
 		    exit 99;;
 	    esac
