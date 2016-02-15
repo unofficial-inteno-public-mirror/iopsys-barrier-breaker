@@ -1,3 +1,4 @@
+rm -rf package/feeds
 ./scripts/feeds update
 ./scripts/feeds install -f -p juci -a
 ./scripts/feeds install -f -p intenoprivate -a
