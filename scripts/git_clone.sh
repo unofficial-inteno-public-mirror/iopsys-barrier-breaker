@@ -4,6 +4,7 @@ URL="$1"
 SUBDIR="$2"
 MIRROR="$3"
 VERSION="$4"
+REWRITE="$5"
 
 repo=$(basename ${URL})
 server=$(dirname ${URL})
@@ -18,7 +19,19 @@ if [ -n "${MIRROR}" ]
 then
 
     # is this an inteno server ? in that case do not use the mirror
+    use_mirror=0
+
     if [[ $URL != *inteno.se* ]]
+    then
+	use_mirror=1
+    fi
+
+    if [ "$REWRITE" = y ]
+    then
+	use_mirror=1
+    fi
+
+    if [ $use_mirror = 1 ]
     then
 	echo "trying to clone from mirror ${MIRROR}/${repo}"
 	if git clone ${MIRROR}:${repo} ${SUBDIR} --recursive
