@@ -7,6 +7,7 @@ export FILEDIR="files/"
 export CONFIGPATH="configs"  
 export CUSTCONF="customerconfigs"
 export VERBOSE=0
+export DEVELOPER=0
 export TMPDIR="/tmp/builder/"
 LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
