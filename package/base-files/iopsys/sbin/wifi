@@ -34,7 +34,7 @@ wifi_detect() {
 	local DECIMAL=$(printf "%d\n" 0x${DMAC/:/})
 	DECIMAL=$((DECIMAL+100))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
-	echo "$WPAKEY" | grep -q "[0-9,a-z,A-Z]" && WPAKEY="1234567890"
+	echo "$WPAKEY" | grep -q "[0-9,a-z,A-Z]" || WPAKEY="1234567890"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
 	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
