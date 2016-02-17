@@ -94,8 +94,7 @@ else
 	@echo "scripts/iop_bootstrap.sh will delete any updated feeds and do a new clone"
 	@echo ""
 endif
-
-	exit 1	
+#	exit 1	
 
 # check prerequisites before starting to build
 prereq: $(target/stamp-prereq) tmp/.prereq_packages
