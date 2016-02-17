@@ -83,8 +83,19 @@ tmp/.prereq_packages: .config
 endif
 
 tmp/.feeds_conf.stamp: feeds.conf
-	@scripts/iop_bootstrap.sh
+#	@scripts/iop_bootstrap.sh
 	@touch $@
+ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
+	@echo "Feeds.conf is updated. you need to run scripts/iop_bootstrap.sh" >&8
+	@echo "scripts/iop_bootstrap.sh will delete any updated feeds and do a new clone"  >&8
+	@echo ""  >&8
+else
+	@echo "Feeds.conf is updated. you need to run scripts/iop_bootstrap.sh" 
+	@echo "scripts/iop_bootstrap.sh will delete any updated feeds and do a new clone"
+	@echo ""
+endif
+
+	exit 1	
 
 # check prerequisites before starting to build
 prereq: $(target/stamp-prereq) tmp/.prereq_packages
