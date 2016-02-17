@@ -15,3 +15,4 @@ rm -rf package/feeds
 ./scripts/feeds install -f -p intenopackages mtd-utils
 ./scripts/feeds uninstall qrencode
 ./scripts/feeds install -f -p intenopackages qrencode
+rm -rf package/feeds/oldpackages/libzstream # have to run this for now since uninstall is not working every time
