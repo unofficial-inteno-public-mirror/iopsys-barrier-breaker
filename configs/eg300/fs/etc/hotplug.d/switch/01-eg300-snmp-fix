@@ -1,0 +1,14 @@
+[ $(db -q get hw.board.hardware) == "EG300" ] || exit
+[ "$INTERFACE" == "eth2" ] || exit
+
+case "$ACTION" in
+	add|register)
+		ifconfig eth0 up
+		ifconfig eth1 up
+	;;
+	remove|unregister)
+		ifconfig eth0 down
+		ifconfig eth1 down
+	;;
+esac
+
