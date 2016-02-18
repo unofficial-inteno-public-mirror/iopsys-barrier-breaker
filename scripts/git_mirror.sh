@@ -1,7 +1,7 @@
 #! /bin/bash
 
 all=$(find . -name ".git_update")
-mirrors=$(ssh git@public.inteno.se | awk '/@| W / {print $NF}'| tr '\r' ' ')
+mirrors=$(ssh git@public.inteno.se 2>/dev/null | awk '/ R / {print $NF}'| tr '\r' ' ')
 
 #echo $mirrors
 
