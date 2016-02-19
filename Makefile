@@ -82,6 +82,16 @@ tmp/.prereq_packages: .config
 	touch $@
 endif
 
+tmp/.iop_bootstrap: feeds.conf
+ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
+	echo "feeds.conf has been updated. you have to run" >&8
+	echo "scripts/iop_feeds_update.sh" >&8
+else
+	echo "feeds.conf has been updated. you have to run"
+	echo "scripts/iop_feeds_update.sh"
+endif
+	exit 1
+
 # check prerequisites before starting to build
 prereq: $(target/stamp-prereq) tmp/.prereq_packages
 	@if [ ! -f "$(INCLUDE_DIR)/site/$(REAL_GNU_TARGET_NAME)" ]; then \
@@ -91,7 +101,7 @@ prereq: $(target/stamp-prereq) tmp/.prereq_packages
 		exit 1; \
 	fi
 
-prepare: .config $(tools/stamp-install) $(toolchain/stamp-install)
+prepare: .config $(tools/stamp-install) $(toolchain/stamp-install) tmp/.iop_bootstrap
 world: prepare $(target/stamp-compile) $(package/stamp-cleanup) $(package/stamp-compile) $(package/stamp-install) $(package/stamp-rootfs-prepare) $(target/stamp-install) FORCE
 	$(_SINGLE)$(SUBMAKE) -r package/index
 ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
