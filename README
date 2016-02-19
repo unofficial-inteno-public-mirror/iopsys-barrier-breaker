@@ -1,6 +1,13 @@
 How feeds work
 
-The OpenWRT build system contains several core packages but can be extended and modified by using feeds. Feeds are repositories that contain package Makefiles, i.e. descriptions on where to find the source code for a package and how to build an OpenWRT package from it. The layout for the dectmngr package is shown below:
+The OpenWRT build system contains several core packages but can be
+extended and modified by using feeds. Feeds are repositories that
+contain package Makefiles, i.e. descriptions on where to find the
+source code for a package and how to build an OpenWRT package from
+it. Feeds are defined in feeds.conf file in TOPDIR.  The layout for
+the dectmngr package is shown below. That is the feeds.conf contains a
+reference to a feeds git repo and a commit, then in that feed the
+dectmngr git repo and cimmit id is specified.
 
 feeds.conf #commit -> feeds/intenopackages/dectmngr/Makefile #commit -> dectmngr.git
 
@@ -11,24 +18,35 @@ feeds/intenopackages/dectmngr/Makefile:
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr.git
 PKG_SOURCE_VERSION:=6ba403663bc9cfdb8f89fb34de367f0796d68552
 
-While the OpenWRT build system supports branch names in feeds.conf, in Iopsys we only use commit id:s. This ensures that we can always recreate a build at a later date by checking out a specific commit in the top level repository. 
+While the OpenWRT build system supports branch names in feeds.conf, in
+Iopsys we only use commit id:s. This ensures that we can always
+recreate a build at a later date by checking out a specific commit in
+the top level repository.
 
 ---------------------------------
 
-
 Iopsys initialization
 
-After cloning the repository, which contains feeds.conf, the feed repositories need to be cloned and installed. This is handled by running:
+After cloning the repository, which contains feeds.conf, the feed
+repositories need to be cloned and installed. This is handled by
+running:
 
 ./scripts/iop_feeds_update.sh
 
-This clones all feed repositories into feeds/ and installs the packages from those repositories into the build system by creating symlinks in packages/feeds/.
+This clones all feed repositories into feeds/ and installs the
+packages from those repositories into the build system by creating
+symlinks in packages/feeds/.
 
-Now, generate a .config file for the board and customer you're building for with 
+Now, generate a .config file for the board and customer you're
+building for with
 
 ./genconfig <board> <customer>
 
-If you're an Inteno developer, run genconfig with the -d option. This sets an option in .config which changes the git clone protocol from http to ssh for inteno repositories. This will give you enhanced access to these repositories according to what is setup in gitolite.
+If you're an Inteno developer, run genconfig with the -d option. This
+sets an option in .config which changes the git clone protocol from
+http to ssh for inteno repositories. This will give you enhanced
+access(git push) to these repositories according to what is setup in
+gitolite.
 
 To summarize, to intialize the repository, run:
 
@@ -37,12 +55,24 @@ git clone <iopsys>
  ./genconfig <board> <customer>  or ./genconfig -d <board> <customer> if your're an Inteno developer
 make
 
+alt: for parallel build. 
+ make download
+ make -j8
 ---------------------------------
-
 
 Updating the repository
 
-If you run git pull in the toplevel repository you will most probably get changes that modify feeds.conf. Now your feeds.conf points to newer commits then what is checked out in the feed repositories and you need to update your feeds. Do this by running ./scripts/iop_feeds_update.sh. This will pull in the latest changes in the modified feed for you. To summarize, to update your repository, run:
+If you run git pull in the toplevel repository you will most probably
+get changes that modify feeds.conf. Now your feeds.conf points to
+newer commits then what is checked out in the feed repositories and
+you need to update your feeds. Do this by running:
+
+./scripts/iop_feeds_update.sh
+
+This will pull in the latest changes in
+the modified feed for you. To summarize, to update your repository,
+
+run:
 
 git pull
 ./scripts/iop_feeds_update.sh
@@ -53,7 +83,11 @@ make
 
 Working with feeds
 
-When you have created a new commit in the package repo in the build directory this commit needs to be pushed to two places. First the package makefile in the feed needs to be repointed to the new commit. This in turn creates a new commit in the feed and feeds.conf needs to be repointed to that commit.
+When you have created a new commit in the package repo in the build
+directory this commit needs to be pushed to two places. First the
+package makefile in the feed needs to be repointed to the new
+commit. This in turn creates a new commit in the feed and feeds.conf
+needs to be repointed to that commit.
 
 First you need to set the EDITOR environmental variable to your favorite editor.
 
@@ -63,14 +97,22 @@ You probably want to add this line to your .bashrc.
 
 Then run ./scripts/iop_update_package.sh
 
-First, it will update the toplevel remote repository and abort if it finds that you are not on the last commit on the branch you're working on. If you get this complaint, just merge the remote branch into your local branch. This step is kept manual to ensure that you know that your repository changes.
+First, it will update the toplevel remote repository and abort if it
+finds that you are not on the last commit on the branch you're working
+on. If you get this complaint, just merge the remote branch into your
+local branch. This step is kept manual to ensure that you know that
+your repository changes.
 
-If you are on the end of your branch the script continues and checks if any git repo in the build differs from the commit in the package makefile. If it finds a diff it asks to update the package makefile and autogenerates a commit message from the commits between the old and the new commit point. The same then happens for the commit on feeds.conf.
+If you are on the end of your branch the script continues and checks
+if any git repo in the build differs from the commit in the package
+makefile. If it finds a diff it asks to update the package makefile
+and autogenerates a commit message from the commits between the old
+and the new commit point of the package. The same then happens for the
+commit on feeds.conf.
 
-To prevent an invalid state where you update feeds.conf with commits that are not pushed to the remote repository, the script pushes the new commits to the remote repos. The script needs to know what branches to push to. For that reason, always make sure to check out remote tracking branches, for example with git checkout -t origin/mybranch.
-
-
-
-
-
-
+To prevent an invalid state where you update feeds.conf with commits
+that are not pushed to the remote repository, the script pushes the
+new commits to the remote repos. The script needs to know what
+branches to push to. For that reason, always make sure to check out
+remote tracking branches, for example with git checkout -t
+origin/mybranch.
