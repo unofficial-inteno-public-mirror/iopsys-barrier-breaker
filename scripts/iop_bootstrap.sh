@@ -1,3 +1,4 @@
+cp .config .genconfig_config_bak
 rm -rf package/feeds
 ./scripts/feeds update
 ./scripts/feeds install -f -p juci -a
@@ -16,3 +17,9 @@ rm -rf package/feeds
 ./scripts/feeds uninstall qrencode
 ./scripts/feeds install -f -p intenopackages qrencode
 rm -rf package/feeds/oldpackages/libzstream # have to run this for now since uninstall is not working every time
+cp .genconfig_config_bak .config
+make defconfig
+# always return true
+exit 0
+
+
