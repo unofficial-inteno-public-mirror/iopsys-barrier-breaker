@@ -1,3 +1,3 @@
 DESC: Wireless Repeater
-EXP: Your router is going to act as a wireless repeater to the selected Wireless Access Point.
+EXP: Your router is going to act as a wireless repeater to the selected Wireless Access Point. If an ethernet cable is plugged in to the WAN port, it will switch to wired connection automatically.
 CRED: 1
