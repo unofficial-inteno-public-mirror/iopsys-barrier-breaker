@@ -7,7 +7,7 @@ source code for a package and how to build an OpenWRT package from
 it. Feeds are defined in feeds.conf file in TOPDIR.  The layout for
 the dectmngr package is shown below. That is the feeds.conf contains a
 reference to a feeds git repo and a commit, then in that feed the
-dectmngr git repo and cimmit id is specified.
+dectmngr git repo and commit id is specified.
 
 feeds.conf #commit -> feeds/intenopackages/dectmngr/Makefile #commit -> dectmngr.git
 
@@ -45,7 +45,7 @@ building for with
 If you're an Inteno developer, run genconfig with the -d option. This
 sets an option in .config which changes the git clone protocol from
 http to ssh for inteno repositories. This will give you enhanced
-access(git push) to these repositories according to what is setup in
+access (git push) to these repositories according to what is setup in
 gitolite.
 
 To summarize, to intialize the repository, run:
@@ -83,13 +83,23 @@ make
 
 Working with feeds
 
+The build system will clone and checkout the packages in build_dir in
+detached head state so before you can commit you need to checkout a
+branch to work on. To prevent an invalid state where you update
+feeds.conf with commits that are not pushed to the remote repository,
+the script pushes the new commits to the remote repos. For this to
+work the script needs to know what remote branches to push to. For
+that reason, always make sure to check out remote tracking branches,
+for example with git checkout -t origin/mybranch.
+
 When you have created a new commit in the package repo in the build
 directory this commit needs to be pushed to two places. First the
 package makefile in the feed needs to be repointed to the new
 commit. This in turn creates a new commit in the feed and feeds.conf
 needs to be repointed to that commit.
 
-First you need to set the EDITOR environmental variable to your favorite editor.
+First you need to set the EDITOR environmental variable to your
+favorite editor. Ex:
 
 export EDITOR=/usr/bin/emacs
 
@@ -105,14 +115,10 @@ your repository changes.
 
 If you are on the end of your branch the script continues and checks
 if any git repo in the build differs from the commit in the package
-makefile. If it finds a diff it asks to update the package makefile
-and autogenerates a commit message from the commits between the old
-and the new commit point of the package. The same then happens for the
-commit on feeds.conf.
+makefile. If it finds a diff it first asks you what branch to make the
+new commit on since you are in detached head state in the feed
+repository. You probably want to select devel here. Once you have
+selected a branch to update the script autogenerates a commit message
+from the commits between the old and the new commit point of the
+package. The same then happens for the commit on feeds.conf.
 
-To prevent an invalid state where you update feeds.conf with commits
-that are not pushed to the remote repository, the script pushes the
-new commits to the remote repos. The script needs to know what
-branches to push to. For that reason, always make sure to check out
-remote tracking branches, for example with git checkout -t
-origin/mybranch.
