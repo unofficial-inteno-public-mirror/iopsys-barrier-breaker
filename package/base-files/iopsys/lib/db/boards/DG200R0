@@ -36,6 +36,7 @@ config pci_slot 'pci'
         option 43a0 AC
         option 43a2 AC
         option 43bc AC
+        option 43c5 AC
 
 config wifi-chip '435f'
         option bands 'b'
@@ -52,6 +53,10 @@ config wifi-chip '43bc'
         option bands 'a'
         option is_ac '1'
         option radarthrs '0x6ae 0x30 0x6a8 0x30 0x6a4 0x30 0x6aa 0x30 0x6aa 0x30 0x6a4 0x30'
+
+config wifi-chip '43c5'
+	option bands 'a'
+	option is_ac '1'
 
 ###############################################################################
 #
