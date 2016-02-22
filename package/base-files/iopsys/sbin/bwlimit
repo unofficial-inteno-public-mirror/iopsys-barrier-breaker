@@ -41,6 +41,9 @@ if [ -n "$XDSL" ]; then
 	DOWNLINK=$(xdslctl info --stats | grep Bearer | grep rate | awk '{print$11}')
 	UPLINK=$(xdslctl info --stats | grep Bearer | grep rate | awk '{print$6}')
 
+	[ -n "$DOWNLINK" ] || exit
+	[ -n "$UPLINK" ] || exit
+
 	# limit bandwidth to 95% of xDSL Bearer rate
 	DOWNLINK=$((95*$DOWNLINK/100))
 	UPLINK=$((95*$UPLINK/100))
