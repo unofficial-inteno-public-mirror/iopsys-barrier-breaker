@@ -4,9 +4,12 @@ local DEV=""
 local DOWNLINK=""
 local UPLINK=""
 local RESET=""
+local XDSL=""
 
 usage() {
 	echo "bwlimit -i <DEVICE> -d <DOWNLINK SPEED>kbps -u <UPLINK SPEED>kbps"
+	echo "or"
+	echo "bwlimit -i <DEVICE> -x # set bandwidth limitation based on xDSL rate"
 	echo "or"
 	echo "bwlimit -i <DEVICE> -r # reset bandwidth limit on a specific device"
 	exit
@@ -17,6 +20,7 @@ while [ -n "$1" ]; do
 		-i) DEV="$2"; shift;;
 		-d) DOWNLINK="$2"; shift;;
 		-u) UPLINK="$2"; shift;;
+		-x) XDSL="1";;
 		-r) RESET="1";;
 		*) echo usage; break;;
 	esac
@@ -31,6 +35,15 @@ fi
 if ! ifconfig $DEV >/dev/null 2>&1; then 
 	echo "$DEV is an invalid device"
 	usage
+fi
+
+if [ -n "$XDSL" ]; then
+	DOWNLINK=$(xdslctl info --stats | grep Bearer | grep rate | awk '{print$11}')
+	UPLINK=$(xdslctl info --stats | grep Bearer | grep rate | awk '{print$6}')
+
+	# limit bandwidth to 95% of xDSL Bearer rate
+	DOWNLINK=$((95*$DOWNLINK/100))
+	UPLINK=$((95*$UPLINK/100))
 fi
 
 if [ -z "$DOWNLINK" -a -z "$UPLINK" -a -z "$RESET" ]; then
