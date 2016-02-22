@@ -1,7 +1,6 @@
 #!/bin/bash
 export CLEAN=0
 export IMPORT=0
-export OPEN=0
 export SRCTREEOVERR=0
 export FILEDIR="files/"
 export CONFIGPATH="configs"  
@@ -20,8 +19,7 @@ usage() {
         echo
 	echo "  -c,  remove all files under ./files and import from config "
 	echo "  -v,  verbose"
-	echo "  -d,  developer, will rewrite git url to use inteno gitolite server."
-	echo "  -o, use openbroadcom kernel"
+	echo "  -d,  developer, will rewrite git url to use inteno gitolite server and use some closed source packages."
 	echo "  -u, Update customer config before applying"  
 	echo "	-p, set profile (if exists)"
 	echo "	-t, use latest git tag and number of commits since as version for the build"
@@ -75,7 +73,7 @@ create_and_copy_files()
     local CUSTOMER=$2
     v "cp  $CONFIGPATH/MASTER/config .config"
     cp  $CONFIGPATH/MASTER/config .config
-    if [ $OPEN -eq 0 ]; then
+    if [ $DEVELOPER -eq 1 ]; then
 		if [ ! -d "$CUSTCONF" ]; then
 			git  clone  git@ihgsp.inteno.se:customerconfigs
 		elif [ $IMPORT -eq 1 ]; then
@@ -89,7 +87,7 @@ create_and_copy_files()
     if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
 		echo "Hardware profile does not exist"
 		exit 1
-    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
+    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
 		echo "Customer profile does not exist"
 		exit 1
     fi
@@ -151,18 +149,19 @@ create_and_copy_files()
 	fi	
 
 
-    ##### if open change to open kernel and remove building of nand tool
-    if [ $OPEN -eq 1 ]; then
-		[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
-    fi
-    
     # Enable Pckage source tree override if selected
     [ $SRCTREEOVERR -eq 1 ] && \
         sed -i 's/# CONFIG_SRC_TREE_OVERRIDE.*/CONFIG_SRC_TREE_OVERRIDE=y/' .config
 
     # developer mode selected ?
-    [ $DEVELOPER -eq 1 ] && \
+    if [ $DEVELOPER -eq 1 ]; then
+
+	##### if developer change to full source packages
+	[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
+
+	# rewrite url to clone with ssh instead of http
 	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+    fi
 
     # validate the .config against dependency rules.
     make defconfig
@@ -181,7 +180,6 @@ else
 
 	    -c) export CLEAN=1;;
 	    -u) export IMPORT=1;;
-	    -o) export OPEN=1;;
 	    -d) export DEVELOPER=1;;
 	    -v) export VERBOSE="$(($VERBOSE + 1))";;
 		-p) export PROFILE="$2"; shift;; 
