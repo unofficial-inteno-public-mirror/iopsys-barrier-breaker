@@ -25,20 +25,20 @@ then
     then
 	use_mirror=1
 	# clone remote servers with http (the repos are read-only)
-	PROTOCOL="http://"
+	CLONE_URL="http://"${MIRROR}/${repo}
     fi
 
     if [ "$REWRITE" = y ]
     then
 	use_mirror=1
 	# clone with ssh 
-	PROTOCOL="git@"
+	CLONE_URL="git@"${MIRROR}:${repo}
     fi
 
     if [ $use_mirror = 1 ]
     then
-	echo "trying to clone from mirror ${PROTOCOL}${MIRROR}/${repo}"
-	if git clone ${PROTOCOL}${MIRROR}:${repo} ${SUBDIR} --recursive
+	echo "trying to clone from mirror ${CLONE_URL}"
+	if git clone ${CLONE_URL} ${SUBDIR} --recursive
 	then
 	    old="$PWD"
 	    cd ${SUBDIR}
