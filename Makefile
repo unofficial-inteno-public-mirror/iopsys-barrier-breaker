@@ -105,9 +105,9 @@ prepare: .config $(tools/stamp-install) $(toolchain/stamp-install) tmp/.iop_boot
 world: prepare $(target/stamp-compile) $(package/stamp-cleanup) $(package/stamp-compile) $(package/stamp-install) $(package/stamp-rootfs-prepare) $(target/stamp-install) FORCE
 	$(_SINGLE)$(SUBMAKE) -r package/index
 ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
-	@$(SCRIPT_DIR)/git_mirror.sh >&8
+	@$(SCRIPT_DIR)/git_mirror.sh $(CONFIG_GITMIRROR_REWRITE) >&8
 else
-	@$(SCRIPT_DIR)/git_mirror.sh
+	@$(SCRIPT_DIR)/git_mirror.sh $(CONFIG_GITMIRROR_REWRITE)
 endif
 
 # update all feeds, re-create index files, install symlinks

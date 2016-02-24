@@ -1,5 +1,7 @@
 #! /bin/bash
 
+REWRITE="$1"
+
 all=$(find . -name ".git_update")
 mirrors=$(ssh git@public.inteno.se 2>/dev/null | awk '/ R / {print $NF}'| tr '\r' ' ')
 
@@ -61,18 +63,21 @@ do
 
 	if [[ $PKG_SOURCE_URL != *inteno.se* ]]
 	then
-
-	    if ! in_mirror $repo
-	    then
-		echo -n "no mirror for $PKG_NAME. "
-		print_help
-		echo "-------------------------------------------------------------------------------"
-	    else
-		# BUG: make sure that the mirror contains the correct commit.
-		# the checkout does it and we need to warn that the mirror is not used here
-		# so the user see it.
-		true
-		#		echo "Mirror for $PKG_NAME. "
+	    
+	    # If rewrite is set, we are an inteno developer. Otherwise skip this part.
+	    if [ "$REWRITE" = y ]; then
+		if ! in_mirror $repo
+		then
+		    echo -n "no mirror for $PKG_NAME. "
+		    print_help
+		    echo "-------------------------------------------------------------------------------"
+		else
+		    # BUG: make sure that the mirror contains the correct commit.
+		    # the checkout does it and we need to warn that the mirror is not used here
+		    # so the user see it.
+		    true
+		    #		echo "Mirror for $PKG_NAME. "
+		fi
 	    fi
 	fi
       fi
