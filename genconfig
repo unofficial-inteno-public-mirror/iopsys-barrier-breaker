@@ -168,6 +168,12 @@ create_and_copy_files()
 }
 
 ####### main #####
+if [ ! -e tmp/.iop_bootstrap ]; then
+    echo "You have not installed feeds. Running genconfig in this state would create a non functional configuration."
+    echo "Run: ./scripts/iop_feeds_update.sh"
+    exit 0
+fi
+
 if [ $# -eq 0 ]; then
     echo Current profile:
     cat .current_config_file
