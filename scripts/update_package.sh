@@ -411,7 +411,7 @@ insert_hash_in_feeds_config()
 check_packages()
 {
     echo -e "${Green}_______________________________________________________________________________${Color_Off}"
-    echo "Now checking cheking if any changes has ben done to the packages."
+    echo "Now checking if any changes has been done to the packages."
     echo -e "${Green}_______________________________________________________________________________${Color_Off}"
 
     # First scan all files in build dir for packages that have .git directories.
@@ -501,7 +501,7 @@ Date: %ai%n\
 check_feeds()
 {
     echo -e "${Green}_______________________________________________________________________________${Color_Off}"
-    echo "Now checking cheking if any changes has ben done to the feeds."
+    echo "Now checking if any changes has been done to the feeds."
     echo -e "${Green}_______________________________________________________________________________${Color_Off}"
 
     feeds=$(grep -v "^#" feeds.conf| awk '{print $2}')
