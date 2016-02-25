@@ -86,9 +86,13 @@ tmp/.iop_bootstrap: feeds.conf
 ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
 	echo "feeds.conf has been updated. you have to run" >&8
 	echo "scripts/iop_feeds_update.sh" >&8
+	echo "or" >&8
+	echo "scripts/iop_feeds_update.sh -d" >&8
 else
 	echo "feeds.conf has been updated. you have to run"
 	echo "scripts/iop_feeds_update.sh"
+	echo "or"
+	echo "scripts/iop_feeds_update.sh -d"
 endif
 	exit 1
 
