@@ -1,13 +1,10 @@
 #! /bin/bash
+developer=0
 
 while getopts "d" opt; do
     case $opt in
         d)
-	    if [[ tmp/.iop_bootstrap -nt feeds.conf ]]; then
-		exit 0
-	    fi
-	    
-            TIMESTAMP=1
+	    developer=1
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -20,7 +17,14 @@ cp .config .genconfig_config_bak
 
 rm -rf package/feeds
 
-./scripts/feeds update
+#if -d argument is passed, clone feeds with ssh instead of http
+if [ $developer == 1 ]; then
+    ./scripts/feeds update -g
+else
+    ./scripts/feeds update
+fi
+
+
 ./scripts/feeds install -f -p feed_inteno_juci -a
 ./scripts/feeds install -f -p feed_inteno_packages -a
 ./scripts/feeds install -f -p feed_inteno_broadcom -a

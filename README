@@ -31,11 +31,12 @@ After cloning the repository, which contains feeds.conf, the feed
 repositories need to be cloned and installed. This is handled by
 running:
 
-./scripts/iop_feeds_update.sh
+./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
 
 This clones all feed repositories into feeds/ and installs the
 packages from those repositories into the build system by creating
-symlinks in packages/feeds/.
+symlinks in packages/feeds/. Cloning with the -d flag will rewrite the
+url:s in feeds.conf to clone with ssh instead of http.
 
 Now, generate a .config file for the board and customer you're
 building for with
@@ -67,7 +68,7 @@ get changes that modify feeds.conf. Now your feeds.conf points to
 newer commits then what is checked out in the feed repositories and
 you need to update your feeds. Do this by running:
 
-./scripts/iop_feeds_update.sh
+./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
 
 This will pull in the latest changes in
 the modified feed for you. To summarize, to update your repository,
@@ -75,7 +76,7 @@ the modified feed for you. To summarize, to update your repository,
 run:
 
 git pull
-./scripts/iop_feeds_update.sh
+./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
 make
 
 ---------------------------------
@@ -105,7 +106,7 @@ export EDITOR=/usr/bin/emacs
 
 You probably want to add this line to your .bashrc.
 
-Then run ./scripts/iop_update_package.sh
+./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
 
 First, it will update the toplevel remote repository and abort if it
 finds that you are not on the last commit on the branch you're working
