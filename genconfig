@@ -165,6 +165,11 @@ create_and_copy_files()
 
     # validate the .config against dependency rules.
     make defconfig
+
+    if [ "$PROFILE" == "juci" ]; then
+	sed -i '/CONFIG_PACKAGE_luci-lib-core_source=y/d' .config
+	sed -i '/CONFIG_PACKAGE_luci-lib-nixio_notls=y/d' .config
+    fi
 }
 
 ####### main #####
