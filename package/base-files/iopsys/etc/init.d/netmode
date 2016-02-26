@@ -45,6 +45,7 @@ switch_netmode() {
 	config_get curmode setup curmode
 	config_get conf $curmode conf
 	cp /etc/netmodes/$conf/* /etc/config/
+	sync
 	rm -f /etc/config/DETAILS
 }
 
