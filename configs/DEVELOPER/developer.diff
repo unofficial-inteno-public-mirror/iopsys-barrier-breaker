@@ -1,6 +1,6 @@
 s/\CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g
 s/# CONFIG_PACKAGE_cfmod is not set/\CONFIG_PACKAGE_cfmod=y/g
-s/# CONFIG_PACKAGE_natalie-dect is note set/\CONFIG_PACKAGE_natalie-dect=y/g
+s/# CONFIG_PACKAGE_natalie-dect is not set/\CONFIG_PACKAGE_natalie-dect=y/g
 s/\CONFIG_PACKAGE_natalie-dect-open=y/# CONFIG_PACKAGE_natalie-dect-open is not set/g
 s/# CONFIG_PACKAGE_ice-client is not set/\CONFIG_PACKAGE_ice-client=y/g
 s/# CONFIG_PACKAGE_ice-client-guest is not set/\CONFIG_PACKAGE_ice-client-guest=m/g
