@@ -42,6 +42,7 @@ system_config() {
 		sed -i '/\/sbin\/testnet timed_check/s/\*\/[0-9]\+/\*\/'$ping_interval'/g' /etc/crontabs/root
 	else
 		echo "*/"$ping_interval" * * * * /sbin/testnet timed_check >/dev/null 2>&1" >>/etc/crontabs/root
+		fsync /etc/crontabs/root
 	fi
 }
 
