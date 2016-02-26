@@ -131,7 +131,11 @@ create_and_copy_files()
 		elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
 			v "Using generic profile for $PROFILE"
 			set_profile $CUSTCONF/$PROFILE.profile .config
-		else 
+		elif [ -e "$CONFIGPATH/$BOARDTYPE/$PROFILE.profile" ]; then
+			set_profile configs/$BOARDTYPE/$PROFILE.profile .config
+		elif [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
+			set_profile configs/MASTER/$PROFILE.profile .config
+		else
 			echo "ERROR: profile $PROFILE does not exist!"
 			exit 1
 		fi
