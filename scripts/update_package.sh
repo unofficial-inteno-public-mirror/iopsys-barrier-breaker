@@ -533,7 +533,7 @@ check_feeds()
 
 	    # if we are behind the remote automatically do a pull
 	    if [ $LOCAL = $BASE ]; then
-		$(cd feeds/$feed ; git pull)
+		(cd feeds/$feed ; git pull 1>/dev/null)
 
 		#redo the test here and see if the feeds.conf and git is still different.
 		in_git=$(cd feeds/$feed; git rev-parse HEAD)
