@@ -55,20 +55,20 @@ handle_configs()
 
 	for config in $configs; do
 		if [ -f /etc/config/$config ]; then
-			sed -i "s/\$MAC6/$mac6/g" /etc/config/$config
-			sed -i "s/\$MAC4/$mac4/g" /etc/config/$config
-			sed -i "s/\$MAC2/$mac2/g" /etc/config/$config
-			sed -i "s/\$MAC/$mac/g" /etc/config/$config
-			sed -i "s/\$BSSID6/$bssid6/g" /etc/config/$config
-			sed -i "s/\$BSSID4/$bssid4/g" /etc/config/$config
-			sed -i "s/\$BSSID2/$bssid2/g" /etc/config/$config
-			sed -i "s/\$BSSID/$bssid/g" /etc/config/$config
-			sed -i "s/\$WPAKEY/$wpakey/g" /etc/config/$config
-			sed -i "s/\$DESKEY/$DESKEY/g" /etc/config/$config
-			sed -i "s/\$SER/$SERIALNR/g" /etc/config/$config
-			sed -i "s/\$OUI/$oid/g" /etc/config/$config
-			sed -i "s/\$HARDWAREID/$hardwareid/g" /etc/config/$config
-			[ "$config" == "wireless" ] && sed -i "s/pskmixedpsk2/mixed-psk/g" /etc/config/$config
+			grep -q "\$MAC6" /etc/config/$config && sed -i "s/\$MAC6/$mac6/g" /etc/config/$config
+			grep -q "\$MAC4" /etc/config/$config && sed -i "s/\$MAC4/$mac4/g" /etc/config/$config
+			grep -q "\$MAC2" /etc/config/$config && sed -i "s/\$MAC2/$mac2/g" /etc/config/$config
+			grep -q "\$MAC" /etc/config/$config && sed -i "s/\$MAC/$mac/g" /etc/config/$config
+			grep -q "\$BSSID6" /etc/config/$config && sed -i "s/\$BSSID6/$bssid6/g" /etc/config/$config
+			grep -q "\$BSSID4" /etc/config/$config && sed -i "s/\$BSSID4/$bssid4/g" /etc/config/$config
+			grep -q "\$BSSID2" /etc/config/$config && sed -i "s/\$BSSID2/$bssid2/g" /etc/config/$config
+			grep -q "\$BSSID" /etc/config/$config && sed -i "s/\$BSSID/$bssid/g" /etc/config/$config
+			grep -q "\$WPAKEY" /etc/config/$config && sed -i "s/\$WPAKEY/$wpakey/g" /etc/config/$config
+			grep -q "\$DESKEY" /etc/config/$config && sed -i "s/\$DESKEY/$DESKEY/g" /etc/config/$config
+			grep -q "\$SER" /etc/config/$config && sed -i "s/\$SER/$SERIALNR/g" /etc/config/$config
+			grep -q "\$OUI" /etc/config/$config && sed -i "s/\$OUI/$oid/g" /etc/config/$config
+			grep -q "\$HARDWAREID" /etc/config/$config && sed -i "s/\$HARDWAREID/$hardwareid/g" /etc/config/$config
+			[ "$config" == "wireless" ] && grep -q "pskmixedpsk2" /etc/config/$config && sed -i "s/pskmixedpsk2/mixed-psk/g" /etc/config/$config
 		fi
 	done
 }
