@@ -98,6 +98,17 @@ create_and_copy_files()
 		v "rm -rf $FILEDIR*"	
 		rm -rf $FILEDIR*
     fi
+
+    # developer mode selected ?
+    if [ $DEVELOPER -eq 1 ]; then
+
+	##### if developer change to full source packages
+	[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
+
+	# rewrite url to clone with ssh instead of http
+	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+    fi
+
     # first build config based on boardid
     if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
         v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
@@ -157,15 +168,6 @@ create_and_copy_files()
     [ $SRCTREEOVERR -eq 1 ] && \
         sed -i 's/# CONFIG_SRC_TREE_OVERRIDE.*/CONFIG_SRC_TREE_OVERRIDE=y/' .config
 
-    # developer mode selected ?
-    if [ $DEVELOPER -eq 1 ]; then
-
-	##### if developer change to full source packages
-	[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
-
-	# rewrite url to clone with ssh instead of http
-	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
-    fi
 
     # validate the .config against dependency rules.
     make defconfig
