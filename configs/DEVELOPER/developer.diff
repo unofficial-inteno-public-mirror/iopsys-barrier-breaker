@@ -1,18 +1,11 @@
 s/\CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g
 s/# CONFIG_PACKAGE_cfmod is not set/\CONFIG_PACKAGE_cfmod=y/g
-s/# CONFIG_PACKAGE_natalie-dect is not set/\CONFIG_PACKAGE_natalie-dect=y/g
-s/\CONFIG_PACKAGE_natalie-dect-open=y/# CONFIG_PACKAGE_natalie-dect-open is not set/g
 s/# CONFIG_PACKAGE_ice-client is not set/\CONFIG_PACKAGE_ice-client=y/g
 s/# CONFIG_PACKAGE_ice-client-guest is not set/\CONFIG_PACKAGE_ice-client-guest=m/g
-s/# CONFIG_PACKAGE_endptcfg is not set/\CONFIG_PACKAGE_endptcfg=y/g
-s/\CONFIG_PACKAGE_endptcfg-open=y/# CONFIG_PACKAGE_endptcfg-open is not set/g
 s/# CONFIG_PACKAGE_ice-client-camerawatch is not set/\CONFIG_PACKAGE_ice-client-camerawatch=m/g
 s/# CONFIG_PACKAGE_ice-client-iperf is not set/\CONFIG_PACKAGE_ice-client-iperf=m/g
 s/# CONFIG_PACKAGE_ice-client-logreader is not set/\CONFIG_PACKAGE_ice-client-logreader=m/g
 s/# CONFIG_PACKAGE_ice-client-monitor is not set/\CONFIG_PACKAGE_ice-client-monitor=m/g
 s/# CONFIG_PACKAGE_ice-client-netrounds is not set/\CONFIG_PACKAGE_ice-client-netrounds=m/g
 s/# CONFIG_PACKAGE_ice-client-rshell is not set/\CONFIG_PACKAGE_ice-client-rshell=m/g
-
-
-
 
