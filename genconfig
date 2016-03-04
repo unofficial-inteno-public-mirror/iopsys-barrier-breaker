@@ -175,6 +175,10 @@ create_and_copy_files()
     if [ "$PROFILE" == "juci" ]; then
 	sed -i '/CONFIG_PACKAGE_luci-lib-core_source=y/d' .config
 	sed -i '/CONFIG_PACKAGE_luci-lib-nixio_notls=y/d' .config
+
+	local luciver=$(grep -w CONFIG_TARGET_VERSION .config | cut -d'=' -f2 | tr -d '"')
+	local juciver=$(echo $luciver | awk -F'.' '{print$1"."$2+1"."$3}')
+	sed -i "s/CONFIG_TARGET_VERSION=.*/CONFIG_TARGET_VERSION=${juciver}/g" .config
     fi
 }
 
