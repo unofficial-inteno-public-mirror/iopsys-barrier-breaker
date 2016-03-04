@@ -157,7 +157,12 @@ handle_backup() {
 
 }
 
+print_out_sw_ver() {
+	echo Software Version: $(grep "IOP Version" /etc/banner | awk '{print$3}') >/dev/kmsg
+}
+
 boot() {
+	print_out_sw_ver
 	handle_upgrade_count
 	handle_threads
 	handle_openwrtversion
