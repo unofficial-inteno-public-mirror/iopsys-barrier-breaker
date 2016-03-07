@@ -68,9 +68,17 @@ check_num_mac_address() {
     fi
 }
 
+feed_rng_entropy() {
+    if lsmod |grep -q bcmtrng; then
+        echo "Seeding rng from hw trng"
+        head -c 1024 /dev/hwrandom > /dev/random
+    fi
+}
+
 brcm_env
 id_upgrade_reconfig
 bcm_dsl_annex
 check_num_mac_address
 brcm_insmod
+feed_rng_entropy
 
