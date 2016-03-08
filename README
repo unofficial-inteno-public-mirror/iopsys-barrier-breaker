@@ -106,7 +106,7 @@ export EDITOR=/usr/bin/emacs
 
 You probably want to add this line to your .bashrc.
 
-./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
+./scripts/update_package.sh
 
 First, it will update the toplevel remote repository and abort if it
 finds that you are not on the last commit on the branch you're working
