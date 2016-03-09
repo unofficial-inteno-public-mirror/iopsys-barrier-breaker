@@ -259,10 +259,14 @@ on_a_branch()
 	    echo "git checkout ${branches[$answer]}"
 	    if ! git checkout -t ${branches[$answer]}
 	    then
-		echo -e "${Color_Off}"
-		echo "update_git aborting! something was wrong changing to branch ${branches[$answer]}"
-		echo "go to [ $repo ] and fix it."
-		exit 99
+		local_branch=$(basename ${branches[$answer]})
+		if ! git checkout ${local_branch}
+		then
+		    echo -e "${Color_Off}"
+		    echo "update_git aborting! something was wrong changing to branch ${branches[$answer]}"
+		    echo "go to [ $repo ] and fix it."
+		    exit 99
+		fi
 	    fi
 	    echo -e "${Color_Off}"
 	fi
