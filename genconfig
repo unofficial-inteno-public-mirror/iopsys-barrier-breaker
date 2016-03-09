@@ -76,7 +76,7 @@ create_and_copy_files()
     cp  $CONFIGPATH/MASTER/config .config
     if [ $DEVELOPER -eq 1 ]; then
 		if [ ! -d "$CUSTCONF" ]; then
-			git  clone  git@ihgsp.inteno.se:customerconfigs
+			git  clone  git@private.inteno.se:customerconfigs
 		elif [ $IMPORT -eq 1 ]; then
 			cd customerconfigs
 			v "git pull"
