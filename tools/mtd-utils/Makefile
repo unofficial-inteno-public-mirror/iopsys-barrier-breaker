@@ -1,123 +1,66 @@
-# 
-# Copyright (C) 2009-2010 OpenWrt.org
+#
+# Copyright (C) 2006-2012 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
-PKG_VERSION:=1.5.1
-PKG_RELEASE:=3
-PKG_INSTALL:=1
+PKG_VERSION:=1.4.5
+PKG_RELEASE:=1
+PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/mtd-utils
+#PKG_SOURCE_URL:=git@ihgsp.inteno.se:mtd-utils
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=dd9f464eced6af7d5e6a4a920b727421229310f4
-PKG_SOURCE_URL:=http://public.inteno.se:/mtd-utils
-
+PKG_SOURCE_VERSION:=3a0d8a01d91e0e80bc59d6320e91c07383f0ede2
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_CAT:=zcat
 
-include $(INCLUDE_DIR)/package.mk
+HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)-$(PKG_VERSION)
 
-FILES:= \
-	docfdisk \
-	doc_loadbios \
-	flashcp \
-	flash_erase \
-	flash_lock \
-	flash_otp_dump \
-	flash_otp_info \
-	flash_otp_lock \
-	flash_otp_write \
-	flash_unlock \
-	ftl_check \
-	ftl_format \
-	imagewrite \
-	jffs2dump \
-	jffs2reader \
-	mkfs.jffs2 \
-	mtd_debug \
-	nanddump \
-	nandtest \
-	nandwrite \
-	nftldump \
-	nftl_format \
-	recv_image \
-	rfddump \
-	rfdformat \
-	serve_image \
-	sumtool
+include $(INCLUDE_DIR)/host-build.mk
 
-ifneq ($(CONFIG_LINUX_2_4),y)
-FILES += \
-	mkfs.ubifs \
-	mtdinfo \
-	ubiattach \
-	ubiblock \
-	ubicrc32 \
-	ubidetach \
-	ubiformat \
-	ubimkvol \
-	ubinfo \
-	ubinize \
-	deubinize \
-	ubirename \
-	ubirmvol \
-	ubirsvol \
-	ubiupdatevol
+HOST_CFLAGS += -I$(STAGING_DIR_HOST)/include/e2fsprogs
+CFLAGS := $(HOST_CFLAGS) -I$(HOST_BUILD_DIR)/include -L$(HOST_BUILD_DIR) -L$(STAGING_DIR_HOST)/lib -DNO_NATIVE_SUPPORT
+ifneq ($(HOST_OS),Linux)
+CFLAGS += -Dloff_t=off_t -D__BYTE_ORDER=BYTE_ORDER -include getline.h -include endian.h -I$(CURDIR)/include -include fls.h
 endif
 
-define PartGen
-define Package/mtd-utils-$(subst _,-,$(1))
-  TITLE:=MTD $(1)
-  URL:=http://www.linux-mtd.infradead.org/
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=mtd-utils +zlib +liblzo +libuuid
-endef
-endef
+MTD_MAKEOPTS = \
+	CFLAGS="$(CFLAGS)" \
+	LDFLAGS="$(HOST_LDFLAGS) $(HOST_STATIC_LINKING)" \
+	WITHOUT_LZO=1 WITHOUT_XATTR=1 \
+	LZMA_STATIC_LIB="$(STAGING_DIR_HOST)/lib/liblzma.a" \
+	SUBDIRS="" \
+	BUILDDIR="$(HOST_BUILD_DIR)"
 
-define Package/mtd-utils
-  TITLE:=Utilities for flash info/debug
-  SECTION:=utils
-  CATEGORY:=Utilities
-  MENU:=1
-endef
-
-define Package/mtd-utils/description
-  Utilities for manipulating memory technology devices.
-endef
-
-define Package/mtd-utils/install
-	true
-endef
-
-$(foreach file,$(FILES),$(eval $(call PartGen,$(file))))
-
-MAKE_FLAGS += \
-	DESTDIR="$(PKG_INSTALL_DIR)" \
-	BUILDDIR="$(PKG_BUILD_DIR)" \
-	LDLIBS+="$(LIBGCC_S)" \
-	WITHOUT_XATTR=1
-
-ifeq ($(CONFIG_LINUX_2_4),y)
-MAKE_FLAGS += \
-	SUBDIRS=""
-endif
-
-define PartInstall
-define Package/mtd-utils-$(subst _,-,$(1))/install
-	$(INSTALL_DIR) \
-		$$(1)/usr/sbin
-
-	$(INSTALL_BIN) \
-		$(PKG_INSTALL_DIR)/usr/sbin/$(1) \
-		$$(1)/usr/sbin/
-endef
+define Host/Compile
+	$(MAKE) -C $(HOST_BUILD_DIR)/lib \
+		$(MTD_MAKEOPTS) \
+		TARGETS="libmtd.a libcrc32.a" \
+		LIBS="libmtd libcrc32"
+	$(MAKE) -C $(HOST_BUILD_DIR) \
+		$(MTD_MAKEOPTS) \
+		TARGETS=mkfs.jffs2
+	$(MAKE) -C $(HOST_BUILD_DIR)/ubi-utils \
+		$(MTD_MAKEOPTS) \
+		TARGETS=ubinize
+	$(MAKE) -C $(HOST_BUILD_DIR)/mkfs.ubifs \
+		$(MTD_MAKEOPTS) \
+		BUILDDIR="$(HOST_BUILD_DIR)/mkfs.ubifs"
 endef
 
-$(foreach file,$(FILES),$(eval $(call PartInstall,$(file))))
+define Host/Install
+	$(CP) \
+		$(HOST_BUILD_DIR)/mkfs.jffs2 \
+		$(HOST_BUILD_DIR)/mkfs.ubifs/mkfs.ubifs \
+		$(HOST_BUILD_DIR)/ubinize \
+		$(STAGING_DIR_HOST)/bin/
+endef
 
-$(eval $(call BuildPackage,mtd-utils))
-$(foreach file,$(FILES),$(eval $(call BuildPackage,mtd-utils-$(subst _,-,$(file)))))
+define Host/Clean
+	rm -f $(STAGING_DIR_HOST)/bin/{mkfs.jffs2,mkfs.ubifs,ubinize}
+endef
+
+$(eval $(call HostBuild))
