@@ -10,6 +10,8 @@ export DEVELOPER=0
 export TMPDIR="/tmp/builder/"
 LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
+git remote -v | grep -q http || DEVELOPER=1
+
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
 }
@@ -19,7 +21,7 @@ usage() {
         echo
 	echo "  -c,  remove all files under ./files and import from config "
 	echo "  -v,  verbose"
-	echo "  -d,  developer, will rewrite git url to use inteno gitolite server and use some closed source packages."
+	#echo "  -d,  developer, will rewrite git url to use inteno gitolite server and use some closed source packages."
 	echo "  -u, Update customer config before applying"  
 	echo "	-p, set profile (if exists)"
 	echo "	-t, use latest git tag and number of commits since as version for the build"
@@ -87,7 +89,8 @@ create_and_copy_files()
     if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
 		echo "Hardware profile does not exist"
 		exit 1
-    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
+    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
+#   elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
 		echo "Customer profile does not exist"
 		exit 1
     fi
@@ -103,10 +106,11 @@ create_and_copy_files()
     if [ $DEVELOPER -eq 1 ]; then
 
 	##### if developer change to full source packages
-	[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
+	#[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
 
 	# rewrite url to clone with ssh instead of http
 	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+	sed -i 's/CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g' .config
     fi
 
     # first build config based on boardid

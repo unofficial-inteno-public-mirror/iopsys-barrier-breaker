@@ -1,2 +1,0 @@
-s/\CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g
-s/# CONFIG_PACKAGE_cfmod is not set/\CONFIG_PACKAGE_cfmod=y/g

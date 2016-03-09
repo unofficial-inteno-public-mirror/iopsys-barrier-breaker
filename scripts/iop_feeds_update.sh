@@ -1,17 +1,19 @@
 #! /bin/bash
 developer=0
 
-while getopts "d" opt; do
-    case $opt in
-        d)
-	    developer=1
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-            ;;
-    esac
-done
+git remote -v | grep -q http || developer=1
+
+#while getopts "d" opt; do
+#    case $opt in
+#        d)
+#	    developer=1
+#            ;;
+#        \?)
+#            echo "Invalid option: -$OPTARG" >&2
+#            exit 1
+#            ;;
+#    esac
+#done
 
 cp .config .genconfig_config_bak
 
