@@ -21,7 +21,6 @@ usage() {
         echo
 	echo "  -c,  remove all files under ./files and import from config "
 	echo "  -v,  verbose"
-	#echo "  -d,  developer, will rewrite git url to use inteno gitolite server and use some closed source packages."
 	echo "  -u, Update customer config before applying"  
 	echo "	-p, set profile (if exists)"
 	echo "	-t, use latest git tag and number of commits since as version for the build"
@@ -207,7 +206,6 @@ else
 
 	    -c) export CLEAN=1;;
 	    -u) export IMPORT=1;;
-	    -d) export DEVELOPER=1;;
 	    -v) export VERBOSE="$(($VERBOSE + 1))";;
 		-p) export PROFILE="$2"; shift;; 
 		-t) export USE_TAG=1;; 
