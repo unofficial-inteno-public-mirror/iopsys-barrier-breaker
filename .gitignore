@@ -43,3 +43,4 @@ mirror*
 .config.master
 target/linux/brcm63xx_ref_nand
 target/linux/brcm63xx_ref_nand_arm
+.genconfig_config_bak
