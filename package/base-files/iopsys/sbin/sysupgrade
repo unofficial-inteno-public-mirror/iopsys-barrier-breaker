@@ -112,7 +112,11 @@ online_fw_check() {
 
 	[ -f $verpath ] || exit 1
 
-	imgver=$(cat $verpath)$extension
+	imgver=$(cat $verpath)
+        case $imgver in
+		*.w|*.y|*.y2|*_fs_image) ;;
+		*) imgver=$imgver$extension ;;
+	esac
 
 	curver="$(db get hw.board.iopVersion)$extension"
 
