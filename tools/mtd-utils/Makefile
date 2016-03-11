@@ -7,10 +7,9 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
-PKG_VERSION:=1.4.5
-PKG_RELEASE:=1
-PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/mtd-utils
-#PKG_SOURCE_URL:=git@ihgsp.inteno.se:mtd-utils
+PKG_VERSION:=1.5.1
+PKG_RELEASE:=3
+PKG_SOURCE_URL:=http://public.inteno.se:/mtd-utils
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=3a0d8a01d91e0e80bc59d6320e91c07383f0ede2
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
