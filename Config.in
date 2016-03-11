@@ -131,7 +131,7 @@ menu "Target Images"
 		help
 		    Allows you to change the percentage of reserved blocks in the root filesystem
  	
-	source "target/linux/brcm63xx_ref_nand/Config.in"
+	source "target/linux/*/Config.in"
 
 endmenu
 
