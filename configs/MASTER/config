@@ -23,8 +23,8 @@ CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_etrax is not set
 # CONFIG_TARGET_brcm2708 is not set
 # CONFIG_TARGET_brcm63xx is not set
-CONFIG_TARGET_brcm63xx_ref_nand=y
-# CONFIG_TARGET_brcm63xx_ref_nand_arm is not set
+CONFIG_TARGET_iopsys_brcm63xx_mips=y
+# CONFIG_TARGET_iopsys_brcm63xx_arm is not set
 # CONFIG_TARGET_brcm47xx is not set
 # CONFIG_TARGET_sibyte is not set
 # CONFIG_TARGET_cns21xx is not set
@@ -305,7 +305,7 @@ CONFIG_TARGET_brcm63xx_ref_nand=y
 # CONFIG_TARGET_brcm63xx_ref_nand_Broadcom-wl is not set
 # CONFIG_TARGET_brcm63xx_ref_nand_Atheros is not set
 # CONFIG_TARGET_brcm63xx_ref_nand_Ralink is not set
-CONFIG_TARGET_brcm63xx_ref_nand_NoWiFi=y
+CONFIG_TARGET_iopsys_brcm63xx_mips_NoWiFi=y
 # CONFIG_TARGET_brcm63xx_ref_nand_Broadcom-brcmsmac is not set
 # CONFIG_TARGET_brcm63xx_ref_nand_GW6X00 is not set
 # CONFIG_TARGET_iop32x_Default is not set
