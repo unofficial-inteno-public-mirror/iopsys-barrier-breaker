@@ -987,6 +987,7 @@ update_from_nvram() {
 	fi
 
 	uci commit wireless
+	touch /tmp/got_wps_credentials_from_nvram
 }
 
 is_in_network() {

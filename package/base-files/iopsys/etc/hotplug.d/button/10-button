@@ -44,9 +44,7 @@ get_wifi_wet_interface() {
 }
 
 wpscbutton_action () {
-	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
-	[ "$bten" == "0" ] && return
-	[ "$(uci get netmode.setup.curmode)" == "repeater" ] && {
+	wps_client_get_credentials () {
 		wet_iface="$(get_wifi_wet_interface)"
 		for iface in $(nvram show | grep _wps_mode | sed -n -r 's/(.*)_wps_mode=.*/\1/p'); do
 			[ "$iface" != "$wet_iface" ] && nvram set ${iface}_wps_mode=disabled
@@ -55,8 +53,41 @@ wpscbutton_action () {
 		killall -q -15 wps_monitor 2>/dev/null # Kill Child Thread first, -15: SIGTERM to force to remove WPS IE
 		sleep 1
 		printf "wps_monitor STA oneshot mode\n" > /dev/console
-		wps_monitor oneshot > /dev/console && wifi reload &
+		wps_monitor oneshot > /dev/console || return
+		echo "ok"
 	}
+
+	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
+	[ "$bten" == "0" ] && return
+	if [ "$(uci get netmode.setup.curmode)" == "repeater" ] ; then
+		[ "$(wps_client_get_credentials)" != "ok" ] && wifi reload
+	else
+		echo "Switch to repeater mode" > /dev/console
+		mkdir -p /tmp/configbackup
+		cp -af /etc/config/* /tmp/configbackup/
+		old_mode=$(uci get netmode.setup.curmode)
+		uci set netmode.setup.curmode=repeater
+		/etc/init.d/netmode reload
+		wifi reload
+		sleep 1
+		if [ "$(wps_client_get_credentials)" == "ok" ] ; then
+			echo "Got WPS credentials, stay in repeater mode and reboot shortly" > /dev/console
+			for i in 1 2 3 4 5; do
+				ledctl allon
+				sleep 1
+				ledctl alloff
+				sleep 1
+			done
+			while [ ! -e "/tmp/got_wps_credentials_from_nvram" ] ; do sleep 1 ; done
+			echo "Now rebooting" > /dev/console
+			reboot
+			return
+		fi
+		echo "Revert to original mode" > /dev/console
+		uci set netmode.setup.curmode="$old_mode"
+		cp -af /tmp/configbackup/* /etc/config/
+		wifi reload
+	fi
 }
 
 infobutton_action() {
