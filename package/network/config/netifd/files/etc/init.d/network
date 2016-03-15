@@ -15,6 +15,10 @@ init_switch() {
 start_service() {
 	init_switch
 
+	# Broadcom Packet Flow Cache Learning of GRE flows
+	# Tunnel<DISABLED> PassThru<ENABLED>
+	fcctl config --gre 2
+
 	procd_open_instance
 	procd_set_param command /sbin/netifd
 	procd_set_param respawn
