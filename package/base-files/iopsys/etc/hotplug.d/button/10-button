@@ -53,6 +53,7 @@ wpscbutton_action () {
 		echo "ok"
 	}
 
+	devstatus eth0.1 | grep -rq "carrier.*true" && return
 	if [ "$(uci get netmode.setup.curmode)" == "repeater" ] ; then
 		[ "$(wps_client_get_credentials)" != "ok" ] && wifi reload
 	else
