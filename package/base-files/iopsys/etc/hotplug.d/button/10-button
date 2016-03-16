@@ -4,8 +4,6 @@
 . /usr/share/libubox/jshn.sh
 
 wifibutton_action() {
-        local bten="$(uci -q get boardpanel.settings.wifibutton)"
-        [ "$bten" == "0" ] && return
 	local wlstatus="$(uci -q get wireless.status.wlan)"
 	if [ "$wlstatus" == "0" ]; then
 		if opkg list_installed | grep -q "luci-mod-admin-full"; then
@@ -26,8 +24,6 @@ wifibutton_action() {
 }
 
 wpsbutton_action () {
-	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
-	[ "$bten" == "0" ] && return
 	killall -USR2 wps_monitor
 }
 
@@ -57,8 +53,6 @@ wpscbutton_action () {
 		echo "ok"
 	}
 
-	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
-	[ "$bten" == "0" ] && return
 	if [ "$(uci get netmode.setup.curmode)" == "repeater" ] ; then
 		[ "$(wps_client_get_credentials)" != "ok" ] && wifi reload
 	else
