@@ -1,6 +1,6 @@
 # remove wifi repeater client interface when wan cable is connected
-include /lib/network
 . /lib/functions.sh
+include /lib/network
 
 [ "$INTERFACE" != "eth0.1" ] && exit
 [ "$(uci get netmode.setup.curmode)" != "repeater" ] && exit
