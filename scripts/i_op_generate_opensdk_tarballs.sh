@@ -8,21 +8,15 @@ curdir=$(pwd)
 
 build_bcmkernel_consumer() {
 	local tarfile bcmkernelcommith
-
 	bcmkernelcommith=$(grep -w "PKG_SOURCE_VERSION:" $curdir/feeds/feed_inteno_broadcom/bcmkernel/$sdkversion.mk | cut -d'=' -f2)
-	
 	# do not build bcmopen sdk if it was already built before
 	ssh inteno@iopsys.inteno.se "ls public/www/iopsys/consumer/bcmopen-$profile-$bcmkernelcommith.tar.gz" && return
-
 	cd ./build_dir/target-*_uClibc-0.9.33.*/bcmkernel-3.4-$sdkversion/bcm963xx/release
 	sh do_consumer_release -p $profile -y
-
 	tarfile='out/bcm963xx_*_consumer.tar.gz'
 	[ $(ls -1 $tarfile |wc -l) -ne 1 ] && die "Too many tar files: '$tarfile'"
-	
 	scp $tarfile inteno@ihgsp.inteno.se:/home/inteno/public/www/iopsys/consumer/bcmopen-$profile-$bcmkernelcommith.tar.gz
-
-	cp $tarfile $curdir/bcmopen-$profile-$bcmkernelcommith.tar.gz
+	rm -f $tarfile
 	cd $curdir
 }
 
