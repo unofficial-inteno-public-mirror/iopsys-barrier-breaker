@@ -66,6 +66,7 @@ wpscbutton_action () {
 		sleep 1
 		if [ "$(wps_client_get_credentials)" == "ok" ] ; then
 			echo "Got WPS credentials, stay in repeater mode and reboot shortly" > /dev/console
+			uci commit netmode
 			for i in 1 2 3 4 5; do
 				ledctl allon
 				sleep 1
