@@ -106,16 +106,23 @@ case "$ACTION" in
 		/sbin/defaultreset
         }
         [ "ecobutton" == "$INTERFACE" -o "wifibutton" == "$INTERFACE" ] && {
+		[ -e "/tmp/wps_active" ] && return
 	        printf "\n\nWiFi button is pressed\n\n" > /dev/console
 		wifibutton_action
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
+		[ -e "/tmp/wps_active" ] && return
+		touch /tmp/wps_active
 	        printf "\n\nWPS button is pressed\n\n" > /dev/console
 		wpsbutton_action
+		rm /tmp/wps_active
         }
 	[ "wpscbutton" == "$INTERFACE" ] && {
+		[ -e "/tmp/wps_active" ] && return
+		touch /tmp/wps_active
 		printf "\n\nWPS client button is pressed\n\n" > /dev/console
 		wpscbutton_action
+		rm /tmp/wps_active
 	}
         [ "dectshort" == "$INTERFACE" ] && {
 	        printf "\n\nDECT button is pressed\n" > /dev/console
