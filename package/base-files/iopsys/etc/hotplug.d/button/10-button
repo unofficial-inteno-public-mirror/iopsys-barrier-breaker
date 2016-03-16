@@ -62,11 +62,13 @@ wpscbutton_action () {
 		cp -af /etc/config/* /tmp/configbackup/
 		old_mode=$(uci get netmode.setup.curmode)
 		uci set netmode.setup.curmode=repeater
+		uci set netmode.repeater.reboot="0"
 		/etc/init.d/netmode reload
 		wifi reload
 		sleep 1
 		if [ "$(wps_client_get_credentials)" == "ok" ] ; then
 			echo "Got WPS credentials, stay in repeater mode and reboot shortly" > /dev/console
+			uci delete netmode.repeater.reboot
 			uci commit netmode
 			for i in 1 2 3 4 5; do
 				ledctl allon
