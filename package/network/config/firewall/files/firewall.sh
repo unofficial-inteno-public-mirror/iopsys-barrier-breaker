@@ -192,8 +192,7 @@ update_enabled() {
 }
 
 find_used_ports() {
-	local SRCPORTS=""
-	local DSTPORTS=""
+	local PORTS=""
 
 	port_from_section() {
 		local port start_port stop_port cnt
@@ -212,17 +211,13 @@ find_used_ports() {
 				start_port=$((start_port+1))
 			done
 		fi
-		[ -n "$port" -a "$2" == "dest_port" ] && DSTPORTS="$DSTPORTS $port"
-		[ -n "$port" -a "$2" == "src_port" ] && SRCPORTS="$SRCPORTS $port"
+		[ -n "$port" ] && PORTS="$PORTS $port"
 	}
 
-	config_foreach port_from_section rule src_port
-	config_foreach port_from_section redirect src_port
 	config_foreach port_from_section rule dest_port
-	config_foreach port_from_section redirect dest_port
+	config_foreach port_from_section redirect src_dport
 
-	echo "$SRCPORTS" | tr ' ' '\n' | sort -un | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//' >/tmp/used_src_ports
-	echo "$DSTPORTS" | tr ' ' '\n' | sort -un | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//' >/tmp/used_dst_ports
+	echo "$PORTS" | tr ' ' '\n' | sort -un | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//' >/tmp/fw_used_ports
 }
 
 firewall_preconf() {
