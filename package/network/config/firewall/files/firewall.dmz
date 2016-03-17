@@ -2,7 +2,7 @@
 
 . /lib/functions.sh
 
-local PORTS="$(cat /tmp/fw_used_ports)"
+local PORTS="$(cat /tmp/fw_used_ports 2>/dev/null)"
 local enabled dmzhost exclude_ports ip6addr
 
 config_load firewall
@@ -14,12 +14,7 @@ config_get ip6addr dmz ip6addr
 [ "$enabled" == "1" ] || exit 0
 [ -n "$dmzhost" ] || exit 0
 
-config_get exclude_ports dmz exclude_ports
-[ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"
-
-PORTS="$(echo $PORTS | tr ' ' '\n' | sort -un | tr '\n' ',' | sed 's/^[ \t,]*//;s/[ \t,]*$//')"
-
-echo "$PORTS" | tr ',' ' ' >/tmp/fw_used_ports
+PORTS="$(echo $PORTS | tr ' ' ',' | sed 's/^[ \t,]*//;s/[ \t,]*$//')"
 
 iptables -t filter -I zone_wan_forward -d $dmzhost -m comment --comment DMZ_Host -j ACCEPT
 if [ -n "$PORTS" ]; then

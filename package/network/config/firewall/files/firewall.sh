@@ -223,6 +223,11 @@ find_used_ports() {
 
 	config_foreach port_from_section rule dest_port
 	config_foreach port_from_section redirect src_dport
+
+	local exclude_ports
+	config_get exclude_ports dmz exclude_ports
+	[ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"
+
 	echo "$PORTS" | tr ' ' '\n' | sort -un | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//' >/tmp/fw_used_ports
 }
 
