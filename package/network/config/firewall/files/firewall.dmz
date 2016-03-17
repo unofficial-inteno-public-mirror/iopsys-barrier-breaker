@@ -2,28 +2,8 @@
 
 . /lib/functions.sh
 
-local PORTS=""
-local enabled dmzhost exclude_ports rule_ports redirect_ports ip6addr
-
-port_from_section() {
-	local dest_port start_port stop_port cnt
-
-	config_get dest_port $1 dest_port
-	case $dest_port in
-		*-*)
-			start_port=$(echo $dest_port | awk -F '-' '{print$1}')
-			stop_port=$(echo $dest_port | awk -F '-' '{print$2}')
-		;;
-	esac
-	if [ -n "$start_port" -a "$stop_port" ]; then
-		dest_port=""
-		while [ $start_port -le $stop_port ]; do
-			dest_port="$dest_port $start_port"
-			start_port=$((start_port+1))
-		done
-	fi
-	[ -n "$dest_port" ] && PORTS="$PORTS $dest_port"
-}
+local PORTS="$(cat /tmp/used_dst_ports)"
+local enabled dmzhost exclude_ports ip6addr
 
 config_load firewall
 
@@ -37,10 +17,7 @@ config_get ip6addr dmz ip6addr
 config_get exclude_ports dmz exclude_ports
 [ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"
 
-config_foreach port_from_section rule
-config_foreach port_from_section redirect
-
-PORTS="$(echo $PORTS | tr ' ' ',')"
+PORTS="$(echo $PORTS | tr ' ' '\n' | sort -un | tr '\n' ',' | sed 's/^[ \t,]*//;s/[ \t,]*$//')"
 
 echo "$PORTS" >/tmp/dmz_excluded_ports
 
