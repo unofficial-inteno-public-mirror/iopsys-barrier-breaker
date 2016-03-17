@@ -193,11 +193,16 @@ update_enabled() {
 
 find_used_ports() {
 	local PORTS=""
+	local pcnt=0
 
 	port_from_section() {
-		local port start_port stop_port cnt
+		local port start_port stop_port hidden
 
 		config_get port $1 $2
+		config_get hidden $1 hidden
+
+		[ "$hidden" == "1" ] || return
+
 		case $port in
 			*-*)
 				start_port=$(echo $port | awk -F '-' '{print$1}')
@@ -209,6 +214,8 @@ find_used_ports() {
 			while [ $start_port -le $stop_port ]; do
 				port="$port $start_port"
 				start_port=$((start_port+1))
+				pcnt=$((pcnt+1))
+				[ $pcnt -gt 1024 ] && break
 			done
 		fi
 		[ -n "$port" ] && PORTS="$PORTS $port"
@@ -216,7 +223,6 @@ find_used_ports() {
 
 	config_foreach port_from_section rule dest_port
 	config_foreach port_from_section redirect src_dport
-
 	echo "$PORTS" | tr ' ' '\n' | sort -un | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//' >/tmp/fw_used_ports
 }
 
