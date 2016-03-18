@@ -838,6 +838,7 @@ setup_wifi_device() {
 	if [ $_NVRAM -eq 0 ]; then # for WiFi-Alliance
 		for vif in $device $device.1 $device.2 $device.3; do
 			nvram set "$vif"_bss_enabled=0
+			nvram set "$vif"_ssid=""
 		done
 
 		# configure virtual wireless interfaces
