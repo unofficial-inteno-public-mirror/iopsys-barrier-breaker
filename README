@@ -31,7 +31,7 @@ After cloning the repository, which contains feeds.conf, the feed
 repositories need to be cloned and installed. This is handled by
 running:
 
-./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
+./scripts/iop_feeds_update.sh
 
 This clones all feed repositories into feeds/ and installs the
 packages from those repositories into the build system by creating
@@ -53,7 +53,7 @@ To summarize, to intialize the repository, run:
 
 git clone <iopsys>
 ./scripts/iop_feeds_update.sh
- ./genconfig <board> <customer>  or ./genconfig -d <board> <customer> if your're an Inteno developer
+ ./genconfig <board> <customer>
 make
 
 alt: for parallel build. 
@@ -68,7 +68,7 @@ get changes that modify feeds.conf. Now your feeds.conf points to
 newer commits then what is checked out in the feed repositories and
 you need to update your feeds. Do this by running:
 
-./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
+./scripts/iop_feeds_update.sh
 
 This will pull in the latest changes in
 the modified feed for you. To summarize, to update your repository,
@@ -76,7 +76,7 @@ the modified feed for you. To summarize, to update your repository,
 run:
 
 git pull
-./scripts/iop_feeds_update.sh or ./scripts/iop_feeds_update.sh -d if your're an Inteno developer
+./scripts/iop_feeds_update.sh
 make
 
 ---------------------------------
