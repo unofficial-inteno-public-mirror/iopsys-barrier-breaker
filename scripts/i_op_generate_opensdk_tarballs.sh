@@ -3,7 +3,7 @@
 git remote -v | grep -q http && return # do not continue if this is an open SDK environment
 
 profile=$(grep CONFIG_BCM_KERNEL_PROFILE .config | cut -d'=' -f2 | tr -d '"')
-sdkversion=$(grep CONFIG_BRCM_SDK_VER .config | awk -F'[_,=]' '{print$5}')
+sdkversion=$(grep "CONFIG_BRCM_SDK_VER.*=y" .config | awk -F'[_,=]' '{print$5}')
 curdir=$(pwd)
 
 build_bcmkernel_consumer() {
