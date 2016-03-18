@@ -14,7 +14,7 @@ build_bcmkernel_consumer() {
 	cd ./build_dir/target-*_uClibc-0.9.33.*/bcmkernel-3.4-$sdkversion/bcm963xx/release
 	sh do_consumer_release -p $profile -y
 	tarfile='out/bcm963xx_*_consumer.tar.gz'
-	[ $(ls -1 $tarfile |wc -l) -ne 1 ] && die "Too many tar files: '$tarfile'"
+	[ $(ls -1 $tarfile |wc -l) -ne 1 ] && echo "Too many tar files: '$tarfile'" && return
 	scp $tarfile inteno@ihgsp.inteno.se:/home/inteno/public/www/iopsys/consumer/bcmopen-$profile-$bcmkernelcommith.tar.gz
 	rm -f $tarfile
 	cd $curdir
