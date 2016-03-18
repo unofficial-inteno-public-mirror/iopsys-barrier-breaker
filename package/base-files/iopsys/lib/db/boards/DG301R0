@@ -59,10 +59,10 @@ config wifi-chip '43c5'
 ############### gpio buttons, driver config
 config gpio_button gpio_buttons
        list buttons gpio_reset
-       list buttons gpio_dect
        list buttons gpio_wps
-       list buttons gpio_info
        list buttons gpio_eco
+       list buttons gpio_info
+       list buttons gpio_dect
 
 config gpio_button gpio_reset
        option addr 32
@@ -76,22 +76,14 @@ config gpio_button gpio_wps
        option addr 22
        option active low
 
-config gpio_button gpio_info
-       option addr 37
-       option active low
-
 config gpio_button gpio_eco
        option addr 36
        option active low
 
-############### function buttons used on board.
-config button_map button_map
-	list buttonnames RESET
-	list buttonnames DECT
-	list buttonnames WPS
-	list buttonnames INFO
-	list buttonnames ECO
-	option minpress 100
+config gpio_button gpio_info
+       option addr 37
+       option active low
+
 
 ############### mapping function button to driver button
 config button_map RESET
