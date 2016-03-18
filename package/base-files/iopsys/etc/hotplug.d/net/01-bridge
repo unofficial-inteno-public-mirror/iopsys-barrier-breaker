@@ -16,14 +16,12 @@ case "$ACTION" in
 			# if an uplink device belongs to a bridge
 			# make sure brige macaddress becomes its macaddress
 			*.*)
-				for br in $(ifconfig -a | grep br- | awk '{print$1}'); do
-					for dev in $(brctl showbr $br | grep -v "STP enabled" | awk '{print$NF}'); do
-						if [ $dev == $INTERFACE ]; then
-							local mac=$(ifconfig $dev | grep HWaddr | awk '{print$NF}')
-							ifconfig $br hw ether $mac 2>/dev/null
-						fi
-					done
-				done
+				local net=$(get_network_of $INTERFACE)
+				local typ=$(uci -q get network.$net.type)
+				if [ "$typ" == "bridge" ]; then
+					local mac=$(ifconfig $INTERFACE | grep HWaddr | awk '{print$NF}')
+					ifconfig br-$net hw ether $mac 2>/dev/null
+				fi
 			;;
 		esac
         ;;

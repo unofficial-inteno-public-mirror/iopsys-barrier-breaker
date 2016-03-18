@@ -72,12 +72,8 @@ config wifi-iface
 	option ssid 'Inteno-$BSSID4'
 	option encryption 'psk2'
 	option cipher 'auto'
-	option key '$WPAPSK'
-	option gtk_rekey '0'
-	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
-	option bss_max '16'
 	option autoconf '1'
 
 config wifi-iface
@@ -95,3 +91,4 @@ config wifi-iface
 	option wmf_bss_enable '1'
 	option bss_max '16'
 	option autoconf '1'
+

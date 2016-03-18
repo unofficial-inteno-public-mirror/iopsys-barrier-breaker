@@ -83,7 +83,7 @@ export ARGC="$#"
 find_image_on_usb() {
 	local image
 	local extension=$(uci -q get system.@upgrade[0].fw_find_ext)
-	extension=${extension:-.w}
+	extension=${extension:-.y}
 
 	image=$(find /mnt/ -name "*$extension" | sed -E 's/.*-([0-9]{6})_.*/\0 \1/gi' | sort -k 2 | head -n1 | cut -d' ' -f1)
 	if [ -n "${image}" ]; then
@@ -100,6 +100,7 @@ online_fw_check() {
 	local checkurl=$(uci -q get system.@upgrade[0].fw_check_url)
 	local pathurl=$(uci -q get system.@upgrade[0].fw_path_url)
 	local extension=$(uci -q get system.@upgrade[0].fw_find_ext)
+	extension=${extension:-.y}
 
 	[ -n "$checkurl" ] || exit 1
 	[ -n "$pathurl" ] || exit 1
@@ -112,6 +113,10 @@ online_fw_check() {
 	[ -f $verpath ] || exit 1
 
 	imgver=$(cat $verpath)
+        case $imgver in
+		*.w|*.y|*.y2|*_fs_image) ;;
+		*) imgver=$imgver$extension ;;
+	esac
 
 	curver="$(db get hw.board.iopVersion)$extension"
 
@@ -359,6 +364,7 @@ do_save_selected_conffiles() {
 		local btgz="backup-$(cat /proc/sys/kernel/hostname)-$(date +%Y-%m-%d).tar.gz"
 		if [ -n "$mntdir" ] && [ "$mntdir" != "/mnt/" ] && [ -d $mntdir ]; then
 			tar c${TAR_V}z "$conf_tar" -T /tmp/selected_backup_files -f $mntdir$btgz 2>/dev/null
+			sync
 		fi
 		rm -f /tmp/backup_target_mntdir
 	else

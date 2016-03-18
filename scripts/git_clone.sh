@@ -4,6 +4,7 @@ URL="$1"
 SUBDIR="$2"
 MIRROR="$3"
 VERSION="$4"
+REWRITE="$5"
 
 repo=$(basename ${URL})
 server=$(dirname ${URL})
@@ -18,10 +19,26 @@ if [ -n "${MIRROR}" ]
 then
 
     # is this an inteno server ? in that case do not use the mirror
+    use_mirror=0
+
     if [[ $URL != *inteno.se* ]]
     then
-	echo "trying to clone from mirror ${MIRROR}/${repo}"
-	if git clone ${MIRROR}/${repo} ${SUBDIR} --recursive
+	use_mirror=1
+	# clone remote servers with http (the repos are read-only)
+	CLONE_URL="http://"${MIRROR}/${repo}
+    fi
+
+    if [ "$REWRITE" = y ]
+    then
+	use_mirror=1
+	# clone with ssh 
+	CLONE_URL="git@"${MIRROR}:${repo}
+    fi
+
+    if [ $use_mirror = 1 ]
+    then
+	echo "trying to clone from mirror ${CLONE_URL}"
+	if git clone ${CLONE_URL} ${SUBDIR} --recursive
 	then
 	    old="$PWD"
 	    cd ${SUBDIR}

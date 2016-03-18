@@ -1,27 +1,30 @@
 #!/bin/bash
 export CLEAN=0
 export IMPORT=0
-export OPEN=0
+export SRCTREEOVERR=0
 export FILEDIR="files/"
 export CONFIGPATH="configs"  
 export CUSTCONF="customerconfigs"
 export VERBOSE=0
+export DEVELOPER=0
 export TMPDIR="/tmp/builder/"
 LOCAL_MIRROR="http://mirror.inteno.se/mirror"
+
+git remote -v | grep -q http || DEVELOPER=1
 
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
 }
 usage() {
         echo
-        echo 1>&2 "Usage:  [OPTION]  $0 BoardConfig Customerconfig"
+        echo 1>&2 "Usage: $0 [OPTIONS] BoardConfig Customerconfig"
         echo
 	echo "  -c,  remove all files under ./files and import from config "
 	echo "  -v,  verbose"
-	echo "  -o, use openbroadcom kernel"
 	echo "  -u, Update customer config before applying"  
 	echo "	-p, set profile (if exists)"
 	echo "	-t, use latest git tag and number of commits since as version for the build"
+	echo "  -s, enable 'Package source tree override'"
 	echo 
         echo "BoardConfig ex "
 	ls -1 configs
@@ -71,9 +74,9 @@ create_and_copy_files()
     local CUSTOMER=$2
     v "cp  $CONFIGPATH/MASTER/config .config"
     cp  $CONFIGPATH/MASTER/config .config
-    if [ $OPEN -eq 0 ]; then
+    if [ $DEVELOPER -eq 1 ]; then
 		if [ ! -d "$CUSTCONF" ]; then
-			git  clone  git@ihgsp.inteno.se:customerconfigs
+			git  clone  git@private.inteno.se:customerconfigs
 		elif [ $IMPORT -eq 1 ]; then
 			cd customerconfigs
 			v "git pull"
@@ -85,7 +88,8 @@ create_and_copy_files()
     if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
 		echo "Hardware profile does not exist"
 		exit 1
-    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
+    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
+#   elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
 		echo "Customer profile does not exist"
 		exit 1
     fi
@@ -96,6 +100,18 @@ create_and_copy_files()
 		v "rm -rf $FILEDIR*"	
 		rm -rf $FILEDIR*
     fi
+
+    # developer mode selected ?
+    if [ $DEVELOPER -eq 1 ]; then
+
+	##### if developer change to full source packages
+	#[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
+
+	# rewrite url to clone with ssh instead of http
+	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+	sed -i 's/CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g' .config
+    fi
+
     # first build config based on boardid
     if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
         v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
@@ -129,7 +145,11 @@ create_and_copy_files()
 		elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
 			v "Using generic profile for $PROFILE"
 			set_profile $CUSTCONF/$PROFILE.profile .config
-		else 
+		elif [ -e "$CONFIGPATH/$BOARDTYPE/$PROFILE.profile" ]; then
+			set_profile configs/$BOARDTYPE/$PROFILE.profile .config
+		elif [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
+			set_profile configs/MASTER/$PROFILE.profile .config
+		else
 			echo "ERROR: profile $PROFILE does not exist!"
 			exit 1
 		fi
@@ -137,26 +157,43 @@ create_and_copy_files()
 		v "No profile selected! Using default."
 	fi	
 
-	if [ -n "$USE_TAG" ]; then 
+	#if [ -n "$USE_TAG" ]; then
 		local GIT_TAG=$(git describe --abbrev=0 --tags)
 		#local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
 		#echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
 		#echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
+		sed -i '/CONFIG_TARGET_VERSION=.*/d' .config
 		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}\"" >> .config
-		echo "Set version to \"${GIT_TAG}\""
-	fi	
+	#fi
 
 
-    ##### if open change to open kernel and remove building of nand tool
-    if [ $OPEN -eq 1 ]; then
-		[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
-    fi
-    
+    # Enable Pckage source tree override if selected
+    [ $SRCTREEOVERR -eq 1 ] && \
+        sed -i 's/# CONFIG_SRC_TREE_OVERRIDE.*/CONFIG_SRC_TREE_OVERRIDE=y/' .config
+
+
     # validate the .config against dependency rules.
     make defconfig
+
+    if [ "$PROFILE" == "juci" ]; then
+	sed -i '/CONFIG_PACKAGE_luci-lib-core_source=y/d' .config
+	sed -i '/CONFIG_PACKAGE_luci-lib-nixio_notls=y/d' .config
+
+	local luciver=$(grep -w CONFIG_TARGET_VERSION .config | cut -d'=' -f2 | tr -d '"')
+	local juciver=$(echo $luciver | awk -F'.' '{print$1"."$2+1"."$3}')
+	sed -i "s/CONFIG_TARGET_VERSION=.*/CONFIG_TARGET_VERSION=${juciver}/g" .config
+    fi
+
+    echo Set version to $(grep -w CONFIG_TARGET_VERSION .config | cut -d'=' -f2 | tr -d '"')
 }
 
 ####### main #####
+if [ ! -e tmp/.iop_bootstrap ]; then
+    echo "You have not installed feeds. Running genconfig in this state would create a non functional configuration."
+    echo "Run: ./scripts/iop_feeds_update.sh"
+    exit 0
+fi
+
 if [ $# -eq 0 ]; then
     echo Current profile:
     cat .current_config_file
@@ -169,10 +206,10 @@ else
 
 	    -c) export CLEAN=1;;
 	    -u) export IMPORT=1;;
-	    -o) export OPEN=1;;
 	    -v) export VERBOSE="$(($VERBOSE + 1))";;
 		-p) export PROFILE="$2"; shift;; 
 		-t) export USE_TAG=1;; 
+	    -s) export SRCTREEOVERR=1;;
 	    -h) usage;;
 	    -*)
 		echo "Invalid option: $1 "

@@ -78,16 +78,22 @@ do_sysctl() {
 		sysctl -n -e "$1"
 }
 
-find_network() {
-        local config="$1"
-        local iface="$2"
-        ifname=$(uci get network."$config".ifname)
-        if [ "$ifname" != "${ifname/"$iface"/}" ]; then
-                echo "$config"
-        fi
-}
-
 get_network_of() {
+
+	find_network() {
+		local config="$1"
+		local iface="$2"
+		local net=
+		ifname="$(uci get network.$config.ifname)"
+		for if in $ifname; do
+			if [ "$if" == "$iface" ]; then
+				net=$config
+				break
+			fi
+		done
+		[ -n "$net" ] && echo $net
+	}
+
 	config_load network
 	config_foreach find_network interface $1
 }

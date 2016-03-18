@@ -104,7 +104,6 @@ config service 'samba'
 	option desc 'Samba'
 	option detail 'Network Shares'
 	list file '/etc/config/samba'
-	list file '/etc/samba/*'
 	option user '1'
 
 config service 'snmp'

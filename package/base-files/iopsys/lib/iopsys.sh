@@ -118,6 +118,7 @@ build_minimal_rootfs() {
 	mkdir bin
 	cp /bin/busybox bin
 	cp -d /bin/ash bin
+	cp -d /bin/cat bin
 	cp -d /bin/mount bin
 	cp -d /bin/sh bin
 	cp -d /bin/umount bin
@@ -168,11 +169,13 @@ build_minimal_rootfs() {
 	mkdir usr/sbin
 	cp -d /usr/sbin/chroot usr/sbin
 	cp /usr/sbin/imagewrite usr/sbin
+	cp /usr/sbin/nanddump usr/sbin
 	cp /usr/sbin/ubiattach usr/sbin
 	cp /usr/sbin/ubidetach usr/sbin
 	cp /usr/sbin/ubimkvol usr/sbin
 	cp /usr/sbin/ubinfo usr/sbin
 	cp /usr/sbin/ubirsvol usr/sbin
+	cp /usr/sbin/ubiupdatevol usr/sbin
 
 	cd -
 }

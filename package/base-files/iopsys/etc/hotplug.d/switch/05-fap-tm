@@ -2,8 +2,8 @@ case "$ACTION" in
 	add|register)
 		case $INTERFACE in
 			eth*)
-				fap tm --enable --if $INTERFACE --auto
-				fap tm --apply --if $INTERFACE
+				fapctl tm --enable --if $INTERFACE --auto
+				fapctl tm --apply --if $INTERFACE
 			;;
 		esac
 	;;

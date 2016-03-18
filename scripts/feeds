@@ -7,6 +7,7 @@ use metadata;
 use warnings;
 use strict;
 use Cwd 'abs_path';
+use File::Basename;
 
 chdir "$FindBin::Bin/..";
 $ENV{TOPDIR}=getcwd();
@@ -126,6 +127,7 @@ my %update_method = (
 		'init'          => "git clone --depth 1 '%s' '%s'",
 		'init_branch'   => "git clone --depth 1 --branch '%s' '%s' '%s'",
 		'init_commit'   => "git clone '%s' '%s' && cd '%s' && git checkout '%s' && cd -",
+		'checkout_commit'=> "cd '%s' && git remote update && git checkout '%s'",
 		'update'	=> "git pull --ff",
 		'controldir'	=> ".git",
 		'revision'	=> "git show --abbrev-commit HEAD | head -n 1 | cut -d ' ' -f 2 | tr -d '\n'"},
@@ -134,6 +136,7 @@ my %update_method = (
 		'init_branch'   => "git clone --branch '%s' '%s' '%s'",
 		'init_commit'   => "git clone '%s' '%s' && cd '%s' && git checkout '%s' && cd -",
 		'update'	=> "git pull --ff",
+		'checkout_commit'=> "cd '%s' && git remote update && git checkout '%s'",
 		'controldir'	=> ".git",
 		'revision'	=> "git show --abbrev-commit HEAD | head -n 1 | cut -d ' ' -f 2 | tr -d '\n'"},
 	'src-gitsvn' => {
@@ -158,11 +161,12 @@ my %update_method = (
 # src-git: pull broken
 # src-cpy: broken if `basename $src` != $name
 
-sub update_feed_via($$$$) {
+sub update_feed_via($$$$$) {
 	my $type = shift;
 	my $name = shift;
 	my $src = shift;
 	my $relocate = shift;
+	my $rewrite_urls = shift;
 
 	my $m = $update_method{$type};
 	my $localpath = "./feeds/$name";
@@ -171,7 +175,21 @@ sub update_feed_via($$$$) {
 	my ($base_branch, $branch) = split(/;/, $src, 2);
 	my ($base_commit, $commit) = split(/\^/, $src, 2);
 
-	if( $relocate || !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
+	# If this is an inteno repo and we are cloning as a developer
+	# rewrite the url to clone using ssh instead of http
+	if ( $rewrite_urls ) {
+	    my $repo = basename($base_commit);
+	    my $url = dirname($base_commit);
+
+	    if( $url eq "http://public.inteno.se" ) {
+		$base_commit = 'git@public.inteno.se:' . $repo;
+		printf "Rewriting url to clone with ssh $base_commit\n";
+	    }
+	}
+
+	# kenjo was here and killed the relocate stuff. now we have to manually rm -rf feeds in case of rename or remove of feed.
+	#	if( $relocate || !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
+	if( !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
 		system("rm -rf '$safepath'");
 		if ($m->{'init_branch'} and $branch) {
 			system(sprintf($m->{'init_branch'}, $branch, $base_branch, $safepath)) == 0 or return 1;
@@ -180,8 +198,8 @@ sub update_feed_via($$$$) {
 		} else {
 			system(sprintf($m->{'init'}, $src, $safepath)) == 0 or return 1;
 		}
-	} elsif ($m->{'init_commit'} and $commit) {
-		# in case git hash has been provided don't update the feed
+	} elsif ($m->{'checkout_commit'} and $commit) {
+		system(sprintf($m->{'checkout_commit'}, $safepath, $commit)) == 0 or return 1;
 	} else {
 		system("cd '$safepath'; $m->{'update'}") == 0 or return 1;
 	}
@@ -648,12 +666,13 @@ sub uninstall {
 	return 0;
 }
 
-sub update_feed($$$$)
+sub update_feed($$$$$)
 {
 	my $type=shift;
 	my $name=shift;
 	my $src=shift;
 	my $perform_update=shift;
+	my $rewrite_urls=shift;
 	my $force_relocate=update_location( $name, "@$src" );
 
 	if( $force_relocate ) {
@@ -667,7 +686,7 @@ sub update_feed($$$$)
 		my $failed = 1;
 		foreach my $feedsrc (@$src) {
 			warn "Updating feed '$name' from '$feedsrc' ...\n";
-			next unless update_feed_via($type, $name, $feedsrc, $force_relocate) == 0;
+			next unless update_feed_via($type, $name, $feedsrc, $force_relocate, $rewrite_urls) == 0;
 			$failed = 0;
 			last;
 		}
@@ -688,11 +707,12 @@ sub update {
 	my %opts;
 	my $feed_name;
 	my $perform_update=1;
+	my $rewrite_urls=0;
 
 	$ENV{SCAN_COOKIE} = $$;
 	$ENV{OPENWRT_VERBOSE} = 's';
 
-	getopts('ahi', \%opts);
+	getopts('ahig', \%opts);
 
 	if ($opts{h}) {
 		usage();
@@ -705,6 +725,11 @@ sub update {
 		$perform_update=0;
 	}
 
+	if ($opts{g}) {
+	    # clone with ssh instead of http for inteno url:s
+	    $rewrite_urls=1;
+	}
+
 	-d "feeds" or do {
 			mkdir "feeds" or die "Unable to create the feeds directory";
 		};
@@ -712,7 +737,7 @@ sub update {
 	if ( ($#ARGV == -1) or $opts{a}) {
 		foreach my $feed (@feeds) {
 			my ($type, $name, $src) = @$feed;
-			next unless update_feed($type, $name, $src, $perform_update) == 1;
+			next unless update_feed($type, $name, $src, $perform_update, $rewrite_urls) == 1;
 			last;
 		}
 	} else {
@@ -722,7 +747,7 @@ sub update {
 				if($feed_name ne $name) {
 					next;
 				}
-				update_feed($type, $name, $src, $perform_update);
+				update_feed($type, $name, $src, $perform_update, $rewrite_urls);
 			}
 		}
 	}
@@ -767,6 +792,7 @@ Commands:
 	    -d <y|m|n>:    Set default for newly installed packages.
 	    -f :           Install will be forced even if the package exists in core OpenWrt (override)
 
+
 	search [options] <substring>: Search for a package
 	Options:
 	    -r <feedname>: Only search in this feed
@@ -779,6 +805,7 @@ Commands:
 	Options:
 	    -a :           Update all feeds listed within feeds.conf. Otherwise the specified feeds will be updated.
 	    -i :           Recreate the index only. No feed update from repository is performed.
+	    -g :           Rewrite feed URLs to clone feeds with ssh instead of http
 
 	clean:             Remove downloaded/generated files.
 

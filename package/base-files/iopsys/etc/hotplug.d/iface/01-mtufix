@@ -8,7 +8,9 @@
 
 	network_get_device device $INTERFACE
 
-	[ "$device" == "lo" ] && return
+	case $device in
+		lo|ppp*|tun*) return ;;
+	esac
 
 	curmtu=$(ifconfig $device | grep -o 'MTU:*[0-9]*' | cut -d':' -f2)
 

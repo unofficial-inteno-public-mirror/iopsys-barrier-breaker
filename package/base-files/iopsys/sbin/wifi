@@ -34,7 +34,7 @@ wifi_detect() {
 	local DECIMAL=$(printf "%d\n" 0x${DMAC/:/})
 	DECIMAL=$((DECIMAL+100))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
-	WPAKEY="${WPAKEY:-1234567890}"
+	echo "$WPAKEY" | grep -q "[0-9,a-z,A-Z]" || WPAKEY="1234567890"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
 	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
@@ -838,6 +838,7 @@ setup_wifi_device() {
 	if [ $_NVRAM -eq 0 ]; then # for WiFi-Alliance
 		for vif in $device $device.1 $device.2 $device.3; do
 			nvram set "$vif"_bss_enabled=0
+			nvram set "$vif"_ssid=""
 		done
 
 		# configure virtual wireless interfaces
@@ -987,6 +988,7 @@ update_from_nvram() {
 	fi
 
 	uci commit wireless
+	touch /tmp/got_wps_credentials_from_nvram
 }
 
 is_in_network() {

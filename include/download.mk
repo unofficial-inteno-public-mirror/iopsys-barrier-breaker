@@ -89,7 +89,7 @@ define DownloadMethod/git
 		cd $(TMP_DIR)/dl && \
 		rm -rf $(SUBDIR) && \
 		[ \! -d $(SUBDIR) ] && \
-		$(SCRIPT_DIR)/git_clone.sh $(URL) $(SUBDIR)  $(CONFIG_GITMIRROR) $(VERSION) && \
+		$(SCRIPT_DIR)/git_clone.sh $(URL) $(SUBDIR)  $(CONFIG_GITMIRROR) $(VERSION) $(CONFIG_GITMIRROR_REWRITE) && \
 		(cd $(SUBDIR) && git checkout $(VERSION)) && \
 		echo "Packing checkout..." && \
 		$(call dl_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \

@@ -214,18 +214,19 @@ config_cb() {
 	config_get TYPE "$CONFIG_SECTION" TYPE
 	case "$TYPE" in
 		interface)
-			config_get_bool enabled "$CONFIG_SECTION" enabled 1
+			config_get_bool enabled "$CONFIG_SECTION" enabled 0
+			config_get device "$CONFIG_SECTION" device
+			[ -z "$device" ] && {
+				device="$(find_ifname ${CONFIG_SECTION})"
+				config_set "$CONFIG_SECTION" device "${device:-eth0.1}"
+			}
+			bwlimit -i $device -r # reset previoulsy set bandwidth limit on this device
 			[ 1 -eq "$enabled" ] || return 0
 			config_get classgroup "$CONFIG_SECTION" classgroup
 			config_set "$CONFIG_SECTION" ifbdev "$C"
 			C=$(($C+1))
 			append INTERFACES "$CONFIG_SECTION"
 			config_set "$classgroup" enabled 1
-			config_get device "$CONFIG_SECTION" device
-			[ -z "$device" ] && {
-				device="$(find_ifname ${CONFIG_SECTION})"
-				config_set "$CONFIG_SECTION" device "${device:-eth0}"
-			}
 		;;
 		classgroup) append CG "$CONFIG_SECTION";;
 		classify|default|reclassify)
@@ -285,14 +286,22 @@ start_interface() {
 	local num_ifb="$2"
 	config_get device "$iface" device
 	config_get_bool enabled "$iface" enabled 1
+
 	[ -z "$device" -o 1 -ne "$enabled" ] && {
 		return 1 
 	}
-	config_get upload "$iface" upload
+
+	# disable flow cache if bandwidth limit is enabled
+	fcctl disable >/dev/null 2>&1
+
+	config_get upload "$iface" upload "10000"
 	config_get_bool halfduplex "$iface" halfduplex
-	config_get download "$iface" download
+	config_get download "$iface" download "100000"
 	config_get classgroup "$iface" classgroup
 	config_get_bool overhead "$iface" overhead 0
+
+	# use bwlimit instead of default OpenWRT way
+	bwlimit -i $device -d $download -u $upload && return 0
 	
 	download="${download:-${halfduplex:+$upload}}"
 	enum_classes "$classgroup"
@@ -393,7 +402,7 @@ add_rules() {
 			unset iptrule
 		}
 
-		target=$(($target | ($target << 4)))
+		target="$(($target | ($target << 4)))"
 		parse_matching_rule iptrule "$rule" "$options" "$prefix" "-j MARK --set-mark $target/0xff"
 		append "$var" "$iptrule" "$N"
 	done
@@ -482,6 +491,8 @@ C="0"
 for iface in $INTERFACES; do
 	export C="$(($C + 1))"
 done
+
+fcctl enable >/dev/null 2>&1
 
 case "$1" in
 	all)
