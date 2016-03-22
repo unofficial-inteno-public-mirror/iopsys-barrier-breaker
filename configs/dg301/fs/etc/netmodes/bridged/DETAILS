@@ -1,0 +1,12 @@
+{
+	"description": [
+		{ "en" : "Bridged IPTV" },
+		{ "sv" : "Brygg IPTV" }
+	],
+	"explanation": [
+		{ "en" : "LAN4 port is bridged with IPTV VLAN" },
+		{ "sv" : "LAN4 port överbryggas med IPTV VLAN" }
+	],
+	"credentials" : 0
+}
+
