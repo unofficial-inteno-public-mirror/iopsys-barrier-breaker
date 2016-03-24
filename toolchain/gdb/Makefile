@@ -7,11 +7,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gdb
-PKG_VERSION:=linaro-7.2-2011.03-0
+PKG_REV:=7.6-2013.05
+PKG_VERSION_MAJOR:=7.6
+PKG_VERSION:=linaro-$(PKG_REV)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_MD5SUM:=747b655418058964451eff7c7a15013c
-PKG_SOURCE_URL:=http://launchpad.net/gdb-linaro/7.2/7.2-2011.03-0/+download/
+PKG_MD5SUM:=816290b91cff03912320089d353e8a12
+PKG_SOURCE_URL:=https://launchpad.net/gdb-linaro/$(PKG_VERSION_MAJOR)/$(PKG_REV)/+download/
 
 PATCH_DIR:=./patches/$(PKG_VERSION)
 
