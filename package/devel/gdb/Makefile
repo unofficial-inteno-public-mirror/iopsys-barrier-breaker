@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2012 OpenWrt.org
+# Copyright (C) 2006-2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,24 +8,25 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gdb
-PKG_VERSION:=7.5
+PKG_VERSION:=7.10.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/gdb
-PKG_MD5SUM:=24a6779a9fe0260667710de1b082ef61
+PKG_MD5SUM:=39e654460c9cdd80200a29ac020cfe11
 
 PATCH_DIR:=./patches/$(PKG_VERSION)
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
+PKG_LICENSE:=GPL-3.0+
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/gdb/Default
   SECTION:=devel
   CATEGORY:=Development
-  DEPENDS:=@!(avr32||cris) +!USE_MUSL:libthread-db +PACKAGE_zlib:zlib
+  DEPENDS:=+!USE_MUSL:libthread-db +PACKAGE_zlib:zlib
   URL:=http://www.gnu.org/software/gdb/
 endef
 
@@ -55,6 +56,7 @@ endef
 CONFIGURE_ARGS+= \
 	--with-system-readline \
 	--without-expat \
+	--without-lzma \
 	--disable-werror
 
 CONFIGURE_VARS+= \
