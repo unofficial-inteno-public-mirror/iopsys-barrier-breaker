@@ -1,8 +1,0 @@
-[ ifup = "$ACTION" ] && {
-	fapctl disable
-	fcctl disable
-	fcctl flush
-	fcctl enable
-	fapctl enable
-}
-

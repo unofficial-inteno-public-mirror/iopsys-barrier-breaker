@@ -3,6 +3,8 @@
 START=10
 USE_PROCD=1
 
+. /usr/share/libubox/jshn.sh
+
 local modedir=$(uci -q get netmode.setup.dir)
 [ -n "$modedir" ] || modedir="/etc/netmodes"
 
@@ -18,21 +20,43 @@ populate_netmodes() {
 	config_foreach delete_netmode netmode
 	uci commit netmode
 
-	for conf in $(ls $modedir); do
-		case $conf in
-			config_*)
-				mode="${conf:7}"
-				uci set netmode.$mode=netmode
-				uci set netmode.$mode.conf=$conf
-				desc=$(cat $modedir/$conf/DETAILS 2>/dev/null | grep -w "DESC:" | awk -F  "DESC:" '{print$2}')
-				desc=${desc:-"$mode"}
-				uci set netmode.$mode.desc="$desc"
-				exp=$(cat $modedir/$conf/DETAILS 2>/dev/null | grep -w "EXP:" | awk -F  "EXP:" '{print$2}')
-				uci set netmode.$mode.exp="$exp"
-				cred=$(cat $modedir/$conf/DETAILS 2>/dev/null | grep -w "CRED:" | awk -F  "CRED:" '{print$2}' | tr -d ' ')
-				uci set netmode.$mode.askcred="$cred"
- 			;;
-		esac
+	local keys lang desc exp
+	for mode in $(ls $modedir); do
+			lang=""
+			desc=""
+			exp=""
+			uci -q set netmode.$mode=netmode
+			uci -q set netmode.$mode.conf=$mode
+			json_load "$(cat $modedir/$mode/DETAILS)"
+
+			json_select description
+			json_get_keys keys
+			for k in $keys; do
+				json_get_keys lang $k
+				lang=$(echo $lang | sed 's/^[ \t]*//;s/[ \t]*$//')
+				json_select $k
+				json_get_var desc $lang
+				uci -q set netmode.$mode."desc_$lang"="$desc"
+				[ "$lang" == "en" ] && uci -q set netmode.$mode."desc"="$desc"
+				json_select ..
+			done
+			json_select ..
+
+			json_select explanation
+			json_get_keys keys
+			for k in $keys; do
+				json_get_keys lang $k
+				lang=$(echo $lang | sed 's/^[ \t]*//;s/[ \t]*$//')
+				json_select $k
+				json_get_var exp $lang
+				uci -q set netmode.$mode."exp_$lang"="$exp"
+				[ "$lang" == "en" ] && uci -q set netmode.$mode."exp"="$exp"
+				json_select ..
+			done
+			json_select ..
+
+			json_get_var cred credentials
+			uci -q set netmode.$mode.askcred="$cred"
 	done
 	uci commit netmode
 }
