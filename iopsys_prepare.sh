@@ -140,13 +140,13 @@ if [ "$gcc_ver" != "4.8" ]; then
 		apt-get install gcc-4.8-multilib
 
 		update-alternatives --install /usr/bin/g++ c++ /usr/bin/g++-4.8 100
-		update-alternatives --install /usr/bin/g++ c++ /usr/bin/g++-5 90
+		update-alternatives --install /usr/bin/g++ c++ /usr/bin/g++-$gcc_ver 90
 
 		update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-4.8 100
-		update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-5 90
+		update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-$gcc_ver 90
 
 		update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-4.8 100
-		update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-5 90
+		update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-$gcc_ver 90
 
 		update-alternatives --set c++ /usr/bin/g++-4.8
 		update-alternatives --set cc  /usr/bin/gcc-4.8
