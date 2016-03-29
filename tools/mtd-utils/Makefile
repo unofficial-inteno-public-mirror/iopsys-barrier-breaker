@@ -7,8 +7,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
-PKG_VERSION:=1.5.1
-PKG_RELEASE:=3
+PKG_VERSION:=1.4.5
+PKG_RELEASE:=4
 PKG_SOURCE_URL:=http://public.inteno.se:/mtd-utils
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=f9e1c4494bceb12ab5bb84dda030de5d6bbb61b5
