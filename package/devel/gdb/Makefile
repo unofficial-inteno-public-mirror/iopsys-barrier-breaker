@@ -8,12 +8,23 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gdb
+ifeq ($(CONFIG_mips),y)
+PKG_VERSION:=android-7.10
+PKG_RELEASE:=1
+
+PKG_SOURCE_VERSION:=771779c6dc58eaae39e53f0bb9a4bbdeef04a624
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_SOURCE_URL:=https://android.googlesource.com/toolchain/gdb
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+else
 PKG_VERSION:=7.10.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/gdb
 PKG_MD5SUM:=39e654460c9cdd80200a29ac020cfe11
+endif
 
 PATCH_DIR:=./patches/$(PKG_VERSION)
 
@@ -59,8 +70,20 @@ CONFIGURE_ARGS+= \
 	--without-lzma \
 	--disable-werror
 
+ifeq ($(CONFIG_mips),y)
+
+CONFIGURE_ARGS += \
+	--with-pkgversion=$(PKG_VERSION)
+
+endif
+
 CONFIGURE_VARS+= \
 	ac_cv_search_tgetent="$(TARGET_LDFLAGS) -lncurses -lreadline"
+
+ifeq ($(PKG_VERSION),android-7.10)
+CONFIGURE_PATH:=gdb-7.10
+MAKE_PATH:=gdb-7.10
+endif
 
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR)/$(MAKE_PATH) \
