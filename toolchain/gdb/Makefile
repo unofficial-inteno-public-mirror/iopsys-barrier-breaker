@@ -57,7 +57,6 @@ HOST_CONFIGURE_ARGS = \
 	--without-included-gettext \
 	--enable-threads \
 	--with-expat \
-	--without-python \
 	--disable-binutils \
 	--disable-ld \
 	--disable-gas \
@@ -82,7 +81,17 @@ define Host/Install
 	mkdir -p $(TOOLCHAIN_DIR)/bin
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/gdb-7.10/gdb/gdb $(TOOLCHAIN_DIR)/bin/$(TARGET_CROSS)gdb
 	ln -fs $(TARGET_CROSS)gdb $(TOOLCHAIN_DIR)/bin/$(GNU_TARGET_NAME)-gdb
+	mkdir -p $(TOOLCHAIN_DIR)/share/gdb/python
+	(cd $(HOST_BUILD_DIR)/gdb-7.10 && cp -a gdb/data-directory/python/gdb $(TOOLCHAIN_DIR)/share/gdb/python)
 	#strip $(TOOLCHAIN_DIR)/bin/$(TARGET_CROSS)gdb
+endef
+
+define Host/Clean
+	rm -rf \
+		$(HOST_BUILD_DIR) \
+		$(TOOLCHAIN_DIR)/bin/$(TARGET_CROSS)gdb \
+		$(TOOLCHAIN_DIR)/bin/$(GNU_TARGET_NAME)-gdb \
+		$(TOOLCHAIN_DIR)/share/gdb
 endef
 
 else
@@ -94,13 +103,13 @@ define Host/Install
 	#strip $(TOOLCHAIN_DIR)/bin/$(TARGET_CROSS)gdb
 endef
 
-endif
-
 define Host/Clean
 	rm -rf \
 		$(HOST_BUILD_DIR) \
 		$(TOOLCHAIN_DIR)/bin/$(TARGET_CROSS)gdb \
 		$(TOOLCHAIN_DIR)/bin/$(GNU_TARGET_NAME)-gdb
 endef
+
+endif
 
 $(eval $(call HostBuild))
