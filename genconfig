@@ -165,14 +165,9 @@ create_and_copy_files()
     fi
 
 
-    #if [ -n "$USE_TAG" ]; then
+    # Set target version
     local GIT_TAG=$(git describe --abbrev=0 --tags)
-    #local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
-    #echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
-    #echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
-    sed -i '/CONFIG_TARGET_VERSION=.*/d' .config
     echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}\"" >> .config
-    #fi
 
 
     # Enable Pckage source tree override if selected
