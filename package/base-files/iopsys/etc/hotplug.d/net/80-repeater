@@ -2,7 +2,7 @@
 . /lib/functions.sh
 include /lib/network
 
-[ "$INTERFACE" != "eth0.1" ] && exit
+[ "$INTERFACE" != "$(uci get layer2_interface_ethernet.Wan.ifname)" ] && exit
 [ "$(uci get netmode.setup.curmode)" != "repeater" ] && exit
 
 get_wifi_wet_interface() {
@@ -12,7 +12,7 @@ get_wifi_wet_interface() {
 			config_get ifname "$1" ifname
 			echo "$ifname"
 		fi
-}
+	}
 	config_load wireless
 	config_foreach handle_interface wifi-iface "$device"
 }

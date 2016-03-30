@@ -7,11 +7,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
-PKG_VERSION:=1.5.1
-PKG_RELEASE:=3
+PKG_VERSION:=1.4.5
+PKG_RELEASE:=4
 PKG_SOURCE_URL:=http://public.inteno.se:/mtd-utils
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=3a0d8a01d91e0e80bc59d6320e91c07383f0ede2
+PKG_SOURCE_VERSION:=f9e1c4494bceb12ab5bb84dda030de5d6bbb61b5
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_CAT:=zcat
@@ -44,7 +44,7 @@ define Host/Compile
 		TARGETS=mkfs.jffs2
 	$(MAKE) -C $(HOST_BUILD_DIR)/ubi-utils \
 		$(MTD_MAKEOPTS) \
-		TARGETS=ubinize
+		TARGETS="ubinize deubinize"
 	$(MAKE) -C $(HOST_BUILD_DIR)/mkfs.ubifs \
 		$(MTD_MAKEOPTS) \
 		BUILDDIR="$(HOST_BUILD_DIR)/mkfs.ubifs"
@@ -55,6 +55,7 @@ define Host/Install
 		$(HOST_BUILD_DIR)/mkfs.jffs2 \
 		$(HOST_BUILD_DIR)/mkfs.ubifs/mkfs.ubifs \
 		$(HOST_BUILD_DIR)/ubinize \
+		$(HOST_BUILD_DIR)/deubinize \
 		$(STAGING_DIR_HOST)/bin/
 endef
 

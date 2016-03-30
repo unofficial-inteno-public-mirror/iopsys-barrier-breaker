@@ -12,6 +12,11 @@ config service 'ddns'
 	option desc 'DynDNS'
 	list file '/etc/config/ddns'
 
+config service 'dect'
+	option desc 'DECT'
+	list file '/etc/config/dect'
+	list file '/etc/dect/nvs'
+
 config service 'dropbear'
 	option desc 'Dropbear'
 	option conservative_keep 1
@@ -125,6 +130,7 @@ config service 'upnp'
 config service 'voice'
 	option desc 'Voice'
 	list file '/etc/config/voice_client'
+	list file '/etc/asterisk/*'
 	option user '0'
 
 config service 'wireless'
