@@ -78,13 +78,6 @@ generate_config()
     done < $DIFFFILE
 }
 
-set_profile(){
-	local PROFILE="$1"; 
-	local MASTERFILE="$2"; 
-	echo "setting profile: $PROFILE"; 
-	cat "$PROFILE" >> "$MASTERFILE"
-	make defconfig > /dev/null
-}
 
 create_and_copy_files()
 {
@@ -146,6 +139,17 @@ create_and_copy_files()
         generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
     fi
     
+    if [ -n "$PROFILE" ]; then 
+	if [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
+	    cat configs/MASTER/$PROFILE.profile >> .config
+	else
+	    echo "ERROR: profile $PROFILE does not exist!"
+	    exit 1
+	fi
+    else 
+	v "No profile selected! Using default."
+    fi	
+
 
     # second add diff for customer config if if customer code
     if [ -n "$CUSTOMER" ]; then
@@ -160,26 +164,6 @@ create_and_copy_files()
 	fi
     fi
 
-    if [ -n "$PROFILE" ]; then 
-	if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
-	    set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
-	elif [ -e "$CUSTCONF/$BOARDTYPE/$PROFILE.profile" ]; then 
-	    v "Using generic board profile for $PROFILE"
-	    set_profile $CUSTCONF/$BOARDTYPE/$PROFILE.profile .config
-	elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
-	    v "Using generic profile for $PROFILE"
-	    set_profile $CUSTCONF/$PROFILE.profile .config
-	elif [ -e "$CONFIGPATH/$BOARDTYPE/$PROFILE.profile" ]; then
-	    set_profile configs/$BOARDTYPE/$PROFILE.profile .config
-	elif [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
-	    set_profile configs/MASTER/$PROFILE.profile .config
-	else
-	    echo "ERROR: profile $PROFILE does not exist!"
-	    exit 1
-	fi
-    else 
-	v "No profile selected! Using default."
-    fi	
 
     #if [ -n "$USE_TAG" ]; then
     local GIT_TAG=$(git describe --abbrev=0 --tags)
