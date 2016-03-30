@@ -90,8 +90,22 @@ create_and_copy_files()
 {
     local BOARDTYPE=$1
     local CUSTOMER=$2
-    v "cp  $CONFIGPATH/MASTER/config .config"
-    cp  $CONFIGPATH/MASTER/config .config
+
+    # set target and profile
+    if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
+		echo "Hardware profile does not exist"
+		exit 1
+   
+    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
+#   elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
+		echo "Customer profile does not exist"
+		exit 1
+    fi
+
+    v  "Config $BOARDTYPE selected"
+    v "cp  $CONFIGPATH/MASTER/config  .config"
+    cp  $CONFIGPATH/MASTER/config  .config
+
     if [ $DEVELOPER -eq 1 ]; then
 		if [ ! -d "$CUSTCONF" ]; then
 			git  clone  git@private.inteno.se:customerconfigs
@@ -103,15 +117,7 @@ create_and_copy_files()
 		fi
     fi
 
-    if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
-		echo "Hardware profile does not exist"
-		exit 1
-    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
-#   elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
-		echo "Customer profile does not exist"
-		exit 1
-    fi
-    v  "Config $BOARDTYPE selected"
+
     if [ ! -d "$FILEDIR" ]; then
 		mkdir $FILEDIR
 		elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
@@ -119,7 +125,18 @@ create_and_copy_files()
 		rm -rf $FILEDIR*
     fi
 
+    # developer mode selected ?
+    if [ $DEVELOPER -eq 1 ]; then
+
+	# rewrite url to clone with ssh instead of http
+	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+    fi
+
+
     # first build config based on boardid
+    echo "CONFIG_TARGET_iopsys_brcm63xx_mips=y" > .config
+    echo "CONFIG_TARGET_iopsys_brcm63xx_mips_$BOARDTYPE=y" >> .config
+
     if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
         v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
         cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
@@ -128,50 +145,50 @@ create_and_copy_files()
         v "Apply $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff"
         generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
     fi
-    echo $BOARDTYPE > .current_config_file
+    
 
-	# second add diff for customer config if if customer code
-	if [ -n "$CUSTOMER" ]; then
-		echo "$BOARDTYPE $CUSTOMER" > .current_config_file
-		if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
-			v "cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
-			cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
-		fi
-		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ]; then
-			v "Apply $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff"
-			generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
-		fi
+    # second add diff for customer config if if customer code
+    if [ -n "$CUSTOMER" ]; then
+	echo "$BOARDTYPE $CUSTOMER" > .current_config_file
+	if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
+	    v "cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
+	    cp -rLp $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
 	fi
+	if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ]; then
+	    v "Apply $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff"
+	    generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+	fi
+    fi
 
-	if [ -n "$PROFILE" ]; then 
-		if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
-			set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
-		elif [ -e "$CUSTCONF/$BOARDTYPE/$PROFILE.profile" ]; then 
-			v "Using generic board profile for $PROFILE"
-			set_profile $CUSTCONF/$BOARDTYPE/$PROFILE.profile .config
-		elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
-			v "Using generic profile for $PROFILE"
-			set_profile $CUSTCONF/$PROFILE.profile .config
-		elif [ -e "$CONFIGPATH/$BOARDTYPE/$PROFILE.profile" ]; then
-			set_profile configs/$BOARDTYPE/$PROFILE.profile .config
-		elif [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
-			set_profile configs/MASTER/$PROFILE.profile .config
-		else
-			echo "ERROR: profile $PROFILE does not exist!"
-			exit 1
-		fi
-	else 
-		v "No profile selected! Using default."
-	fi	
+    if [ -n "$PROFILE" ]; then 
+	if [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile" ]; then
+	    set_profile $CUSTCONF/$BOARDTYPE/$CUSTOMER/$PROFILE.profile .config
+	elif [ -e "$CUSTCONF/$BOARDTYPE/$PROFILE.profile" ]; then 
+	    v "Using generic board profile for $PROFILE"
+	    set_profile $CUSTCONF/$BOARDTYPE/$PROFILE.profile .config
+	elif [ -e "$CUSTCONF/$PROFILE.profile" ]; then 
+	    v "Using generic profile for $PROFILE"
+	    set_profile $CUSTCONF/$PROFILE.profile .config
+	elif [ -e "$CONFIGPATH/$BOARDTYPE/$PROFILE.profile" ]; then
+	    set_profile configs/$BOARDTYPE/$PROFILE.profile .config
+	elif [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
+	    set_profile configs/MASTER/$PROFILE.profile .config
+	else
+	    echo "ERROR: profile $PROFILE does not exist!"
+	    exit 1
+	fi
+    else 
+	v "No profile selected! Using default."
+    fi	
 
-	#if [ -n "$USE_TAG" ]; then
-		local GIT_TAG=$(git describe --abbrev=0 --tags)
-		#local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
-		#echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
-		#echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
-		sed -i '/CONFIG_TARGET_VERSION=.*/d' .config
-		echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}\"" >> .config
-	#fi
+    #if [ -n "$USE_TAG" ]; then
+    local GIT_TAG=$(git describe --abbrev=0 --tags)
+    #local GIT_REVISION=$(($(git rev-list --count HEAD) - $(git rev-list --count $GIT_TAG)))
+    #echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}.${GIT_REVISION}\"" >> .config
+    #echo "Set version to \"${GIT_TAG}.${GIT_REVISION}\""
+    sed -i '/CONFIG_TARGET_VERSION=.*/d' .config
+    echo "CONFIG_TARGET_VERSION=\"${GIT_TAG}\"" >> .config
+    #fi
 
 
     # Enable Pckage source tree override if selected

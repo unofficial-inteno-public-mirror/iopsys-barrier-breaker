@@ -1,5 +1,3 @@
-CONFIG_TARGET_iopsys_brcm63xx_mips=y
-CONFIG_TARGET_iopsys_brcm63xx_mips_dg301=y
 CONFIG_BUILD_NLS=y
 CONFIG_BUSYBOX_CUSTOM=y
 CONFIG_CCACHE=y
