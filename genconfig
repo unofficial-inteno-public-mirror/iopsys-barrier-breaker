@@ -64,7 +64,7 @@ use_local_mirror()
 	echo "mirror [$LOCAL_MIRROR] exists. Using local mirror"
 	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=\"$LOCAL_MIRROR\";" .config
     else
-	echo "mirror [$LOCAL_MIRROR] don't exists. Not using local mirror"
+	echo "mirror [$LOCAL_MIRROR] does not exist. Not using local mirror"
     fi
 }
 
@@ -78,27 +78,8 @@ generate_config()
     done < $DIFFFILE
 }
 
-
-create_and_copy_files()
+setup_dirs()
 {
-    local BOARDTYPE=$1
-    local CUSTOMER=$2
-
-    # set target and profile
-    if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
-		echo "Hardware profile does not exist"
-		exit 1
-   
-    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
-#   elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $DEVELOPER -eq 1 ]; then
-		echo "Customer profile does not exist"
-		exit 1
-    fi
-
-    v  "Config $BOARDTYPE selected"
-    v "cp  $CONFIGPATH/MASTER/config  .config"
-    cp  $CONFIGPATH/MASTER/config  .config
-
     if [ $DEVELOPER -eq 1 ]; then
 		if [ ! -d "$CUSTCONF" ]; then
 			git  clone  git@private.inteno.se:customerconfigs
@@ -117,28 +98,31 @@ create_and_copy_files()
 		v "rm -rf $FILEDIR*"	
 		rm -rf $FILEDIR*
     fi
+}
 
-    # developer mode selected ?
-    if [ $DEVELOPER -eq 1 ]; then
 
-	# rewrite url to clone with ssh instead of http
-	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+create_and_copy_files()
+{
+    local BOARDTYPE=$1
+    local CUSTOMER=$2
+
+    # Validate seleced board and customer
+    if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
+		echo "Hardware profile does not exist"
+		exit 1
+   
+    elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
+		echo "Customer profile does not exist"
+		exit 1
     fi
 
+    # Base config on master
+    v  "Config $BOARDTYPE selected"
+    v "cp  $CONFIGPATH/MASTER/config  .config"
+    cp  $CONFIGPATH/MASTER/config  .config
 
-    # first build config based on boardid
-    echo "CONFIG_TARGET_iopsys_brcm63xx_mips=y" > .config
-    echo "CONFIG_TARGET_iopsys_brcm63xx_mips_$BOARDTYPE=y" >> .config
 
-    if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
-        v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
-        cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
-    fi
-    if [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ]; then
-        v "Apply $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff"
-        generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
-    fi
-    
+    # Add profile to master config if selected
     if [ -n "$PROFILE" ]; then 
 	if [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
 	    cat configs/MASTER/$PROFILE.profile >> .config
@@ -150,6 +134,28 @@ create_and_copy_files()
 	v "No profile selected! Using default."
     fi	
 
+    
+    # Check developer mode
+    if [ $DEVELOPER -eq 1 ]; then
+
+	# rewrite url to clone with ssh instead of http
+	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+    fi
+
+
+    # Set target and profile
+    echo "CONFIG_TARGET_iopsys_brcm63xx_mips=y" >> .config
+    echo "CONFIG_TARGET_iopsys_brcm63xx_mips_$BOARDTYPE=y" >> .config
+
+    if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
+        v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
+        cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
+    fi
+    if [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ]; then
+        v "Apply $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff"
+        cat $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff >> .config
+    fi
+    
 
     # second add diff for customer config if if customer code
     if [ -n "$CUSTOMER" ]; then
@@ -172,10 +178,10 @@ create_and_copy_files()
 
     # Enable Pckage source tree override if selected
     [ $SRCTREEOVERR -eq 1 ] && \
-        sed -i 's/# CONFIG_SRC_TREE_OVERRIDE.*/CONFIG_SRC_TREE_OVERRIDE=y/' .config
+        echo CONFIG_SRC_TREE_OVERRIDE=y >> .config
 
 
-    # validate the .config against dependency rules.
+    # Set default values based on selected parameters
     make defconfig
 
     # developer mode selected ?
@@ -193,6 +199,8 @@ create_and_copy_files()
 	echo "CONFIG_NATALIE_OPEN=y" >> .config
     fi
 
+
+    # Temporary fixup for juci profile
     if [ "$PROFILE" == "juci" ]; then
 	sed -i '/CONFIG_PACKAGE_luci-lib-core_source=y/d' .config
 	sed -i '/CONFIG_PACKAGE_luci-lib-nixio_notls=y/d' .config
@@ -239,6 +247,7 @@ else
 	shift;
     done
     [ -d $TMPDIR ] || mkdir $TMPDIR
+    setup_dirs
     create_and_copy_files "$1" "$2"
     [ -d $TMPDIR ] && rm -rf $TMPDIR
     use_local_mirror
