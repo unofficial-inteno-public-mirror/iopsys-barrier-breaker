@@ -1,0 +1,14 @@
+choice
+        prompt "GDB Version"
+        depends on PACKAGE_gdb
+        default GDB_VERSION_7_10_1
+        help
+          Select the version of GDB you wish to use.
+
+        config GDB_VERSION_7_10_1
+                bool "GDB 7.10.1"
+        config GDB_VERSION_ANDROID_7_10
+                bool "GDB Android 7.10"
+        config GDB_VERSION_7_5
+                bool "GDB 7.5"
+endchoice

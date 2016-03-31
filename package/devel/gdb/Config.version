@@ -1,0 +1,7 @@
+config GDB_VERSION
+        string
+        depends on PACKAGE_gdb
+        default 7.10.1		if GDB_VERSION_7_10_1
+        default android-7.10	if GDB_VERSION_ANDROID_7_10
+        default 7.5		if GDB_VERSION_7_5
+        default 7.5

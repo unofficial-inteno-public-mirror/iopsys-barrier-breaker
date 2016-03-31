@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gdb
-ifeq ($(CONFIG_mips),y)
+ifeq ($(CONFIG_GDB_VERSION),"android-7.10")
 PKG_VERSION:=android-7.10
 PKG_RELEASE:=1
 
@@ -17,13 +17,20 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_URL:=https://android.googlesource.com/toolchain/gdb
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-else
+else ifeq ($(CONFIG_GDB_VERSION),"7.10.1")
 PKG_VERSION:=7.10.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/gdb
 PKG_MD5SUM:=39e654460c9cdd80200a29ac020cfe11
+else
+PKG_VERSION:=7.5
+PKG_RELEASE:=1
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE_URL:=@GNU/gdb
+PKG_MD5SUM:=24a6779a9fe0260667710de1b082ef61
 endif
 
 PATCH_DIR:=./patches/$(PKG_VERSION)
@@ -47,6 +54,11 @@ $(call Package/gdb/Default)
   DEPENDS+=+libreadline +libncurses +zlib
 endef
 
+define Package/gdb/config
+	source "$(SOURCE)/Config.version"
+	source "$(SOURCE)/Config.in"
+endef
+
 define Package/gdb/description
 GDB, the GNU Project debugger, allows you to see what is going on `inside'
 another program while it executes -- or what another program was doing at the
@@ -57,6 +69,11 @@ define Package/gdbserver
 $(call Package/gdb/Default)
   TITLE:=Remote server for GNU Debugger
 endef
+
+#define Package/gdbserver/config
+#	source "$(SOURCE)/Config.version"
+#	source "$(SOURCE)/Config.in"
+#endef
 
 define Package/gdbserver/description
 GDBSERVER is a program that allows you to run GDB on a different machine than the
