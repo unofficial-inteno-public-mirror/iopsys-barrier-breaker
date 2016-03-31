@@ -88,5 +88,4 @@ CONFIG_PACKAGE_luaposix33=y
 # CONFIG_PACKAGE_luci-i18n-english is not set
 # CONFIG_PACKAGE_samba2-client is not set
 # CONFIG_PACKAGE_samba2-common is not set
-CONFIG_PACKAGE_ubus-scriptd=y
 # CONFIG_PACKAGE_iconnect is not set
