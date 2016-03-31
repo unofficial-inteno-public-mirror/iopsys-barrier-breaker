@@ -135,14 +135,6 @@ create_and_copy_files()
     fi	
 
     
-    # Check developer mode
-    if [ $DEVELOPER -eq 1 ]; then
-
-	# rewrite url to clone with ssh instead of http
-	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
-    fi
-
-
     # Set target and profile
     echo "CONFIG_TARGET_iopsys_brcm63xx_mips=y" >> .config
     echo "CONFIG_TARGET_iopsys_brcm63xx_mips_$BOARDTYPE=y" >> .config
