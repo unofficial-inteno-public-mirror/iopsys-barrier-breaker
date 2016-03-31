@@ -215,18 +215,17 @@ config_cb() {
 	case "$TYPE" in
 		interface)
 			config_get_bool enabled "$CONFIG_SECTION" enabled 0
-			config_get device "$CONFIG_SECTION" device
-			[ -z "$device" ] && {
-				device="$(find_ifname ${CONFIG_SECTION})"
-				config_set "$CONFIG_SECTION" device "${device:-eth0.1}"
-			}
-			bwlimit -i $device -r # reset previoulsy set bandwidth limit on this device
 			[ 1 -eq "$enabled" ] || return 0
 			config_get classgroup "$CONFIG_SECTION" classgroup
 			config_set "$CONFIG_SECTION" ifbdev "$C"
 			C=$(($C+1))
 			append INTERFACES "$CONFIG_SECTION"
 			config_set "$classgroup" enabled 1
+			config_get device "$CONFIG_SECTION" device
+			[ -z "$device" ] && {
+				device="$(find_ifname ${CONFIG_SECTION})"
+				config_set "$CONFIG_SECTION" device "${device:-eth0}"
+			}
 		;;
 		classgroup) append CG "$CONFIG_SECTION";;
 		classify|default|reclassify)
@@ -286,7 +285,6 @@ start_interface() {
 	local num_ifb="$2"
 	config_get device "$iface" device
 	config_get_bool enabled "$iface" enabled 1
-
 	[ -z "$device" -o 1 -ne "$enabled" ] && {
 		return 1 
 	}
@@ -294,14 +292,11 @@ start_interface() {
 	# disable flow cache if bandwidth limit is enabled
 	fcctl disable >/dev/null 2>&1
 
-	config_get upload "$iface" upload "10000"
+	config_get upload "$iface" upload
 	config_get_bool halfduplex "$iface" halfduplex
-	config_get download "$iface" download "100000"
+	config_get download "$iface" download
 	config_get classgroup "$iface" classgroup
 	config_get_bool overhead "$iface" overhead 0
-
-	# use bwlimit instead of default OpenWRT way
-	bwlimit -i $device -d $download -u $upload && return 0
 	
 	download="${download:-${halfduplex:+$upload}}"
 	enum_classes "$classgroup"
@@ -357,7 +352,7 @@ tc filter add dev $device parent 1: protocol ip prio 10 u32 match u32 0 0 flowid
 	elif [ -n "$download" ]; then
 		append dev_${dir} "tc qdisc del dev $device ingress >&- 2>&-
 tc qdisc add dev $device ingress
-tc filter add dev $device parent ffff: protocol ip prio 1 u32 match u32 0 0 flowid 1:1 action connmark action mirred egress redirect dev ifb$ifbdev" "$N"
+tc filter add dev $device parent ffff: protocol ip prio 1 u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb$ifbdev" "$N"
 	fi
 	add_insmod cls_fw
 	add_insmod sch_hfsc
