@@ -1,5 +1,0 @@
-CONFIG_TARGET_NO_DSL=y
-CONFIG_BCM_I2C=y
-CONFIG_PACKAGE_catv=y
-CONFIG_PACKAGE_luci-app-catv=y
-CONFIG_PACKAGE_luci-app-sfp=y

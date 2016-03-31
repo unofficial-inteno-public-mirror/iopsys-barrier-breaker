@@ -1,4 +1,0 @@
-# CONFIG_PACKAGE_dectmngr is not set
-# CONFIG_PACKAGE_luci-app-dect is not set
-# CONFIG_PACKAGE_natalie-dect is not set
-CONFIG_BCM_I2C=y

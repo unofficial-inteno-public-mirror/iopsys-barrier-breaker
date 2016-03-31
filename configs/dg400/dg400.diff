@@ -1,6 +1,0 @@
-CONFIG_TARGET_NO_DECT=y
-CONFIG_PACKAGE_dectmngr2=y
-# CONFIG_PACKAGE_dectmngr is not set
-# CONFIG_PACKAGE_luci-app-dect is not set
-# CONFIG_PACKAGE_natalie-dect is not set
-
