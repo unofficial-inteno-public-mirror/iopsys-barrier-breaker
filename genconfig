@@ -165,13 +165,9 @@ create_and_copy_files()
         v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
         cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
     fi
-    if [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ]; then
-        v "Apply $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff"
-        cat $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff >> .config
-    fi
-    
 
-    # second add diff for customer config if if customer code
+
+    # Add diff for customer config if if customer code
     if [ -n "$CUSTOMER" ]; then
 	echo "$BOARDTYPE $CUSTOMER" > .current_config_file
 	if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
