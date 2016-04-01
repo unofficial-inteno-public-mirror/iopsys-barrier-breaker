@@ -32,15 +32,15 @@ check_forward(){
 }
 
 check_rule(){
-	local target src dest_port hidden port
+	local target src port hidden port
 	port=$2
 	config_get target $1 target
 	config_get src $1 src
-	config_get dest_port $1 dest_port
+	config_get port $1 port
 	config_get hidden $1 hidden
-	if [ "$target" == "ACCEPT" ] && [ "$src" == "wan" ] && [ "$dest_port" == "80" ] && [ "$hidden" == "1" ];then
+	if [ "$target" == "ACCEPT" ] && [ "$src" == "wan" ] && [ "$port" == "80" ] && [ "$hidden" == "1" ];then
 		noRule=0
-		uci -q set firewall.$1.dest_port=$port
+		uci -q set firewall.$1.port=$port
 		uci -q commit firewall
 	fi
 }
@@ -170,7 +170,7 @@ reconf_parental()
 			uci -q set firewall."$1".src="*"
 			uci -q set firewall."$1".src_port=""
 			uci -q set firewall."$1".dest="*"
-			uci -q set firewall."$1".dest_port=""
+			uci -q set firewall."$1".port=""
 			uci -q set firewall."$1".proto="tcpudp"
 		fi
 	}
@@ -191,13 +191,53 @@ update_enabled() {
 	fi                                               
 }
 
+find_used_ports() {
+	local PORTS=""
+	local pcnt=0
+
+	port_from_section() {
+		local port start_port stop_port hidden
+
+		config_get port $1 $2
+		config_get hidden $1 hidden
+
+		[ "$hidden" == "1" ] || return
+
+		case $port in
+			*-*)
+				start_port=$(echo $port | awk -F '-' '{print$1}')
+				stop_port=$(echo $port | awk -F '-' '{print$2}')
+			;;
+		esac
+		if [ -n "$start_port" -a "$stop_port" ]; then
+			port=""
+			while [ $start_port -le $stop_port ]; do
+				port="$port $start_port"
+				start_port=$((start_port+1))
+				pcnt=$((pcnt+1))
+				[ $pcnt -gt 1024 ] && break
+			done
+		fi
+		[ -n "$port" ] && PORTS="$PORTS $port"
+	}
+
+	config_foreach port_from_section rule dest_port
+	config_foreach port_from_section redirect src_dport
+
+	local exclude_ports
+	config_get exclude_ports dmz exclude_ports
+	[ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"
+
+	echo "$PORTS" | tr ' ' '\n' | sort -un | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//' >/tmp/fw_used_ports
+}
+
 firewall_preconf() {
-	config_load firewall 
+	config_load firewall
 	config_foreach update_enabled zone
+	find_used_ports
 	rematch_duidip6
 	reconf_parental
 	reindex_dmzhost
 	http_port_management
 	uci -q commit firewall
 }
-

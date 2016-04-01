@@ -1,0 +1,18 @@
+--- a/networking/udhcp/common.c	2016-02-15 11:28:44.067075646 +0100
++++ b/networking/udhcp/common.c	2016-02-15 12:54:57.697879516 +0100
+@@ -66,6 +66,7 @@
+ #endif
+ 	{ OPTION_STRING                           , 0xd1 }, /* DHCP_PXE_CONF_FILE */
+ 	{ OPTION_6RD | OPTION_REQ                 , 0xd4 }, /* DHCP_6RD           */
++	{ OPTION_STRING                           , 0xe0 }, /* Option 224 private option */
+ 	{ OPTION_STRING				  , 0xf1 }, /* Option 241 private option */
+ 	{ OPTION_STATIC_ROUTES | OPTION_LIST      , 0xf9 }, /* DHCP_MS_STATIC_ROUTES */
+ 	{ OPTION_STRING                           , 0xfc }, /* DHCP_WPAD          */
+@@ -136,6 +137,7 @@
+ #endif
+ 	"pxeconffile" "\0" /* DHCP_PXE_CONF_FILE  */
+ 	"ip6rd" "\0"       /* DHCP_6RD            */
++	"privopt224" "\0"  /* Option 224 private option */
+ 	"privopt241" "\0"  /* Option 241 private option */
+ 	"msstaticroutes""\0"/* DHCP_MS_STATIC_ROUTES */
+ 	"wpad" "\0"        /* DHCP_WPAD           */

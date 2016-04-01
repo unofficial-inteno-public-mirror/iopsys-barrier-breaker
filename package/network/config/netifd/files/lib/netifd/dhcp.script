@@ -165,10 +165,16 @@ setup_interface () {
 
 iup() {
 	local url
+	local dat
+	local start
+	local time
 	local provisioningcode
 	local rest
 
-	if [ $vendorspecinf ]; then
+	if [ $privopt224 ]; then
+                echo "Option224 recived " $privopt224 > /dev/console
+		/sbin/iup224 $privopt224 &
+	elif [ $vendorspecinf ]; then
 		url=${vendorspecinf%%,*}; rest=${vendorspecinf#*,}
 		provisioningcode=${rest%%,*};
 		uci_set_state provisioning iup url "$url"

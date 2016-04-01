@@ -131,7 +131,7 @@ menu "Target Images"
 		help
 		    Allows you to change the percentage of reserved blocks in the root filesystem
  	
-	source "target/linux/brcm63xx_ref_nand/Config.in"
+	source "target/linux/*/Config.in"
 
 endmenu
 
@@ -456,6 +456,16 @@ menuconfig DEVEL
 	config LOCALMIRROR
 		string "Local mirror for source packages" if DEVEL
 		default ""
+
+	config GITMIRROR
+		string "Git mirror for source packages" if DEVEL
+		default "public.inteno.se"
+
+	config GITMIRROR_REWRITE
+		bool "rewrite the inteno http url to inteno gitolite urls" if DEVEL
+		default n
+		help 
+		     ex: http://public.inteno.se/xyz -> git@public.inteno.se:xyz
 
 	config AUTOREBUILD
 		bool "Automatic rebuild of packages" if DEVEL

@@ -23,6 +23,13 @@ config board 'board'
 	option gpio_shiftreg_mask 23
 	option gpio_shiftreg_bits 8
 
+config pci_slot 'pci'
+	option 435f B
+	option 43a0 AC
+	option 43a2 AC
+	option 43bc AC
+	option 43c5 AC
+
 config wifi-chip '435f'
 	option bands 'b'
 
@@ -37,6 +44,10 @@ config wifi-chip '43a2'
 config wifi-chip '43bc'
         option bands 'a'
         option is_ac '1'
+
+config wifi-chip '43c5'
+	option bands 'a'
+	option is_ac '1'
 
 ###############################################################################
 #

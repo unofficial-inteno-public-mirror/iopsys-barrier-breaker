@@ -30,8 +30,8 @@ fi
 ./scripts/feeds install -f -p feed_inteno_juci -a
 ./scripts/feeds install -f -p feed_inteno_packages -a
 ./scripts/feeds install -f -p feed_inteno_broadcom -a
-./scripts/feeds install -f -p feed_inteno_targets brcm63xx_ref_nand
-./scripts/feeds install -f -p feed_inteno_targets brcm63xx_ref_nand_arm
+./scripts/feeds install -f -p feed_inteno_targets iopsys-brcm63xx-mips
+./scripts/feeds install -f -p feed_inteno_targets iopsys-brcm63xx-arm
 ./scripts/feeds install -a 
 ./scripts/feeds uninstall asterisk18
 ./scripts/feeds uninstall zstream

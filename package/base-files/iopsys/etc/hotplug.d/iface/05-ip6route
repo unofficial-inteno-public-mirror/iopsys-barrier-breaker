@@ -1,9 +1,8 @@
 . /usr/share/libubox/jshn.sh
 
-local ifc6="wan6"
-local net6="$(uci -q get boardpanel.network.ipv6)"
+local ifc6=$(uci -q show network | grep proto=dhcpv6 | head -1 | cut -d'.' -f2)
 
-[ -n "$net6" ] && ifc6="$net6"
+[ -n "$ifc6" ] || exit 0
 
 [ ifupdate = "$ACTION" ] && {
         case "$INTERFACE" in

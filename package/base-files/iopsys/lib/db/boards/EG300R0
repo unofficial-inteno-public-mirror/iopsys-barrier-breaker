@@ -6,6 +6,8 @@ config board 'board'
 	option hasVdsl '0'
 	option hasVoice '1'
 	option hasDect '1'
+	option hasCatv '1'
+	option hasSfp '1'
 	option VoicePorts '6'
 	option VoicePortNames 'DECT_1 DECT_2 DECT_3 DECT_4 Tel_1 Tel_2'
 	option VoicePortOrder 'brcm0 brcm1 brcm2 brcm3 brcm4 brcm5'
@@ -33,6 +35,7 @@ config pci_slot 'pci'
         option 43a0 AC
         option 43a2 AC
         option 43bc AC
+        option 43c5 AC
 
 config wifi-chip '435f'
         option bands 'b'
@@ -49,6 +52,10 @@ config wifi-chip '43bc'
         option bands 'a'
         option is_ac '1'
 	option radarthrs '0x6a4 0x30 0x6a4 0x30 0x6a0 0x30 0x6ac 0x30 0x6a6 0x30 0x69c 0x30'
+
+config wifi-chip '43c5'
+	option bands 'a'
+	option is_ac '1'
 
 ###############################################################################
 #

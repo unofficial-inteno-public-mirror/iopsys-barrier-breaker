@@ -44,3 +44,6 @@ mirror*
 target/linux/brcm63xx_ref_nand
 target/linux/brcm63xx_ref_nand_arm
 .genconfig_config_bak
+target/linux/iopsys-brcm63xx-arm
+target/linux/iopsys-brcm63xx-mips
+

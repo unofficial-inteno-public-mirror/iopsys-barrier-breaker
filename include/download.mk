@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2012 OpenWrt.org
+# Cyright (C) 2006-2012 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -17,7 +17,7 @@ $(strip \
           $(if $(filter cvs://%,$(1)),cvs, \
             $(if $(filter hg://%,$(1)),hg, \
               $(if $(filter sftp://%,$(1)),bzr, \
-                $(if $(filter ssh://%,$(1)),ssh, \ 
+                $(if $(filter ssh://%,$(1)),ssh, \
                   unknown \
                 ) \
               ) \
@@ -89,7 +89,7 @@ define DownloadMethod/git
 		cd $(TMP_DIR)/dl && \
 		rm -rf $(SUBDIR) && \
 		[ \! -d $(SUBDIR) ] && \
-		git clone $(URL) $(SUBDIR) --recursive && \
+		$(SCRIPT_DIR)/git_clone.sh $(URL) $(SUBDIR)  $(CONFIG_GITMIRROR) $(VERSION) $(CONFIG_GITMIRROR_REWRITE) && \
 		(cd $(SUBDIR) && git checkout $(VERSION)) && \
 		echo "Packing checkout..." && \
 		$(call dl_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \

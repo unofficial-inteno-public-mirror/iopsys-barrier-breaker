@@ -1,26 +1,46 @@
 # remove wifi repeater client interface when wan cable is connected
+. /lib/functions.sh
 include /lib/network
 
-[ "$INTERFACE" != "eth0.1" ] && exit
+[ "$INTERFACE" != "$(uci get layer2_interface_ethernet.Wan.ifname)" ] && exit
 [ "$(uci get netmode.setup.curmode)" != "repeater" ] && exit
+
+get_wifi_wet_interface() {
+	handle_interface() {
+		config_get mode "$1" mode
+		if [ "$mode" == "wet" ] ; then
+			config_get ifname "$1" ifname
+			echo "$ifname"
+		fi
+	}
+	config_load wireless
+	config_foreach handle_interface wifi-iface "$device"
+}
+
+get_wifi_iface_cfgstr() {
+	get_cfgno() {
+		config_get ifname "$1" ifname
+		[ "$ifname" == "$2" ] && echo "wireless.$1"
+	}
+	config_load wireless
+	config_foreach get_cfgno wifi-iface $1 $2
+}
 
 case "$ACTION" in
 	add|register)
-		echo "Switch to AP (wired master)" > /dev/console
+		echo "Autoswitch to AP (wired master)" > /dev/console
 		sleep 2
-		uci set wireless.@wifi-iface[1].disabled=1
+		uci set $(get_wifi_iface_cfgstr $(get_wifi_wet_interface)).disabled=1
 		uci commit wireless
-		uci set network.wan.ifname="eth0.1 wl1.1 wl0"
-		uci commit network
-		ubus call network reload
+		uci set network.wan.ifname="$(uci get layer2_interface_ethernet.Wan.ifname)"
+		ubus call uci commit '{"config":"network"}'
 	;;
 	remove|unregister)
-		echo "Switch to repeater (wireless master)" > /dev/console
+		echo "Autoswitch to repeater (wireless master)" > /dev/console
 		sleep 2
-		uci delete wireless.@wifi-iface[1].disabled
+		uci delete $(get_wifi_iface_cfgstr $(get_wifi_wet_interface)).disabled
 		uci commit wireless
-		uci set network.wan.ifname="wl1 wl1.1 wl0"
-		uci commit network
-		ubus call network reload
+		uci delete network.wan.ifname
+		ubus call uci commit '{"config":"network"}'
 	;;
 esac

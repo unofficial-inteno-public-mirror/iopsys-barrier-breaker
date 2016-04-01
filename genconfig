@@ -10,11 +10,29 @@ export DEVELOPER=0
 export TMPDIR="/tmp/builder/"
 LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
-git remote -v | grep -q http || DEVELOPER=1
+git remote -v | grep -q http || {
+	DEVELOPER=1
+
+	bcmAllowed=0
+	iceAllowed=0
+	endptAllowed=0
+	natalieAllowed=0
+
+	allowedRepos="$(ssh -o ConnectTimeout=5 git@private.inteno.se 2>/dev/null  | grep -w 'R\|W' | awk '{print$NF}')"
+	for repo in $allowedRepos; do
+		case $repo in
+			bcmkernel) bcmAllowed=1 ;;
+			ice-client) iceAllowed=1 ;;
+			endptcfg) endptAllowed=1 ;;
+			natalie-dect*) natalieAllowed=1 ;;
+		esac
+	done
+}
 
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
 }
+
 usage() {
         echo
         echo 1>&2 "Usage: $0 [OPTIONS] BoardConfig Customerconfig"
@@ -101,17 +119,6 @@ create_and_copy_files()
 		rm -rf $FILEDIR*
     fi
 
-    # developer mode selected ?
-    if [ $DEVELOPER -eq 1 ]; then
-
-	##### if developer change to full source packages
-	#[ -e "$CONFIGPATH/DEVELOPER/developer.diff" ] && generate_config $CONFIGPATH/DEVELOPER/developer.diff .config
-
-	# rewrite url to clone with ssh instead of http
-	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
-	sed -i 's/CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g' .config
-    fi
-
     # first build config based on boardid
     if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
         v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
@@ -174,6 +181,21 @@ create_and_copy_files()
 
     # validate the .config against dependency rules.
     make defconfig
+
+    # developer mode selected ?
+    if [ $DEVELOPER -eq 1 ]; then
+
+	# rewrite url to clone with ssh instead of http
+	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
+	[ $bcmAllowed -eq 1 ] && sed -i 's/CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g' .config
+	[ $iceAllowed -eq 1 ] && echo "# CONFIG_ICE_OPEN is not set" >> .config || echo "CONFIG_ICE_OPEN=y" >> .config
+	[ $endptAllowed -eq 1 ] && echo "# CONFIG_ENDPT_OPEN is not set" >> .config || echo "CONFIG_ENDPT_OPEN=y" >> .config
+	[ $natalieAllowed -eq 1 ] && echo "# CONFIG_NATALIE_OPEN is not set" >> .config || echo "CONFIG_NATALIE_OPEN=y" >> .config
+    else
+	echo "CONFIG_ICE_OPEN=y" >> .config
+	echo "CONFIG_ENDPT_OPEN=y" >> .config
+	echo "CONFIG_NATALIE_OPEN=y" >> .config
+    fi
 
     if [ "$PROFILE" == "juci" ]; then
 	sed -i '/CONFIG_PACKAGE_luci-lib-core_source=y/d' .config
