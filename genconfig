@@ -10,6 +10,28 @@ export DEVELOPER=0
 export TMPDIR="/tmp/builder/"
 LOCAL_MIRROR="http://mirror.inteno.se/mirror"
 
+iopsys_brcm63xx_mips="cg300 cg301 dg150 dg150v2 dg200 dg200al dg301 dg301al eg300 vg50 vox25"
+iopsys_brcm63xx_arm="dg400"
+target="bogus"
+
+set_target() {
+
+    local profile=$1
+
+    for p in $iopsys_brcm63xx_mips; do
+        if [ $p == $profile ]; then
+            target="iopsys_brcm63xx_mips"
+        fi
+    done
+
+    for p in $iopsys_brcm63xx_arm; do
+        if [ $p == $profile ]; then
+            target="iopsys_brcm63xx_arm"
+        fi
+    done
+}
+
+
 git remote -v | grep -q http || {
 	DEVELOPER=1
 
@@ -107,10 +129,10 @@ create_and_copy_files()
     local CUSTOMER=$2
 
     # Validate seleced board and customer
-    if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
-		echo "Hardware profile does not exist"
-		exit 1
-   
+    set_target $BOARDTYPE
+    if [ $target == "bogus" ]; then
+	echo "Hardware profile does not exist"
+	exit 1
     elif [ -n "$CUSTOMER" -a ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" ]; then
 		echo "Customer profile does not exist"
 		exit 1
@@ -136,8 +158,8 @@ create_and_copy_files()
 
     
     # Set target and profile
-    echo "CONFIG_TARGET_iopsys_brcm63xx_mips=y" >> .config
-    echo "CONFIG_TARGET_iopsys_brcm63xx_mips_$BOARDTYPE=y" >> .config
+    echo "CONFIG_TARGET_${target}=y" >> .config
+    echo "CONFIG_TARGET_${target}_${BOARDTYPE}=y" >> .config
 
     if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
         v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
