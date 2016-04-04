@@ -96,7 +96,7 @@ generate_config()
     MASTERFILE="$2"
     while read p; do
 	v  "$p"
-	sed -r -i  "$p" $MASTERFILE
+	sed -r -i "$p" $MASTERFILE
     done < $DIFFFILE
 }
 
@@ -144,18 +144,19 @@ create_and_copy_files()
     cp  $CONFIGPATH/MASTER/config  .config
 
 
-    # Add profile to master config if selected
+    # Apply profile diff to master config if selected
     if [ -n "$PROFILE" ]; then 
-	if [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
-	    cat configs/MASTER/$PROFILE.profile >> .config
+	if [ -e "$CONFIGPATH/MASTER/$PROFILE.diff" ]; then
+	    generate_config configs/MASTER/$PROFILE.diff .config
+	elif [ "$PROFILE" == "juci" ]; then
+		v "Default profile (juci) is selected."
 	else
 	    echo "ERROR: profile $PROFILE does not exist!"
 	    exit 1
 	fi
     else 
 	v "No profile selected! Using default."
-    fi	
-
+    fi
     
     # Set target and profile
     echo "CONFIG_TARGET_${target}=y" >> .config
@@ -166,8 +167,7 @@ create_and_copy_files()
         cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
     fi
 
-
-    # Add diff for customer config if if customer code
+    # Add customerconfig diff if a customer is selected
     if [ -n "$CUSTOMER" ]; then
 	echo "$BOARDTYPE $CUSTOMER" > .current_config_file
 	if [ -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/fs" ]; then
@@ -179,7 +179,6 @@ create_and_copy_files()
 	    generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
 	fi
     fi
-
 
     # Set target version
     local GIT_TAG=$(git describe --abbrev=0 --tags)
@@ -196,7 +195,6 @@ create_and_copy_files()
 
     # developer mode selected ?
     if [ $DEVELOPER -eq 1 ]; then
-
 	# rewrite url to clone with ssh instead of http
 	echo "CONFIG_GITMIRROR_REWRITE=y" >>.config
 	[ $bcmAllowed -eq 1 ] && sed -i 's/CONFIG_BCM_OPEN=y/# CONFIG_BCM_OPEN is not set/g' .config
@@ -209,15 +207,13 @@ create_and_copy_files()
 	echo "CONFIG_NATALIE_OPEN=y" >> .config
     fi
 
-
-    # Temporary fixup for juci profile
-    if [ "$PROFILE" == "juci" ]; then
-	sed -i '/CONFIG_PACKAGE_luci-lib-core_source=y/d' .config
-	sed -i '/CONFIG_PACKAGE_luci-lib-nixio_notls=y/d' .config
-
-	local luciver=$(grep -w CONFIG_TARGET_VERSION .config | cut -d'=' -f2 | tr -d '"')
-	local juciver=$(echo $luciver | awk -F'.' '{print$1"."$2+1"."$3}')
-	sed -i "s/CONFIG_TARGET_VERSION=.*/CONFIG_TARGET_VERSION=${juciver}/g" .config
+    # Temporary fixup for juci/luci profile
+    if [ "$PROFILE" == "luci" ]; then
+	sed -i '/CONFIG_DEFAULT_juci/d' .config
+	sed -i '/CONFIG_PACKAGE_juci/d' .config
+    else
+	sed -i '/CONFIG_PACKAGE_luci/d' .config
+	sed -i '/CONFIG_PACKAGE_luci/d' .config
     fi
 
     echo Set version to $(grep -w CONFIG_TARGET_VERSION .config | cut -d'=' -f2 | tr -d '"')
