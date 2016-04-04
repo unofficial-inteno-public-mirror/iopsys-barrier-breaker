@@ -385,6 +385,7 @@ TARGET_CPPFLAGS := \
 TARGET_CFLAGS += \
 	-I$(PKG_BUILD_DIR)/include \
 	-I$(LINUX_DIR)/user_headers/include \
+	-I$(LINUX_DIR)/include \
 	-ffunction-sections -fdata-sections
 
 TARGET_LDFLAGS += \
