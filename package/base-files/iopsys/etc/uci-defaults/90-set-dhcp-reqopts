@@ -1,5 +1,22 @@
 #!/bin/sh
 
+management_interfaces() {
+	local DHCP_IFACES=""
+
+	is_notbridged_dhcp() {
+		local config="$1"
+		local proto="$(uci -q get network.$config.proto)"
+		local typ="$(uci -q get network.$config.type)"
+		if [ "$proto" == "dhcp" -a "$typ" != "bridge" ]; then
+			DHCP_IFACES="$DHCP_IFACES $config"
+		fi
+	}
+
+	config_load network
+	config_foreach is_notbridged_dhcp interface
+	echo $DHCP_IFACES
+}
+
 set_iup_reqopts() {
 	### Ask for IUP related DHCP options only if IUP is enabled ###
 	local enabled="$(uci -q get provisioning.iup.enabled)"
@@ -10,6 +27,7 @@ set_iup_reqopts() {
 	local proto="$(uci -q get network.wan.proto)"
 	local iupopts="66 67 128"
 	local ropt iopt
+	local net
 	for ropt in $reqopts; do
 		case $ropt in
 			66|67|128|224) ;;
@@ -24,11 +42,11 @@ set_iup_reqopts() {
 			*) newreqopts="$newreqopts $ropt" ;;
 		esac
 	done
-	if [ "$proto" == "dhcp" ]; then
-		newreqopts="$(echo $newreqopts | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//')"
-		uci -q set network.wan.reqopts="$newreqopts"
-		uci commit network
-	fi
+	newreqopts="$(echo $newreqopts | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/^[ \t]*//;s/[ \t]*$//')"
+	for net in $(management_interfaces); do
+		uci -q set network.$net.reqopts="$newreqopts"
+	done
+	uci commit network
 }
 
 set_cwmp_reqopts() {
