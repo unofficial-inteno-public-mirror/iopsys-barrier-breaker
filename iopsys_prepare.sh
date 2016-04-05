@@ -56,7 +56,7 @@ echo "The packages below must be installed in order to be able to compile JUCI"
 echo $packages_npm
 read -p "Do you approve insallation of these packages (y/n): " ans
 if [ "$ans" == "y" ]; then
-	apt-get install $packages_npm
+	apt-get install npm nodejs yui-compressor
 	npm install
 	npm install -g grunt-cli
 	npm install -g mocha
