@@ -1,15 +1,7 @@
 /CONFIG_DEFAULT_juci/d
 /CONFIG_PACKAGE_juci/d
-/CONFIG_PACKAGE_uhttpd/d
-/CONFIG_PACKAGE_libubox-lua=y/d
-/CONFIG_PACKAGE_libuv-lua=y/d
-/CONFIG_PACKAGE_libuv=y/d
-/CONFIG_PACKAGE_luabitop=y/d
-/CONFIG_PACKAGE_luaposix33=y/d
 
 /CONFIG_PACKAGE_luci/d
-/CONFIG_PACKAGE_lighttpd/d
-
 $a\CONFIG_PACKAGE_luci=y
 $a\CONFIG_PACKAGE_luci-mod-admin-core=y
 $a\CONFIG_PACKAGE_luci-mod-admin-full=y
@@ -48,11 +40,4 @@ $a\CONFIG_PACKAGE_luci-lib-nixio=y
 $a\CONFIG_PACKAGE_luci-lib-nixio_notls=y
 $a\CONFIG_PACKAGE_luci-lib-sys=y
 $a\CONFIG_PACKAGE_luci-lib-web=y
-
-$a\CONFIG_PACKAGE_lighttpd=y
-$a\CONFIG_LIGHTTPD_SSL=y
-$a\CONFIG_PACKAGE_lighttpd-mod-cgi=y
-$a\CONFIG_PACKAGE_lighttpd-mod-webdav=y
-
-$a\CONFIG_PACKAGE_libpcre=y
 

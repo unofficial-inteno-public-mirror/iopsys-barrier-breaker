@@ -213,7 +213,6 @@ create_and_copy_files()
 	sed -i '/CONFIG_PACKAGE_juci/d' .config
     else
 	sed -i '/CONFIG_PACKAGE_luci/d' .config
-	sed -i '/CONFIG_PACKAGE_luci/d' .config
     fi
 
     echo Set version to $(grep -w CONFIG_TARGET_VERSION .config | cut -d'=' -f2 | tr -d '"')
