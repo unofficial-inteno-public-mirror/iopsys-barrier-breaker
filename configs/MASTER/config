@@ -28,6 +28,7 @@ CONFIG_PACKAGE_glib2=y
 CONFIG_PACKAGE_ice-client=y
 CONFIG_PACKAGE_ice-client-camerawatch=m
 CONFIG_PACKAGE_ice-client-fileme=m
+CONFIG_PACKAGE_ice-client-gigaset=m
 CONFIG_PACKAGE_ice-client-guest=m
 CONFIG_PACKAGE_ice-client-iperf=m
 CONFIG_PACKAGE_ice-client-logreader=m
