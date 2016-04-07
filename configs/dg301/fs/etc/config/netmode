@@ -1,5 +1,0 @@
-config mode 'setup'
-        option dir '/etc/netmodes'
-        option detail ''
-        option curmode 'routed'
-

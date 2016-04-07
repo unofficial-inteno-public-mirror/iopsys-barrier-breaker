@@ -162,11 +162,6 @@ create_and_copy_files()
     echo "CONFIG_TARGET_${target}=y" >> .config
     echo "CONFIG_TARGET_${target}_${BOARDTYPE}=y" >> .config
 
-    if [ -d "$CONFIGPATH/$BOARDTYPE/fs" ]; then
-        v "cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
-        cp -rLp $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
-    fi
-
     # Add customerconfig diff if a customer is selected
     if [ -n "$CUSTOMER" ]; then
 	echo "$BOARDTYPE $CUSTOMER" > .current_config_file
