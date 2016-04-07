@@ -4,8 +4,6 @@
 . /usr/share/libubox/jshn.sh
 . /lib/network/brcmwifi.sh
 
-exec >/dev/null 2>&1
-
 local _ACTION="$1"
 local _DOWN=0
 local _RELOAD=0
@@ -1177,13 +1175,24 @@ wifi_schedule() {
 
 case "$_ACTION" in
 	detect)
+		exec >/dev/null 2>&1
 		wifi_detect
 		exit
 	;;
 	disable|enable)
+		exec >/dev/null 2>&1
 		toggle_wifi_iface "$1" "$2"
 	;;
+	clients)
+		if [ -n "$2" ]; then
+			ubus call router sta "{\"vif\":\"$2\"}"
+		else
+			ubus call router stas
+		fi
+		exit
+	;;
 	down|off)
+		exec >/dev/null 2>&1
 		_DOWN=1
 		wlmngr_stopServices
 		wlmngr_WlConfDown 0
@@ -1196,10 +1205,12 @@ case "$_ACTION" in
 		_RELOAD=1
 	;;
 	toggle)
+		exec >/dev/null 2>&1
 		toggle_wifi_device "$2"
 		_RELOAD=1
 	;;
 	nvram|on)
+		exec >/dev/null 2>&1
 		update_from_nvram
 		_RELOAD=1
 	;;
@@ -1208,5 +1219,6 @@ case "$_ACTION" in
 #	;;
 esac
 
+exec >/dev/null 2>&1
 configure_wifi
 
