@@ -11,7 +11,7 @@ validate_system_section()
 		'conloglevel:uinteger' \
 		'buffersize:uinteger' \
 		'timezone:string:UTC' \
-		'zonename:string'
+		'zonename:string' 
 }
 
 system_config() {
@@ -27,10 +27,23 @@ system_config() {
 	echo "$hostname" > /proc/sys/kernel/hostname
 	[ -z "$conloglevel" -a -z "$buffersize" ] || dmesg ${conloglevel:+-n $conloglevel} ${buffersize:+-s $buffersize}
 	echo "$timezone" > /tmp/TZ
-	[ -n "$zonename" ] && [ -f "/usr/share/zoneinfo/$zonename" ] && ln -s "/usr/share/zoneinfo/$zonename" /tmp/localtime
+	[ -n "$zonename" ] && [ -f "/usr/share/zoneinfo/$zonename" ] && {
+		ln -sf "/usr/share/zoneinfo/$zonename" /tmp/localtime
+		ln -sf "/usr/share/zoneinfo/$zonename" /etc/localtime
+	}
 
 	# apply timezone to kernel
 	date -k
+	
+	local ping_interval
+	config_get ping_interval $cfg ping_interval 5
+	if grep -q "/sbin/testnet timed_check" /etc/crontabs/root
+	then 
+		sed -i '/\/sbin\/testnet timed_check/s/\*\/[0-9]\+/\*\/'$ping_interval'/g' /etc/crontabs/root
+	else
+		echo "*/"$ping_interval" * * * * /sbin/testnet timed_check >/dev/null 2>&1" >>/etc/crontabs/root
+		fsync /etc/crontabs/root
+	fi
 }
 
 reload_service() {

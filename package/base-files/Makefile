@@ -150,8 +150,7 @@ define Package/base-files/install
 				echo "$$$${conffile##$(1)}" >> $(1)/CONTROL/conffiles; \
 		fi \
 	done
-	
-	$(CP) ./iopsys/* $(1)/
+
 	sed -i 's/^IOP Version.*/IOP Version: $(IOP_BUILD_VERSION)/g' $(1)/etc/banner
 endef
 
