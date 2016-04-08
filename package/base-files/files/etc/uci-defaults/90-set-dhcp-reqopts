@@ -25,7 +25,7 @@ set_iup_reqopts() {
 	local baseopts=
 	local reqopts="$(uci -q get network.wan.reqopts)"
 	local proto="$(uci -q get network.wan.proto)"
-	local iupopts="66 67 128"
+	local iupopts="66 67 128 224"
 	local ropt iopt
 	local net
 	for ropt in $reqopts; do
