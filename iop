@@ -52,7 +52,7 @@ if [ -d package/feeds/feed_inteno_packages/iop/scripts ]; then
 fi
 
 if [ -z $arg ]; then
-    printf "Error: you have to specify a command to run\n\n"
+    printf "Usage: iop <command> [<args>]\n\n"
     dump_commands
     exit -1
 fi
