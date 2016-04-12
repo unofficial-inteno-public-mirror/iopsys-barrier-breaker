@@ -51,11 +51,12 @@ if [ -d package/feeds/feed_inteno_packages/iop/scripts ]; then
     done
 fi
 
-if [ -z $arg ]; then
+if [ -z $arg ] || [ $arg == "--help" ]; then
     printf "Usage: iop <command> [<args>]\n\n"
     dump_commands
     exit -1
 fi
+
 
 
 # Check all registered commands for a match
