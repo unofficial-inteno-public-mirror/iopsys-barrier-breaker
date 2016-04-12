@@ -1,0 +1,76 @@
+#!/bin/bash
+
+arg=$1
+arr_index=0
+declare -a command_array
+declare -a help_array
+
+
+# Check if we should clone feeds with ssh or http
+developer=0
+git remote -v | grep -q http || developer=1
+
+
+# Utility functions
+function register_command {
+
+    command_array[$arr_index]=$1
+    help_array[$arr_index]=$2
+    arr_index=$((arr_index+1))
+}
+
+function dump_commands {
+    
+    printf "Avaliable commands:\n"
+    for i in $(seq 0 $arr_index); do
+        printf "   %-15s%s\n" "${command_array[$i]}" "${help_array[$i]}"
+    done
+}
+
+
+# Register bootstrap command that installs other commands from feeds
+function bootstrap {
+
+    if [ $developer == 1 ]; then
+        ./scripts/feeds update -g
+    else
+        ./scripts/feeds update
+    fi
+
+    ./scripts/feeds install -p feed_inteno_packages iop
+}
+
+register_command "bootstrap" "Initial command to run to install other commands"
+
+
+# Plugin scripts call register command to export their interface
+if [ -d package/feeds/feed_inteno_packages/iop/scripts ]; then
+    source package/feeds/feed_inteno_packages/iop/scripts/*
+fi
+
+if [ -z $arg ]; then
+    printf "Error: you have to specify a command to run\n\n"
+    dump_commands
+    exit -1
+fi
+
+
+# Check all registered commands for a match
+for i in $(seq 0 $arr_index); do
+
+    if [ $arg == "${command_array[$i]}" ]; then
+        # Run the command and pass all args 
+        # except for the first to it
+        $arg "${@:2}"
+        exit 0
+    fi
+
+done
+
+
+# No registered command for the passed input arg
+printf "Error: no such command $arg\n\n"
+dump_commands
+exit -1
+
+
