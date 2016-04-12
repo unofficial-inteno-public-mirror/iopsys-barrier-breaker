@@ -112,13 +112,17 @@ ifdef CONFIG_PACKAGE_procd-seccomp
 endif
 
 define Package/procd/install
-	$(INSTALL_DIR) $(1)/sbin $(1)/etc $(1)/lib/functions
+	$(INSTALL_DIR) $(1)/sbin $(1)/etc/init.d $(1)/etc/config $(1)/lib/functions
 
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/{init,procd,askfirst,udevtrigger} $(1)/sbin/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libsetlbf.so $(1)/lib
 	$(INSTALL_BIN) ./files/reload_config $(1)/sbin/
 	$(INSTALL_DATA) ./files/hotplug*.json $(1)/etc/
 	$(INSTALL_DATA) ./files/procd.sh $(1)/lib/functions/
+
+	$(INSTALL_CONF) ./files/cgroups.config $(1)/etc/config/cgroups
+	$(INSTALL_BIN) ./files/cgroups.init $(1)/etc/init.d/cgroups
+	$(INSTALL_BIN) ./files/cgroupd $(1)/sbin/
 endef
 
 define Package/procd-ujail/install

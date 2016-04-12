@@ -196,7 +196,7 @@ _procd_set_param() {
 		nice)
 			json_add_int "$type" "$1"
 		;;
-		pidfile|user|seccomp|capabilities)
+		pidfile|user|seccomp|capabilities|cgroup)
 			json_add_string "$type" "$1"
 		;;
 		stdout|stderr|no_new_privs)

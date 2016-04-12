@@ -1,0 +1,75 @@
+#!/bin/sh /etc/rc.common
+
+START=01
+USE_PROCD=1
+PROCD_DEBUG=1
+NAME=cgroupd
+
+CGBASEDIR=/sys/fs/cgroup
+CGCONFIG="cgroups"
+
+cgroupinit_set_knob_value () {
+	local knob_val=$1
+	local cgrp=$2
+	local knob val
+
+	knob=$(echo $knob_val |awk -F= '{print $1}')
+	val=$(echo $knob_val |awk -F= '{print $2}')
+	/bin/echo $val > $CGBASEDIR/$cgrp/$knob
+}
+
+cgroupinit_create_group () {
+	local cgrp=$1
+	local cgdir
+
+	if [ "$cgrp" == "_root_" ]; then
+		cgdir=.
+	else
+		cgdir=$cgrp
+		[ -d $CGBASEDIR/$cgdir] || mkdir $CGBASEDIR/$cgdir
+	fi
+
+	config_list_foreach $cgrp option cgroupinit_set_knob_value $cgdir
+}
+
+cgroupinit_configure_cgroups () {
+	local enab defgrp
+
+	config_load $CGCONFIG
+
+	config_get enab cgroups enabled "1"
+	[ $enab -eq 0 ] && return 1
+
+	config_get defgrp cgroups defgroup "_undef_"
+	[ "$defgrp" == "_undef_" ] && return 1
+
+	config_foreach cgroupinit_create_group cgroup
+	return 0
+}
+
+start_service () {
+	cgroupinit_configure_cgroups
+	[ $? -eq 0 ] || return
+
+	procd_open_instance
+	procd_set_param command /sbin/cgroupd $CGBASEDIR $CGCONFIG
+	procd_set_param respawn
+	procd_close_instance
+}
+
+stop_service () {
+	local cgdir procs prc
+
+	for cgdir in $(find $CGBASEDIR -type d -mindepth 1); do
+		procs=$(cat $cgdir/cgroup.procs)
+		for prc in $procs; do
+			echo $prc > $CGBASEDIR/cgroup.procs
+		done
+		rmdir $cgdir
+	done
+}
+
+service_triggers() {
+        procd_add_reload_trigger $CGCONFIG
+}
+

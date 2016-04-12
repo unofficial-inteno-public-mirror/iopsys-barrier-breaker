@@ -1,0 +1,74 @@
+#!/bin/sh
+
+CGBASEDIR=$1
+CGCONFIG=$2
+[ -n "$CGBASEDIR" -a -n "$CGCONFIG" ] || exit 1
+
+[ -r /lib/functions.sh ] || exit 1
+. /lib/functions.sh
+
+CGPROCMAP=/tmp/cgprocmap
+CGDLOG=/tmp/cgroupd.log
+CGPERIOD=3s
+DEBUG=1
+
+
+add_to_procmap () {
+	local name_grp=$1
+	local name grp
+
+	name=$(echo $name_grp |awk -F= '{print $1}')
+	grp=$(echo $name_grp |awk -F= '{print $2}')
+
+	echo "($name) $grp" >> $CGPROCMAP
+}
+
+# Read configuration file and create process:group look-up table
+# in /tmp file
+read_config () {
+	local enab
+
+	config_load $CGCONFIG
+
+	config_get enab cgroups enabled "1"
+	[ $enab -eq 0 ] && exit 1
+
+	config_get CGDEFGROUP cgroups defgroup "_undef_"
+	[ "$CGDEFGROUP" == "_undef_" ] && exit 1
+	[ "$DEBUG" == "1" ] && echo "default $CGDEFGROUP" >> $CGDLOG
+
+	echo -n '' > $CGPROCMAP
+	config_list_foreach procmap procmap add_to_procmap
+	[ "$DEBUG" == "1" ] && cat $CGPROCMAP >> $CGDLOG
+}
+
+# Move all process except init from cgroup root to cgroups according
+# to /tmp look-up table
+move_wild_procs () {
+	local wild_procs=$(cat $CGBASEDIR/cgroup.procs)
+	local pid name grp
+
+	for pid in $wild_procs; do
+
+		[ $pid -eq 1 ] && continue
+		if [ -d /proc/$pid ]; then
+
+			name=$(awk '{print $2}' /proc/$pid/stat)
+			grp=$(awk "\$1==\"$name\" {print \$2}" $CGPROCMAP)
+			[ "$grp" == "." ] && continue
+			[ -n "$grp" ] || grp=$CGDEFGROUP
+
+			[ "$DEBUG" == "1" ] && \
+			    echo "Moving proc $pid $name to $grp" >> $CGDLOG
+			echo $pid > $CGBASEDIR/$grp/cgroup.procs
+		fi
+	done
+}
+
+
+[ "$DEBUG" == "1" ] && echo "$0 started $(date)" >> $CGDLOG
+read_config
+while true; do
+	move_wild_procs
+	sleep $CGPERIOD
+done
