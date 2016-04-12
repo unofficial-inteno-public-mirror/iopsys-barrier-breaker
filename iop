@@ -23,7 +23,7 @@ function dump_commands {
     
     printf "Avaliable commands:\n"
     for i in $(seq 0 $arr_index); do
-        printf "   %-15s%s\n" "${command_array[$i]}" "${help_array[$i]}"
+        printf "   %-25s%s\n" "${command_array[$i]}" "${help_array[$i]}"
     done
 }
 
@@ -45,7 +45,10 @@ register_command "bootstrap" "Initial command to run to install other commands"
 
 # Plugin scripts call register command to export their interface
 if [ -d package/feeds/feed_inteno_packages/iop/scripts ]; then
-    source package/feeds/feed_inteno_packages/iop/scripts/*
+    
+    for f in package/feeds/feed_inteno_packages/iop/scripts/*; do
+	source $f
+    done
 fi
 
 if [ -z $arg ]; then
