@@ -27,33 +27,62 @@ the top level repository.
 
 Iopsys initialization
 
-After cloning the repository, which contains feeds.conf, the feed
-repositories need to be cloned and installed. This is handled by
-running:
+After cloning the repository the iop command needs to be initialized
+to install the commands for this version of iopsys.
 
-./scripts/iop_feeds_update.sh
+Running iop without arguments gives the following output:
+
+./iop
+Usage: iop <command> [<args>]
+
+Avaliable commands:
+   bootstrap                Initial command to run to install other commands
+
+As can be seen, there is only one command avaliable. Run this to
+install more commands from feeds:
+
+./iop bootstrap
+
+When bootstrap completes you should have more commands avaliable (some
+commands can differ for your version):
+
+./iop
+Usage: iop <command> [<args>]
+
+Avaliable commands:
+   bootstrap                Initial command to run to install other commands
+   feeds_update             Update feeds to point to commit hashes in feeds.conf
+   genconfig                Genereate configuration for board and customer
+   generate_tarballs        Generate tarballs for openstk
+   setup_host               Install needed packets to host machine
+   status                   Display the state of your working tree
+   update_package           Publish changes to packages and feeds
+
+
+Next, all feed repositories need to be cloned and packages
+installed. This is handled by running:
+
+iop feeds_update 
 
 This clones all feed repositories into feeds/ and installs the
 packages from those repositories into the build system by creating
-symlinks in packages/feeds/. Cloning with the -d flag will rewrite the
-url:s in feeds.conf to clone with ssh instead of http.
+symlinks in packages/feeds/. 
+
+NOTE. iop bootstrap only needs to be run once to install the commands
+above. After you have installed feeds_update, running that command
+will update iop commands along with all other packages.
 
 Now, generate a .config file for the board and customer you're
 building for with
 
-./genconfig <board> <customer>
-
-If you're an Inteno developer, run genconfig with the -d option. This
-sets an option in .config which changes the git clone protocol from
-http to ssh for inteno repositories. This will give you enhanced
-access (git push) to these repositories according to what is setup in
-gitolite.
+iop genconfig <board> <customer>
 
 To summarize, to intialize the repository, run:
 
 git clone <iopsys>
-./scripts/iop_feeds_update.sh
- ./genconfig <board> <customer>
+iop boostrap
+iop feeds_update
+iop genconfig <board> <customer>
 make
 
 alt: for parallel build. 
@@ -68,15 +97,13 @@ get changes that modify feeds.conf. Now your feeds.conf points to
 newer commits then what is checked out in the feed repositories and
 you need to update your feeds. Do this by running:
 
-./scripts/iop_feeds_update.sh
+iop feeds_update
 
-This will pull in the latest changes in
-the modified feed for you. To summarize, to update your repository,
-
-run:
+This will pull in the latest changes in the modified feed for you. To
+summarize, to update your repository, run:
 
 git pull
-./scripts/iop_feeds_update.sh
+iop feeds_update
 make
 
 ---------------------------------
@@ -106,7 +133,7 @@ export EDITOR=/usr/bin/emacs
 
 You probably want to add this line to your .bashrc.
 
-./scripts/update_package.sh
+iop update_package
 
 First, it will update the toplevel remote repository and abort if it
 finds that you are not on the last commit on the branch you're working
