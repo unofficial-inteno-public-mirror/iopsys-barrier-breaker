@@ -80,7 +80,7 @@ iop genconfig <board> <customer>
 To summarize, to intialize the repository, run:
 
 git clone <iopsys>
-iop boostrap
+iop bootstrap
 iop feeds_update
 iop genconfig <board> <customer>
 
