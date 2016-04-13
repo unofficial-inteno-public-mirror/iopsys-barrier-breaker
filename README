@@ -51,10 +51,10 @@ Usage: iop <command> [<args>]
 
 Avaliable commands:
    bootstrap                Initial command to run to install other commands
-   feeds_update             Update feeds to point to commit hashes in feeds.conf
+   feeds_update             Update feeds to point to commit hashes from feeds.conf
    genconfig                Genereate configuration for board and customer
    generate_tarballs        Generate tarballs for openstk
-   setup_host               Install needed packets to host machine
+   setup_host               Install needed packages to host machine
    status                   Display the state of your working tree
    update_package           Publish changes to packages and feeds
 
@@ -83,6 +83,15 @@ git clone <iopsys>
 iop boostrap
 iop feeds_update
 iop genconfig <board> <customer>
+
+If it's the first time you're building an image on your host, you
+should run:
+
+iop setup_host 
+
+to install the required packages on your
+host machine. After that run:
+
 make
 
 alt: for parallel build. 
