@@ -87,6 +87,7 @@ wifi_detect() {
 		[ "$(db get hw.$1.is_ac)" == "1" ] && return 0 || return 1
 	}
 	populate_chanspecs() {
+		wlctl -i $1 band $band
 		wlctl -i $1 country $country
 		wlctl -i $1 chanspecs -b $bno -w 20 | awk '{print$1}' > /$WLDIR/$1"_chanspecs"
 		wlctl -i $1 chanspecs -b $bno -w 40 | awk '{print$1}' >> /$WLDIR/$1"_chanspecs"
