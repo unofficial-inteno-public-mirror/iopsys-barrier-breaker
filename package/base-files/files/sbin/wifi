@@ -217,6 +217,12 @@ EOF
 				uci -q get wireless.$wl.maxassoc || uci -q set wireless.$wl.maxassoc="${PMAX:-32}"
 				uci -q set wireless.$wl.band="$band"
 				uci -q set wireless.$wl.doth="$doth"
+				if [ "$band" == "b" ]; then
+					uci -q set wireless.$wl.dfsc=""
+					uci -q set wireless.$wl.beamforming=""
+					uci -q set wireless.$wl.bandwidth="20"
+					[ "$(uci -q get wireless.$wl.hwmode)" == "11ac" ] && uci -q set wireless.$wl.hwmode="auto"
+				fi
 			fi
 		else
 			uci -q delete wireless.$wl
