@@ -57,7 +57,7 @@ echo $packages_npm
 read -p "Do you approve insallation of these packages (y/n): " ans
 if [ "$ans" == "y" ]; then
 	apt-get install $packages_npm
-	npm install
+	npm install -g npm
 	npm install -g grunt-cli
 	npm install -g mocha
 	npm install -g bower
