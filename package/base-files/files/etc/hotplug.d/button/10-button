@@ -23,12 +23,14 @@ wpsbutton_action () {
 	killall -USR2 wps_monitor
 }
 
-get_wifi_wet_interface() {
+get_wifi_wet_info() {
+	local opt="$1"
+	opt="${opt:-ifname}"
 	handle_interface() {
 		config_get mode "$1" mode
 		if [ "$mode" == "wet" ] ; then
-			config_get ifname "$1" ifname
-			echo "$ifname"
+			config_get val "$1" $opt
+			echo "$val"
 		fi
 	}
 	config_load wireless
@@ -36,50 +38,69 @@ get_wifi_wet_interface() {
 }
 
 wpscbutton_action () {
+	local wanbaseif=$(uci get layer2_interface_ethernet.Wan.baseifname)
+	local cur_mode=$(uci -q get netmode.setup.curmode)
+	local wet_iface wet_ssid carrier fl
+	local wps_paired=0
+	local tm=0
+
 	wps_client_get_credentials () {
-		wet_iface="$(get_wifi_wet_interface)"
+		wet_iface="$(get_wifi_wet_info ifname)"
+		wlctl -i $wet_iface down
+		wlctl -i $wet_iface apsta 1
+		wlctl -i $wet_iface wet 1
+		wlctl -i $wet_iface up
+		nvram set ${wet_iface}_mode="wet"
+		nvram set ${wet_iface}_apsta="1"
+		nvram set ${wet_iface}_wps_mode="enabled"
 		for iface in $(nvram show | grep _wps_mode | sed -n -r 's/(.*)_wps_mode=.*/\1/p'); do
-			[ "$iface" != "$wet_iface" ] && nvram set ${iface}_wps_mode=disabled
+			[ "$iface" != "$wet_iface" ] && nvram set ${iface}_wps_mode="disabled"
 		done
-		nvram set ${wet_iface}_wps_mode=enabled
 		killall -q -15 wps_monitor 2>/dev/null # Kill Child Thread first, -15: SIGTERM to force to remove WPS IE
 		sleep 1
-		printf "wps_monitor STA oneshot mode\n" > /dev/console
-		wps_monitor oneshot > /dev/console || return
-		echo "ok"
+		echo "wps_monitor STA oneshot mode" > /dev/console
+		wps_monitor oneshot && wps_paired=1
 	}
 
-	devstatus `uci get layer2_interface_ethernet.Wan.ifname` | grep -rq "carrier.*true" && return
-	if [ "$(uci get netmode.setup.curmode)" == "repeater" ] ; then
-		[ "$(wps_client_get_credentials)" != "ok" ] && wifi reload
+	json_load $(devstatus $wanbaseif)
+	json_get_var carrier carrier
+	[ "$carrier" == "1" ] && return
+
+	if [ "$cur_mode" == "repeater" ] ; then
+		wps_client_get_credentials
+		[ $wps_paired -eq 0 ] && wifi reload
 	else
-		echo "Switch to repeater mode" > /dev/console
-		mkdir -p /tmp/configbackup
-		cp -af /etc/config/* /tmp/configbackup/
-		old_mode=$(uci get netmode.setup.curmode)
+		ubus call leds set  '{"state" : "test"}'
+		echo "Switching to 'repeater' mode" > /dev/console
+		mkdir -p /tmp/netmode_config_backup
+		cp -af /etc/config/* /tmp/netmode_config_backup/
 		uci set netmode.setup.curmode=repeater
 		uci set netmode.repeater.reboot="0"
 		/etc/init.d/netmode reload
-		wifi reload
-		sleep 1
-		if [ "$(wps_client_get_credentials)" == "ok" ] ; then
-			echo "Got WPS credentials, stay in repeater mode and reboot shortly" > /dev/console
+		wps_client_get_credentials
+		if [ $wps_paired -eq 1 ] ; then
+			echo "WPS pair is successful; WiFi credentials are received from $(nvram get ${wet_iface}_ssid)" > /dev/console
 			uci delete netmode.repeater.reboot
 			uci commit netmode
-			for i in 1 2 3 4 5; do
-				ledctl allon
+			while [ ! -e "/tmp/got_wps_credentials_from_nvram" ]; do
+				[ $tm -gt 30 ] && break
 				sleep 1
-				ledctl alloff
-				sleep 1
+				tm=$((tm+1))
 			done
-			while [ ! -e "/tmp/got_wps_credentials_from_nvram" ] ; do sleep 1 ; done
-			echo "Now rebooting" > /dev/console
-			reboot
+			echo "Restarting network services" > /dev/console
+			/etc/init.d/enviroment reload
+			ubus call uci commit "{\"config\":\"layer2_interface_ethernet\"}"
+			#ubus call uci commit "{\"config\":\"network\"}"
+			ubus call network reload
+			ifup "$(get_wifi_wet_info network)"
+			ubus call leds set  '{"state" : "normal"}'
 			return
 		fi
-		echo "Revert to original mode" > /dev/console
-		uci set netmode.setup.curmode="$old_mode"
-		cp -af /tmp/configbackup/* /etc/config/
+		ubus call leds set  '{"state" : "normal"}'
+		echo "Could not switch to 'repeater' mode; going back to '$cur_mode' mode" > /dev/console
+		uci set netmode.setup.curmode="$cur_mode"
+		cp -af /tmp/netmode_config_backup/* /etc/config/
+		rm -rf /tmp/netmode_config_backup
 		wifi reload
 	fi
 }
