@@ -28,6 +28,7 @@ config button EXT
 	list button 9512_ext
 	option hotplug extbutton
 	option minpress 1000
+	option enable 0
 
 #config button THOUCH_NEAR
 #	list button 9512_touch_near
