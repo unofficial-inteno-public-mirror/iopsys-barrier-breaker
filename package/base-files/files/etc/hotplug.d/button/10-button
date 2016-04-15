@@ -62,7 +62,7 @@ wpscbutton_action () {
 		wps_monitor oneshot && wps_paired=1
 	}
 
-	json_load $(devstatus $wanbaseif)
+	json_load "$(devstatus $wanbaseif)"
 	json_get_var carrier carrier
 	[ "$carrier" == "1" ] && return
 
