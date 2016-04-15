@@ -17,6 +17,6 @@ config interface 'lan'
 	option is_lan '1'
 	option proto 'static'
 	option ifname 'eth1'
-	option ipaddr '192.168.1.1'
+	option ipaddr '192.168.11.1'
 	option netmask '255.255.255.0'
 
