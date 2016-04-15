@@ -85,10 +85,10 @@ endif
 tmp/.iop_bootstrap: feeds.conf
 ifeq ($(findstring s,$(OPENWRT_VERBOSE)),)
 	echo "feeds.conf has been updated. you have to run" >&8
-	echo "scripts/iop_feeds_update.sh" >&8
+	echo "./iop feeds_update" >&8
 else
 	echo "feeds.conf has been updated. you have to run"
-	echo "scripts/iop_feeds_update.sh"
+	echo "./iop feeds_update"
 endif
 	exit 1
 
