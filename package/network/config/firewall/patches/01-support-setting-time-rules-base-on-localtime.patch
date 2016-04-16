@@ -1,0 +1,11 @@
+--- a/iptables.c
++++ b/iptables.c
+@@ -847,6 +847,8 @@ fw3_ipt_rule_time(struct fw3_ipt_rule *r, struct fw3_time *time)
+ 
+ 	if (time->utc)
+ 		fw3_ipt_rule_addarg(r, false, "--utc", NULL);
++	else
++		fw3_ipt_rule_addarg(r, false, "--localtz", NULL);
+ 
+ 	if (d1)
+ 	{
