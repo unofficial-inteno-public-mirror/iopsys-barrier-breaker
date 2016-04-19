@@ -34,6 +34,7 @@ config service 'ice'
 	option desc 'ICE'
 	option detail 'iopsys Communication Engine'
 	list file '/etc/config/ice'
+	list file '/etc/iopsys/server.ini'
 	option user '0'
 
 #config service 'ipsec'
