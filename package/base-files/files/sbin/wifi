@@ -834,6 +834,10 @@ wdev_settings() {
 	nvram set "$device"_wme_no_ack=$wme_no_ack
 	nvram set "$device"_reg_mode=$reg_mode
 	nvram set "$device"_radio=$radio
+
+	# disable radio if no virtual interface lives on it
+	[ $(nvram get "$device"_vifnum) == "0" ] && nvram set "$device"_radio=0
+	nvram unset "$device"_vifnum
 }
 
 setup_wifi_device() {
@@ -848,6 +852,7 @@ setup_wifi_device() {
 
 		# configure virtual wireless interfaces
 		config_foreach configure_vif wifi-iface "$device"
+		nvram set "$device"_vifnum=$_VIFNUM
 		_VIFNUM=0
 
 		wdev_settings $device
