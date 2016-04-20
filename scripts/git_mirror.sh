@@ -27,23 +27,22 @@ print_help()
     cat <<EOF
 login to public.inteno.se and setup an mirror
 
-  ssh -i ~/Git-Machine.pem ubuntu@public.inteno.se
-  sudo bash
-  su git
+  ssh god@public.inteno.se
   cd /home/git/repositories
+  sudo su git
   git clone --mirror ${PKG_SOURCE_URL}
 
-logout, exit 3 times
+logout, exit 2 times
 
 to make it possible to clone do
 
   git clone git@public.inteno.se:gitolite-admin gitolite-admin-public
   vim gitolite-admin-public/conf/gitolite.conf
 
-add the following to the files
+add the following to the file
 ---
  repo $repo
-    R      = @anyone
+    R      = @all
 
 ---
 Do not miss that the config needs to end with an empty line.
