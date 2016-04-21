@@ -484,10 +484,10 @@ vif_settings() {
 	nvram set "$iface"_ifname="$iface"
 	nvram set "$iface"_maclist="$maclist"
 	nvram set "$iface"_macmode=$macmode
-	#nvram set "$iface"_mfp=0
+	nvram set "$iface"_mfp=0
 	nvram set "$iface"_mode=$mode
 	nvram set "$iface"_net_reauth=$net_reauth
-	#nvram set "$iface"_radio=1
+	nvram set "$iface"_radio=1
 	nvram set "$iface"_radius_ipaddr=$radius_server
 	nvram set "$iface"_radius_key=$radius_secret
 	nvram set "$iface"_radius_port=$radius_port
