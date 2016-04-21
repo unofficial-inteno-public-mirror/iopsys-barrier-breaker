@@ -437,7 +437,13 @@ if [ -n "$CONF_RESTORE" ]; then
 
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	tar -C / -x${TAR_V}zf "$CONF_RESTORE"
-	exit $?
+
+	local extraction_failed="$?"
+	if [ "$extraction_failed" == "1" ]; then
+		echo "Backup decompression failed! Backup might be password protected."
+		exit 1
+	fi
+	exit 0
 fi
 
 type platform_check_image >/dev/null 2>/dev/null || {
