@@ -85,6 +85,7 @@ CONFIG_PACKAGE_mtd-utils=y
 CONFIG_PACKAGE_mtd-utils-deubinize=y
 CONFIG_PACKAGE_mtd-utils-imagewrite=y
 CONFIG_PACKAGE_mtd-utils-mkfs.jffs2=y
+CONFIG_PACKAGE_mtd-utils-nanddump=y
 CONFIG_PACKAGE_mtd-utils-ubiattach=y
 CONFIG_PACKAGE_mtd-utils-ubidetach=y
 CONFIG_PACKAGE_mtd-utils-ubimkvol=y
