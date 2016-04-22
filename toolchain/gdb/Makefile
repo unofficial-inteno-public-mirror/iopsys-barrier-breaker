@@ -52,8 +52,12 @@ HOST_CONFIGURE_ARGS = \
 	--host=$(GNU_HOST_NAME) \
 	--target=$(REAL_GNU_TARGET_NAME) \
 	--disable-werror \
-	--without-uiout \
-	--disable-tui --disable-gdbtk --without-x \
+	--without-uiout
+
+#HOST_CONFIGURE_ARGS += \
+#	--disable-tui --disable-gdbtk --without-x
+
+HOST_CONFIGURE_ARGS += \
 	--without-included-gettext \
 	--enable-threads \
 	--with-expat \
