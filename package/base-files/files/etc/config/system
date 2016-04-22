@@ -15,3 +15,5 @@ config 'timeserver' 'ntp'
 	list server     ntp1.sth.netnod.se
 	list server     ntp1.gbg.netnod.se
 
+config upgrade
+
