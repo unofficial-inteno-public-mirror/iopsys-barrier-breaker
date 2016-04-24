@@ -873,12 +873,12 @@ configure_wifi() {
 	config_foreach setup_wifi_device wifi-device
 	uci commit wireless
 
-	killall -15 wificontrol >/dev/null 2>&1
 	if [ $_REPEATER -eq 1 ]; then
 		# open a tcp socket and wait for
 		# master AP to push new configuration
-		wificontrol -s &
+		pidof wificontrol >/dev/null || wificontrol -s &
 	else
+		killall -9 wificontrol >/dev/null 2>&1
 		# configure connected repeaters/extenders
 		wificontrol -c
 	fi
@@ -1194,7 +1194,8 @@ wifi_schedule() {
 
 wifi_import_settings()
 {
-	local ssid key newssid newkey
+	local ssid key autoconf
+	local newssid newkey
 	local changed=0
 	local clientmode=0
 	local wetnet=
@@ -1207,6 +1208,9 @@ wifi_import_settings()
 		config_get ssid "$1" ssid
 		config_get key "$1" key
 		config_get mode "$1" mode "ap"
+		config_get autoconf "$1" autoconf "1"
+
+		[ "$autoconf" == "1" ] || return
 
 		[ $mode == "ap" ] || {
 			config_get wetnet "$1" network
