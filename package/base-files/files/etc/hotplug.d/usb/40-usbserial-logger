@@ -1,0 +1,29 @@
+#!/bin/sh
+[ "$PRODUCT" != "10c4/ea60/100" ] && exit
+[ "$INTERFACE" != "255/0/0" ] && exit
+
+sanitize() {
+        sed -e 's/[[:space:]]\+$//; s/[[:space:]]\+/_/g' "$@"
+}
+
+usb_dir="/sys/$DEVPATH"
+[ -f "$usb_dir/idVendor" ] || usb_dir="${usb_dir%/*}"
+SERIAL=$(sanitize "$usb_dir/serial")
+TTYDEV=$(ls $(find $usb_dir -name tty | head -2 | tail -1) | tail -1)i
+LOGFILE="/tmp/log/usbserial-logger_$SERIAL.log"
+
+case "$ACTION" in
+	add)
+		[ ${SERIAL:0:1} != "1" ] && exit #serial number needs to start with 1
+		echo "Start logger for $DEVICENAME (serial=$SERIAL)" > /dev/console
+		echo "[usbserial-logger start `date -Iseconds`]" >> $LOGFILE
+		stty -F /dev/$TTYDEV 115200 clocal cread cs8 -cstopb -parenb -echo igncr inpck
+		cat /dev/$TTYDEV >> $LOGFILE &
+		echo $! > /tmp/$DEVICENAME.pid
+	;;
+	remove)
+		echo "Kill logger for $DEVICENAME" > /dev/console
+		kill `cat /tmp/$DEVICENAME.pid`
+		rm -f /tmp/$DEVICENAME.pid
+	;;
+esac
