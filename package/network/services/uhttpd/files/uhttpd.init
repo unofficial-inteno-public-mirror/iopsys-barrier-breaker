@@ -2,6 +2,7 @@
 # Copyright (C) 2010 Jo-Philipp Wich
 
 START=95
+STOP=05
 
 USE_PROCD=1
 
