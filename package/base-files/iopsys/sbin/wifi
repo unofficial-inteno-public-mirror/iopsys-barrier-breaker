@@ -4,8 +4,6 @@
 . /usr/share/libubox/jshn.sh
 . /lib/network/brcmwifi.sh
 
-exec >/dev/null 2>&1
-
 local _ACTION="$1"
 local _DOWN=0
 local _RELOAD=0
@@ -219,6 +217,12 @@ EOF
 				uci -q get wireless.$wl.maxassoc || uci -q set wireless.$wl.maxassoc="${PMAX:-32}"
 				uci -q set wireless.$wl.band="$band"
 				uci -q set wireless.$wl.doth="$doth"
+				if [ "$band" == "b" ]; then
+					uci -q set wireless.$wl.dfsc=""
+					uci -q set wireless.$wl.beamforming=""
+					uci -q set wireless.$wl.bandwidth="20"
+					[ "$(uci -q get wireless.$wl.hwmode)" == "11ac" ] && uci -q set wireless.$wl.hwmode="auto"
+				fi
 			fi
 		else
 			uci -q delete wireless.$wl
@@ -480,10 +484,10 @@ vif_settings() {
 	nvram set "$iface"_ifname="$iface"
 	nvram set "$iface"_maclist="$maclist"
 	nvram set "$iface"_macmode=$macmode
-	#nvram set "$iface"_mfp=0
+	nvram set "$iface"_mfp=0
 	nvram set "$iface"_mode=$mode
 	nvram set "$iface"_net_reauth=$net_reauth
-	#nvram set "$iface"_radio=1
+	nvram set "$iface"_radio=1
 	nvram set "$iface"_radius_ipaddr=$radius_server
 	nvram set "$iface"_radius_key=$radius_secret
 	nvram set "$iface"_radius_port=$radius_port
@@ -830,6 +834,10 @@ wdev_settings() {
 	nvram set "$device"_wme_no_ack=$wme_no_ack
 	nvram set "$device"_reg_mode=$reg_mode
 	nvram set "$device"_radio=$radio
+
+	# disable radio if no virtual interface lives on it
+	[ $(nvram get "$device"_vifnum) == "0" ] && nvram set "$device"_radio=0
+	nvram unset "$device"_vifnum
 }
 
 setup_wifi_device() {
@@ -844,6 +852,7 @@ setup_wifi_device() {
 
 		# configure virtual wireless interfaces
 		config_foreach configure_vif wifi-iface "$device"
+		nvram set "$device"_vifnum=$_VIFNUM
 		_VIFNUM=0
 
 		wdev_settings $device
@@ -1178,13 +1187,24 @@ wifi_schedule() {
 
 case "$_ACTION" in
 	detect)
+		exec >/dev/null 2>&1
 		wifi_detect
 		exit
 	;;
 	disable|enable)
+		exec >/dev/null 2>&1
 		toggle_wifi_iface "$1" "$2"
 	;;
+	clients)
+		if [ -n "$2" ]; then
+			ubus call router sta "{\"vif\":\"$2\"}"
+		else
+			ubus call router stas
+		fi
+		exit
+	;;
 	down|off)
+		exec >/dev/null 2>&1
 		_DOWN=1
 		wlmngr_stopServices
 		wlmngr_WlConfDown 0
@@ -1197,10 +1217,12 @@ case "$_ACTION" in
 		_RELOAD=1
 	;;
 	toggle)
+		exec >/dev/null 2>&1
 		toggle_wifi_device "$2"
 		_RELOAD=1
 	;;
 	nvram|on)
+		exec >/dev/null 2>&1
 		update_from_nvram
 		_RELOAD=1
 	;;
@@ -1209,5 +1231,6 @@ case "$_ACTION" in
 #	;;
 esac
 
+exec >/dev/null 2>&1
 configure_wifi
 
