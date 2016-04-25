@@ -88,4 +88,92 @@ platform_check_image() {
 	return 0
 }
 
-# use default for platform_do_upgrade()
+platform_pre_upgrade() {
+
+	local from mtd_no
+	local cfe_fs
+	local is_nand
+	local klink sname
+
+	cfe_fs=$(cat /tmp/CFE_FS)
+	is_nand=$(cat /tmp/IS_NAND)
+
+	case "$1" in
+		http://*|ftp://*) from=/tmp/firmware.bin;;
+		*) from=$1;;
+	esac
+
+	if [ $is_nand -ne 1 ]; then
+		v "This is not a nand image, aborting!"
+		exit 1
+	fi
+
+	# Stop unnecessary processes
+	for klink in $(ls /etc/rc.d/K[0-9]*); do
+		sname=$(basename $(readlink -f $klink))
+		case $sname in
+			bcmhotproxy|boot|cgroups|dropbear|iwatchdog|telnet|umount)
+				v "Not stopping $sname"
+				;;
+			*)
+				v "Stopping $sname..."
+				$klink stop
+				;;
+		esac
+	done
+	sleep 3s
+
+	#DEBUG
+	#ps > /dev/console
+	#DEBUG
+
+	if [ "$SAVE_OVERLAY" -eq 1 -a -z "$USE_REFRESH" ]; then
+		v "Creating save overlay file marker"
+		touch /SAVE_OVERLAY
+	else
+		v "Not saving overlay files"
+		rm -f /SAVE_OVERLAY
+	fi
+	if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
+		v "Creating save config file marker"
+		touch /SAVE_CONFIG
+	else
+		v "Not saving config files"
+		rm -f /SAVE_CONFIG
+	fi
+	sync
+
+	if [ $cfe_fs -eq 2 ]; then
+		inteno_image_upgrade $from
+	else
+		# Old/Brcm format image
+		if [ $cfe_fs -eq 1 ]; then
+			v "Writing CFE ..."
+			cfe_image_upgrade $from 0 131072
+		fi
+
+		v "Writing File System ..."
+		mtd_no=$(find_mtd_no "rootfs_update")
+		if [ $cfe_fs -eq 1 ]; then
+			update_sequence_number $from 0 131072
+			imagewrite -c -k 131072 /dev/mtd$mtd_no $from
+		else
+			update_sequence_number $from 0
+			imagewrite -c /dev/mtd$mtd_no $from
+		fi
+	fi
+	sync
+
+	v "Setting bootline parameter to boot from newly flashed image"
+	brcm_fw_tool set -u 0
+	v "Current Software Upgrade Count: $(get_rootfs_sequence_number)"
+
+	v "Upgrade completed!"
+	rm -f $from
+	[ -n "$DELAY" ] && sleep "$DELAY"
+	v "Rebooting system ..."
+	sync
+	export REBOOT_REASON=upgrade
+	reboot -f
+}
+
