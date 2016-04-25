@@ -1,0 +1,9 @@
+#!/bin/sh
+# Copyright (C) 2016 OpenWrt.org
+
+iopsys_mount_mnt_tmpfs() {
+	mount -t tmpfs tmpfs /mnt -o rw,size=64K
+}
+
+boot_hook_add preinit_mount_root iopsys_mount_mnt_tmpfs
+
