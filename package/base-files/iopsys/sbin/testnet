@@ -64,9 +64,9 @@ iptvtest() {
 
 	if [ "$?" -eq 0 ]; then
 		tvcon=1
-		ubus call led.ext  set '{"state" : "ok"}'
+		[ -n "$dest" ] && ubus call led.ext  set '{"state" : "ok"}'
 	else
-		ubus call led.ext  set '{"state" : "off"}'
+		[ -n "$dest" ] && ubus call led.ext  set '{"state" : "off"}'
 	fi
 }
 
