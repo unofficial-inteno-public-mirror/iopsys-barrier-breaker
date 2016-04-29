@@ -173,8 +173,11 @@ iup() {
 
 	if [ $privopt224 ]; then
                 echo "Option224 recived " $privopt224 > /dev/console
-		/sbin/iup224 $privopt224 &
-	elif [ $vendorspecinf ]; then
+		/sbin/iup224 $privopt224
+		[ $? -eq 1 ] && return
+	fi
+
+	if [ $vendorspecinf ]; then
 		url=${vendorspecinf%%,*}; rest=${vendorspecinf#*,}
 		provisioningcode=${rest%%,*};
 		uci_set_state provisioning iup url "$url"
