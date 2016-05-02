@@ -836,7 +836,11 @@ wdev_settings() {
 	nvram set "$device"_radio=$radio
 
 	# disable radio if no virtual interface lives on it
-	[ $(nvram get "$device"_vifnum) == "0" ] && nvram set "$device"_radio=0
+	# nvram set wl_radio to 0 if any radio is disabled
+	if [ $(nvram get "$device"_vifnum) == "0" ]; then
+		nvram set "$device"_radio=0
+		nvram set wl_radio=0
+	fi
 	nvram unset "$device"_vifnum
 }
 
