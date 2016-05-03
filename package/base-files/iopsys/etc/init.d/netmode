@@ -75,9 +75,9 @@ switch_netmode() {
 	sync
 	local reboot=$(uci -q get netmode.$curmode.reboot)
 	if [ "$reboot" == "0" ]; then
-		reboot &
-	else
 		/etc/init.d/enviroment reload
+	else
+		reboot &
 	fi
 }
 
