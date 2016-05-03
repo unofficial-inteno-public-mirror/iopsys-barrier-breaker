@@ -7,6 +7,7 @@
 		{ "en" : "Your router is going to act as a wired extender or wireless repeater to the selected Wireless Access Point." },
 		{ "sv" : "Routern kommer att fungera som en trådbunden extender eller trådlös repeater till den valda trådlösa åtkomstpunkten." }
 	],
-	"credentials" : 1
+	"credentials" : 1,
+	"reboot" : 0
 }
 
