@@ -16,6 +16,7 @@ local _NVRAM=0
 local _ACSIFS=
 local _OLDCRONMD5=
 local _NEWCRONMD5=
+local _REPEATER=0
 
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
@@ -402,6 +403,8 @@ vif_settings() {
 	config_get bss_max $cfg bss_max "32"
 	config_get network $cfg network "lan"
 	config_get hspot $cfg hspot "0"
+
+	[ "$mode" == "ap" ] || _REPEATER=1
 
 	[ "$disabled" == "1" ] && bss_enabled=0 || bss_enabled=1
 	[ "$wps" == "1" ] && wps_mode=enabled || wps_mode=disabled
@@ -875,6 +878,16 @@ configure_wifi() {
 	config_foreach setup_wifi_device wifi-device
 	uci commit wireless
 
+	if [ $_REPEATER -eq 1 ]; then
+		# open a tcp socket and wait for
+		# master AP to push new configuration
+		pidof wificontrol >/dev/null || wificontrol -s &
+	else
+		killall -9 wificontrol >/dev/null 2>&1
+		# configure connected repeaters/extenders
+		wificontrol -c
+	fi
+
 	[ $_RELOAD -eq 0 ] && wlmngr_setupTPs
 
 	wlmngr_stopServices
@@ -1184,6 +1197,59 @@ wifi_schedule() {
 	fi
 }
 
+wifi_import_settings()
+{
+	local ssid key autoconf
+	local newssid newkey
+	local changed=0
+	local clientmode=0
+	local wetnet=
+
+	json_load "$1"
+	json_get_var newssid ssid
+	json_get_var newkey key
+
+	vif_update_settings() {
+		config_get ssid "$1" ssid
+		config_get key "$1" key
+		config_get mode "$1" mode "ap"
+		config_get autoconf "$1" autoconf "1"
+
+		[ "$autoconf" == "1" ] || return
+
+		[ $mode == "ap" ] || {
+			config_get wetnet "$1" network
+			clientmode=1
+		}
+
+		if [ "$ssid" != "$newssid" ]; then
+			uci -q set wireless.$1.ssid="$newssid"
+			changed=1
+		fi
+
+		if [ "$key" != "$newkey" ]; then
+			uci -q set wireless.$1.key="$newkey"
+			if [ -n "$newkey" ]; then
+				uci -q set wireless.$1.encryption="psk2"
+				uci -q set wireless.$1.cipher="ccmp"
+			else
+				uci -q set wireless.$1.encryption=""
+				uci -q set wireless.$1.cipher=""
+			fi
+			changed=1
+		fi
+	}
+
+	config_load wireless
+	config_foreach vif_update_settings wifi-iface
+	[ $changed -eq 1 ] || exit 0
+	uci commit wireless
+	if [ $clientmode -eq 1 ]; then
+		ifup $wetnet &
+		exit
+	fi
+}
+
 #case "$_ACTION" in
 #	on|off)
 #		wifi_onoff "$1"
@@ -1216,6 +1282,10 @@ case "$_ACTION" in
 		wlmngr_WlConfDown 1
 		ubus call led.wifi set '{"state":"off"}'
 		exit
+	;;
+	import)
+		wifi_import_settings "$2"
+		_RELOAD=1
 	;;
 	reload|restart|up)
 #		wifi_schedule
