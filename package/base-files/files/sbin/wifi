@@ -885,7 +885,7 @@ configure_wifi() {
 	else
 		killall -9 wificontrol >/dev/null 2>&1
 		# configure connected repeaters/extenders
-		wificontrol -c
+		wificontrol -c &
 	fi
 
 	[ $_RELOAD -eq 0 ] && wlmngr_setupTPs
