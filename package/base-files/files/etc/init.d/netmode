@@ -57,6 +57,8 @@ populate_netmodes() {
 
 			json_get_var cred credentials
 			uci -q set netmode.$mode.askcred="$cred"
+			json_get_var reboot reboot
+			uci -q set netmode.$mode.reboot="$reboot"
 	done
 	uci commit netmode
 }
