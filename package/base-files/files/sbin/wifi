@@ -840,6 +840,7 @@ wdev_settings() {
 	if [ $(nvram get "$device"_vifnum) == "0" ]; then
 		nvram set "$device"_radio=0
 		nvram set wl_radio=0
+		nvram set wl_ssid=""
 	fi
 	nvram unset "$device"_vifnum
 }
