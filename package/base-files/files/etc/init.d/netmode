@@ -74,7 +74,11 @@ switch_netmode() {
 	rm -f /etc/config/DETAILS
 	sync
 	local reboot=$(uci -q get netmode.$curmode.reboot)
-	[ "$reboot" == "0" ] || reboot &
+	if [ "$reboot" == "0" ]; then
+		reboot &
+	else
+		/etc/init.d/enviroment reload
+	fi
 }
 
 start_service() {
