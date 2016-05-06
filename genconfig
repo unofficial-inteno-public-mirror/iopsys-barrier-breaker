@@ -156,6 +156,8 @@ create_and_copy_files()
 			set_profile configs/$BOARDTYPE/$PROFILE.profile .config
 		elif [ -e "$CONFIGPATH/MASTER/$PROFILE.profile" ]; then
 			set_profile configs/MASTER/$PROFILE.profile .config
+		elif [ "$PROFILE" == "luci" ]; then
+			echo -n ""
 		else
 			echo "ERROR: profile $PROFILE does not exist!"
 			exit 1
