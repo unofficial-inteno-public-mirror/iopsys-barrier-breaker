@@ -725,7 +725,10 @@ wdev_settings() {
 	local rifs rifs_advert maxassoc reg_mode acs_dfs acs_fcs beamforming
 	local rxchain_pwrsave_enable rxchain_pwrsave_pps rxchain_pwrsave_quiet_time
 
-	config_get disabled $cfg disabled "0"
+	config_get_bool disabled $cfg disabled 0
+	[ "$disabled" == "1" ] && radio=0 || radio=1
+	config_get_bool radio $cfg radio $radio
+
 	config_get country $cfg country "EU/13"
 	config_get band $cfg band "b"
 	config_get bandwidth $cfg bandwidth "80"
@@ -749,8 +752,6 @@ wdev_settings() {
 	config_get rxchain_pwrsave_enable $cfg rxchainps "1"
 	config_get rxchain_pwrsave_pps $cfg rxchainps_qt "10"
 	config_get rxchain_pwrsave_quiet_time $cfg rxchainps_pps "10"
-
-	[ "$disabled" == "1" ] && radio=0 || radio=1
 
 	if [ $band == "a" ]; then
 		freq=5
