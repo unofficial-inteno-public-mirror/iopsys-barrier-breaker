@@ -37,12 +37,11 @@ config rule
 	option family		ipv4
 	option hidden		1
 
-# Allow HTTP on port 8080
 config rule
-	option name		Allow-HTTP-8080
+	option name		Repeater-Management
 	option src		wan
 	option proto		tcp
-	option dest_port	8080
+	option dest_port	'22 80 8080 9876'
 	option target		ACCEPT
 	option family		ipv4
 	option hidden		1

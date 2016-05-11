@@ -16,6 +16,7 @@ local _NVRAM=0
 local _ACSIFS=
 local _OLDCRONMD5=
 local _NEWCRONMD5=
+local _REPEATER=0
 
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
@@ -403,6 +404,8 @@ vif_settings() {
 	config_get network $cfg network "lan"
 	config_get hspot $cfg hspot "0"
 
+	[ "$mode" == "ap" ] || _REPEATER=1
+
 	[ "$disabled" == "1" ] && bss_enabled=0 || bss_enabled=1
 	[ "$wps" == "1" ] && wps_mode=enabled || wps_mode=disabled
 	[ "$closed" == "1" ] && qr_hidden="true"
@@ -722,7 +725,10 @@ wdev_settings() {
 	local rifs rifs_advert maxassoc reg_mode acs_dfs acs_fcs beamforming
 	local rxchain_pwrsave_enable rxchain_pwrsave_pps rxchain_pwrsave_quiet_time
 
-	config_get disabled $cfg disabled "0"
+	config_get_bool disabled $cfg disabled 0
+	[ "$disabled" == "1" ] && radio=0 || radio=1
+	config_get_bool radio $cfg radio $radio
+
 	config_get country $cfg country "EU/13"
 	config_get band $cfg band "b"
 	config_get bandwidth $cfg bandwidth "80"
@@ -746,8 +752,6 @@ wdev_settings() {
 	config_get rxchain_pwrsave_enable $cfg rxchainps "1"
 	config_get rxchain_pwrsave_pps $cfg rxchainps_qt "10"
 	config_get rxchain_pwrsave_quiet_time $cfg rxchainps_pps "10"
-
-	[ "$disabled" == "1" ] && radio=0 || radio=1
 
 	if [ $band == "a" ]; then
 		freq=5
@@ -836,7 +840,12 @@ wdev_settings() {
 	nvram set "$device"_radio=$radio
 
 	# disable radio if no virtual interface lives on it
-	[ $(nvram get "$device"_vifnum) == "0" ] && nvram set "$device"_radio=0
+	# nvram set wl_radio to 0 if any radio is disabled
+	if [ $(nvram get "$device"_vifnum) == "0" ]; then
+		nvram set "$device"_radio=0
+		nvram set wl_radio=0
+		nvram set wl_ssid=""
+	fi
 	nvram unset "$device"_vifnum
 }
 
@@ -869,6 +878,16 @@ configure_wifi() {
 	config_load wireless
 	config_foreach setup_wifi_device wifi-device
 	uci commit wireless
+
+	if [ $_REPEATER -eq 1 ]; then
+		# open a tcp socket and wait for
+		# master AP to push new configuration
+		pidof wificontrol >/dev/null || wificontrol -s &
+	else
+		killall -9 wificontrol >/dev/null 2>&1
+		# configure connected repeaters/extenders
+		wificontrol -c &
+	fi
 
 	[ $_RELOAD -eq 0 ] && wlmngr_setupTPs
 
@@ -1179,6 +1198,59 @@ wifi_schedule() {
 	fi
 }
 
+wifi_import_settings()
+{
+	local ssid key autoconf
+	local newssid newkey
+	local changed=0
+	local clientmode=0
+	local wetnet=
+
+	json_load "$1"
+	json_get_var newssid ssid
+	json_get_var newkey key
+
+	vif_update_settings() {
+		config_get ssid "$1" ssid
+		config_get key "$1" key
+		config_get mode "$1" mode "ap"
+		config_get autoconf "$1" autoconf "1"
+
+		[ "$autoconf" == "1" ] || return
+
+		[ $mode == "ap" ] || {
+			config_get wetnet "$1" network
+			clientmode=1
+		}
+
+		if [ "$ssid" != "$newssid" ]; then
+			uci -q set wireless.$1.ssid="$newssid"
+			changed=1
+		fi
+
+		if [ "$key" != "$newkey" ]; then
+			uci -q set wireless.$1.key="$newkey"
+			if [ -n "$newkey" ]; then
+				uci -q set wireless.$1.encryption="psk2"
+				uci -q set wireless.$1.cipher="ccmp"
+			else
+				uci -q set wireless.$1.encryption=""
+				uci -q set wireless.$1.cipher=""
+			fi
+			changed=1
+		fi
+	}
+
+	config_load wireless
+	config_foreach vif_update_settings wifi-iface
+	[ $changed -eq 1 ] || exit 0
+	uci commit wireless
+	if [ $clientmode -eq 1 ]; then
+		ifup $wetnet &
+		exit
+	fi
+}
+
 #case "$_ACTION" in
 #	on|off)
 #		wifi_onoff "$1"
@@ -1211,6 +1283,10 @@ case "$_ACTION" in
 		wlmngr_WlConfDown 1
 		ubus call led.wifi set '{"state":"off"}'
 		exit
+	;;
+	import)
+		wifi_import_settings "$2"
+		_RELOAD=1
 	;;
 	reload|restart|up)
 #		wifi_schedule

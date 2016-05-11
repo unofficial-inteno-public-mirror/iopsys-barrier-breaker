@@ -30,17 +30,21 @@ case "$ACTION" in
 	add|register)
 		echo "Autoswitch to AP (wired master)" > /dev/console
 		sleep 2
+		#disable wifi client interface
 		uci set $(get_wifi_iface_cfgstr $(get_wifi_wet_interface)).disabled=1
 		uci commit wireless
-		uci set network.wan.ifname="$(uci get layer2_interface_ethernet.Wan.ifname)"
+		#add wan ethernet port
+		uci set network.wan.ifname="$(echo $(uci get layer2_interface_ethernet.Wan.ifname) $(uci get network.wan.ifname) | tr ' ' '\n' | sort -u | tr '\n' ' ')"
 		ubus call uci commit '{"config":"network"}'
 	;;
 	remove|unregister)
 		echo "Autoswitch to repeater (wireless master)" > /dev/console
 		sleep 2
+		#enable wifi client interface
 		uci delete $(get_wifi_iface_cfgstr $(get_wifi_wet_interface)).disabled
 		uci commit wireless
-		uci delete network.wan.ifname
+		#remove wan ethernet port
+		uci set network.wan.ifname="$(uci get network.wan.ifname | sed 's/$/ /' | sed -r "s/`uci get layer2_interface_ethernet.Wan.ifname` //g")"
 		ubus call uci commit '{"config":"network"}'
 	;;
 esac

@@ -1,0 +1,55 @@
+#!/bin/sh /etc/rc.common
+
+START=20
+USE_PROCD=1
+
+setled() {
+	config_get enable $1 enable
+	ubus call led.$1 set "{\"enable\":$enable}"
+}
+
+start_service() {
+	local enable
+
+	config_load leds
+	config_foreach setled led
+	config_get_bool enable leds enable 1
+
+	if [ "$enable" == "0" ]; then
+		ubus call leds set  '{"state" : "alloff"}'
+	else
+		ubus call leds set  '{"state" : "normal"}'
+	fi
+}
+
+boot() {
+	local led ledname
+
+	[ -f /etc/config/leds ] || touch /etc/config/leds
+
+	if ! uci -q get leds.leds >/dev/null; then
+		uci set leds.leds=leds
+		uci set leds.leds.enable=1
+	fi
+
+	for led in $(ubus list led.*); do
+		ledname=${led:4}
+		case $ledname in
+			*phy*) continue ;;
+		esac
+		if ! uci -q  get leds.$ledname >/dev/null; then
+			uci set leds.$ledname=led
+			uci set leds.$ledname.enable=1
+		fi
+	done
+
+	uci commit leds
+
+	start
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger "leds"
+}
+

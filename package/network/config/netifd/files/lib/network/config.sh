@@ -153,3 +153,31 @@ get_port_number() {
 		fi
 	done
 }
+
+# function wait_for_dns
+# params: url
+# call example: wait_for_dns http://user:password@example.com/path/firmware.y2
+# waits for dnsmasq to start
+wait_for_dns() {
+        local url=$1
+        local wait_time=30
+        local wait_interval=2
+
+        url=${url#*://}		# remove http://
+        url=${url%%/*}		# remove /path/firmware.y2
+        url=${url#*@}		# remove user:password@
+				# url is only example.com
+
+        echo -n "Waiting for dns ..."
+        while [ true ] ; do
+                host -t a $url &> /dev/null # try DNS lookup for url
+                [ $? == 0 ] && break
+                sleep $wait_interval
+                echo -n "."
+                wait_time=$((wait_time - wait_interval))
+                [ "$wait_time" -le "0" ] && { echo " failed"; return 1;} # timer expired
+        done
+        echo " ok"
+        return 0
+}
+# end of wait_for_dns
