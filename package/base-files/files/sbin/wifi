@@ -731,8 +731,8 @@ wdev_settings() {
 
 	config_get country $cfg country "EU/13"
 	config_get band $cfg band "b"
-	config_get bandwidth $cfg bandwidth "80"
-	config_get hwmode $cfg hwmode "11ac"
+	config_get bandwidth $cfg bandwidth "20"
+	config_get hwmode $cfg hwmode "auto"
 	config_get channel $cfg channel "auto"
 	config_get scantimer $cfg scantimer "15"
 	config_get wme $cfg wmm "1"
