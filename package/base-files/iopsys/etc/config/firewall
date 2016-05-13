@@ -118,6 +118,11 @@ config include
 	option path /etc/firewall.sip
 	option reload 1
 
+# include a file with rules for prioritizing some specific packets
+config include
+	option path /etc/firewall.qos
+	option reload 1
+
 # include a file with rules for DMZ Host
 config include dmzhost
 	option path /etc/firewall.dmz
