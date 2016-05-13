@@ -293,6 +293,7 @@ assign_network() {
 			if [ $ifc == $vif ]; then
 				if [ $interface == $net -a $enabled == "1" ]; then
 					#echo "wifi: $ifc is already at $net" >/dev/console
+					uci -q set wireless.$cfgno.network=$net
 					found=1
 				else
 					#echo "wifi: remove $ifc from $interface" >/dev/console
@@ -307,6 +308,7 @@ assign_network() {
 		if [ $found -eq 0 ]; then
 			if [ $interface == $net ]; then
 				#echo "wifi: add $vif to $interface" >/dev/console
+				uci -q set wireless.$cfgno.network=$net
 				[ -n "$ifname" ] && ifname="$ifname $vif" || ifname="$vif"
 				uci -q set network.$interface.ifname="$ifname"
 			fi
@@ -338,6 +340,7 @@ assign_network() {
 	done
 	config_foreach tag_network interface
 	uci commit network
+	uci commit wireless
 	ubus call network reload
 }
 
