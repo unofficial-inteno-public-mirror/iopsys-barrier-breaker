@@ -1,0 +1,29 @@
+#!/bin/sh /etc/rc.common
+
+START=14
+STOP=96
+
+USE_PROCD=1
+NAME=iotx
+
+start_service() {
+	procd_open_instance
+	procd_set_param command "/sbin/iotx"
+	procd_set_param respawn
+	procd_close_instance
+}
+
+stop() {
+	service_stop /sbin/iotx
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger iotx
+}
+
+reload_service() {
+	stop
+	start
+}
+
