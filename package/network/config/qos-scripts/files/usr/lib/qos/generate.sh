@@ -289,15 +289,17 @@ start_interface() {
 		return 1 
 	}
 
-	# disable flow cache if bandwidth limit is enabled
-	fcctl disable >/dev/null 2>&1
+	
 
 	config_get upload "$iface" upload
 	config_get_bool halfduplex "$iface" halfduplex
 	config_get download "$iface" download
 	config_get classgroup "$iface" classgroup
 	config_get_bool overhead "$iface" overhead 0
-	
+
+	# disable flow cache if download bandwidth limit is enabled
+	[ -n "$download" ] && fcctl disable >/dev/null 2>&1
+
 	download="${download:-${halfduplex:+$upload}}"
 	enum_classes "$classgroup"
 	for dir in ${halfduplex:-up} ${download:+down}; do
@@ -387,6 +389,8 @@ add_rules() {
 		config_get target "$rule" target
 		config_get target "$target" classnr
 		config_get options "$rule" options
+
+                [ -n "$target" ] || return
 
 		## If we want to override the TOS field, let's clear the DSCP field first.
 		[ ! -z "$(echo $options | grep 'TOS')" ] && {
