@@ -1,0 +1,87 @@
+#!/bin/sh
+# Iopsys nand flash health test script
+# Will echo "good" or "bad" depending on verdict.
+#
+# (C) 2016 Inteno Broadband Technology AB
+#
+
+[ "$1" == "-v" ] && verbose=1
+
+# Check for bad marker in first byte of OOB area
+eb_is_bad() {
+	local part=$1
+	local ebstart=$2
+	local mark
+
+	mark=$( \
+		nanddump -c -s $ebstart -l 1 -n -o --bb=dumpbad \
+			/dev/$part 2>/dev/null \
+			| awk '/OOB/ {print $3}' | head -n1 \
+	)
+	[ "$mark" == "ff" ] && echo "false" || echo "true"
+}
+
+# Raw data partition
+# Compute the number of bad erase blocks per 1000
+test_raw_partition() {
+	local part_name=$1
+	local part size ebsz badcnt ebstart
+
+	part=$(awk -F: "/\"$part_name\"/ { print \$1 }" /proc/mtd)
+	size=0x$(awk "/\"$part_name\"/ { print \$2 }" /proc/mtd)
+	ebsz=0x$(awk "/\"$part_name\"/ { print \$3 }" /proc/mtd)
+
+	badcnt=0
+	ebstart=0
+	while [ $ebstart -lt $((size)) ]; do
+		[ $(eb_is_bad $part $ebstart) == "true" ] && \
+			badcnt=$((badcnt+1))
+		ebstart=$((ebstart+$ebsz))
+	done
+
+	echo $(( badcnt*1000 / (size/ebsz) ))
+}
+
+# UBI partition
+# Compute the number of remaining pebs reserved for bad block handling
+# compared to the total number of erase blocks per 1000
+test_ubi_partition() {
+	local tot=$(cat /sys/class/ubi/ubi0/total_eraseblocks)
+	local res=$(cat /sys/class/ubi/ubi0/reserved_for_bad)
+
+	echo $((res*1000/tot))
+}
+
+
+# Sorry, no support for old/jffs2 file-system so just say OK...
+if ! grep -q "rootfstype=ubifs" /proc/cmdline; then
+	echo good
+	exit 0
+fi
+
+# A good nand should fulfill these criteria:
+# - Less than 50% bad blocks in NVRAM partition
+# - Less than 20% bad blocks in any kernel partition
+# - Minimum 1% bad peb reserve in main UBI partition
+
+nvram=$(test_raw_partition nvram2)
+kernel0=$(test_raw_partition kernel_0)
+kernel1=$(test_raw_partition kernel_1)
+ubi=$(test_ubi_partition)
+
+if [ -n "$verbose" ]; then
+	echo "== NAND health =="
+	echo "nvram:   $nvram/1000 bad blocks (<500)"
+	echo "kernel0: $kernel0/1000 bad blocks (<200)"
+	echo "kernel1: $kernel1/1000 bad blocks (<200)"
+	echo "ubi:     $ubi/1000 blocks in reserve (>=10)"
+	echo -n "NAND health is "
+fi
+
+[ \
+  $nvram -lt 500 -a \
+  $kernel0 -lt 200 -a \
+  $kernel1 -lt 200 -a \
+  $ubi -ge 10 \
+] && echo good || echo bad
+
