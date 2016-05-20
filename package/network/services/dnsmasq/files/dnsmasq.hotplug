@@ -5,4 +5,8 @@
 #/etc/init.d/dnsmasq enabled && /etc/init.d/dnsmasq start
 
 # prevent multiple instances of dnsamsq reload
-/etc/init.d/dnsmasq enabled && ubus call uci commit '{"config":"dhcp"}'
+if [ -f /var/etc/dnsmasq.conf ]; then
+	ubus call uci commit '{"config":"dhcp"}'
+else
+	/etc/init.d/dnsmasq start
+fi
