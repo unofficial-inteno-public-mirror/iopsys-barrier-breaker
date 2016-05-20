@@ -2,4 +2,7 @@
 
 [ "$ACTION" = ifup ] || exit 0
 
-/etc/init.d/dnsmasq enabled && /etc/init.d/dnsmasq start
+#/etc/init.d/dnsmasq enabled && /etc/init.d/dnsmasq start
+
+# prevent multiple instances of dnsamsq reload
+/etc/init.d/dnsmasq enabled && ubus call uci commit '{"config":"dhcp"}'
