@@ -224,8 +224,9 @@ config led_map led_broadband
 	list super_error       dsl_error
 
 config led_map led_wifi
-       list led_action_ok     Wireless_green=ON
        list led_action_off    Wireless_green=OFF
+       list led_action_ok     Wireless_green=ON
+       list led_action_eok    Wireless_green=ON
        list led_action_notice Wireless_green=ON
        list led_action_alert  Wireless_green=FLASH_SLOW
        list led_action_error  Wireless_green=FLASH_FAST
