@@ -1,5 +1,7 @@
 include /lib/network
 
+[ ${INTERFACE:0:2} == "wl" ] && exit
+
 case "$ACTION" in
         add|register)
 		case "$INTERFACE" in
@@ -13,7 +15,7 @@ case "$ACTION" in
 			;;
 			# if an uplink device belongs to a bridge
 			# make sure brige macaddress becomes its macaddress
-			[eap][t][mh][0-9].[0-4096])
+			*.*)
 				local net=$(get_network_of $INTERFACE)
 				local typ=$(uci -q get network.$net.type)
 				if [ "$typ" == "bridge" ]; then
