@@ -1,0 +1,164 @@
+--- a/bridge.c
++++ b/bridge.c
+@@ -105,6 +105,7 @@ static void
+ bridge_reset_primary(struct bridge_state *bst)
+ {
+ 	struct bridge_member *bm;
++	uint8_t macaddr_old[6];
+ 
+ 	if (!bst->primary_port &&
+ 	    (bst->dev.settings.flags & DEV_OPT_MACADDR))
+@@ -112,12 +113,40 @@ bridge_reset_primary(struct bridge_state *bst)
+ 
+ 	bst->primary_port = NULL;
+ 	bst->dev.settings.flags &= ~DEV_OPT_MACADDR;
++	memcpy(macaddr_old, bst->dev.settings.macaddr, 6);
+ 	vlist_for_each_element(&bst->members, bm, node) {
+ 		uint8_t *macaddr;
+ 
+ 		if (!bm->present)
+ 			continue;
+ 
++		/*
++		 * If 2 or more uplinks are in the bridge,
++		 * ensure that the selection of the primary_port is consistent
++		 * between process restarts for the same set of bridge members.
++		 * Choose a primary device type based on priority, i.e.:
++		 *	ptmX.X, atmX.X ,ethX.X, wlX
++		 * Choose a primary device number in alphabetical order, e.g.:
++		 *	eth0.1, eth1.1.
++		 */
++
++		if (bst->primary_port) {
++			/* a candidate has been selected for primary_port */
++			int primary_uplink = system_if_is_uplink(bst->primary_port->dev.dev);
++			int member_uplink = system_if_is_uplink(bm->dev.dev);
++			if (!member_uplink)
++				/* bm is not an uplink */
++				continue;
++			if (primary_uplink > member_uplink)
++				/* current primary_port is preferrable to bm */
++				continue;
++			if (primary_uplink == member_uplink)
++				/* both are uplinks, same type */
++				if (strcmp(bst->primary_port->dev.dev->ifname, bm->dev.dev->ifname) < 0)
++					/* Choose in alphabetical order */
++					continue;
++		}
++
+ 		bst->primary_port = bm;
+ 		if (bm->dev.dev->settings.flags & DEV_OPT_MACADDR)
+ 			macaddr = bm->dev.dev->settings.macaddr;
+@@ -125,8 +154,16 @@ bridge_reset_primary(struct bridge_state *bst)
+ 			macaddr = bm->dev.dev->orig_settings.macaddr;
+ 		memcpy(bst->dev.settings.macaddr, macaddr, 6);
+ 		bst->dev.settings.flags |= DEV_OPT_MACADDR;
+-		return;
+ 	}
++
++	for (int i = 0; i < 6; i++)
++		if (bst->dev.settings.macaddr[i] != macaddr_old[i]) {
++			/* macaddr has changed */
++			system_if_apply_settings(&bst->dev, &bst->dev.settings, DEV_OPT_MACADDR);
++			netifd_log_message(L_NOTICE, "%s MAC address set to %s (based on bridge member %s)",
++				bst->dev.ifname, format_macaddr(bst->dev.settings.macaddr), bst->primary_port->name);
++			return;
++		}
+ }
+ 
+ static int
+@@ -170,6 +207,7 @@ bridge_enable_member(struct bridge_member *bm)
+ 		goto error;
+ 	}
+ 
++	bridge_reset_primary(bst);
+ 	device_broadcast_event(&bst->dev, DEV_EVENT_TOPO_CHANGE);
+ 
+ 	return 0;
+@@ -307,7 +345,6 @@ bridge_set_up(struct bridge_state *bst)
+ 		return -ENOENT;
+ 	}
+ 
+-	bridge_reset_primary(bst);
+ 	ret = bst->set_state(&bst->dev, true);
+ 	if (ret < 0)
+ 		bridge_set_down(bst);
+@@ -351,6 +388,8 @@ bridge_create_member(struct bridge_state *bst, struct device *dev, bool hotplug)
+ 	if (hotplug && bm)
+ 		bm->node.version = -1;
+ 
++	bridge_reset_primary(bst);
++
+ 	return bm;
+ }
+ 
+diff --git a/system-linux.c b/system-linux.c
+--- a/system-linux.c
++++ b/system-linux.c
+@@ -1123,6 +1123,55 @@ system_if_get_parent(struct device *dev)
+ 	return device_get(devname, true);
+ }
+ 
++/* Function system_if_is_uplink
++ *
++ * Check if dev is an uplink
++ * Param dev pointer to the struct device to be checked
++ *
++ * Returns >0 if dev is uplink:
++ *	4, if dev is ptmX.X
++ *	3, if dev is atmX.X
++ *	2, if dev is ethX.X
++ *	1, if dev is wlX
++ * Returns 0 if dev is not uplink
++ */
++int system_if_is_uplink(struct device *dev)
++{
++	enum {
++		UPLINK_PRIO_NONE,
++		UPLINK_PRIO_WL,
++		UPLINK_PRIO_ETH,
++		UPLINK_PRIO_ATM,
++		UPLINK_PRIO_PTM
++	};
++	char *name = dev->ifname;
++
++	if (strstr(name, "ptm") && strchr(name, '.')) {
++		return UPLINK_PRIO_PTM;
++	}
++	if (strstr(name, "atm") && strchr(name, '.')) {
++		return UPLINK_PRIO_ATM;
++	}
++	if (strstr(name, "eth") && strchr(name, '.')) {
++		return UPLINK_PRIO_ETH;
++	}
++	if (strstr(name, "wl")) {
++		char command[128], buf[128];
++		memset(command, 0, sizeof(command));
++		memset(buf, 0, sizeof(buf));
++		snprintf(command, sizeof(command), "nvram get %s_mode", name);
++		FILE *f = popen(command, "r");
++		if (!f)
++			return UPLINK_PRIO_NONE;
++		fgets(buf, sizeof(buf), f);
++		pclose(f);
++		if (strstr(buf, "wet") || strstr(buf, "sta"))
++			return UPLINK_PRIO_WL;
++	}
++
++	return UPLINK_PRIO_NONE;
++}
++
+ static bool
+ read_string_file(int dir_fd, const char *file, char *buf, int len)
+ {
+diff --git a/system.h b/system.h
+--- a/system.h
++++ b/system.h
+@@ -121,6 +121,7 @@ struct device *system_if_get_parent(struct device *dev);
+ bool system_if_force_external(const char *ifname);
+ void system_if_apply_settings(struct device *dev, struct device_settings *s,
+ 			      unsigned int apply_mask);
++int system_if_is_uplink(struct device *dev);
+ 
+ int system_add_address(struct device *dev, struct device_addr *addr);
+ int system_del_address(struct device *dev, struct device_addr *addr);
