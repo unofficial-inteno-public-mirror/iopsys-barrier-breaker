@@ -26,6 +26,7 @@ boot() {
 	local led ledname
 
 	ubus list led* >/dev/null || sleep 1
+	ubus list led* >/dev/null || sleep 1
 
 	[ -f /etc/config/leds ] || touch /etc/config/leds
 
