@@ -1,0 +1,12 @@
+#!/bin/sh
+
+case "$1" in
+	bootstrap)
+	;;
+	feeds_update)
+		./scripts/iop_feeds_update.sh
+	;;
+	genconfig)
+		./"$@"
+	;;
+esac
