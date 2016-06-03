@@ -882,6 +882,9 @@ configure_wifi() {
 	config_foreach setup_wifi_device wifi-device
 	uci commit wireless
 
+	[ $(nvram get "$_WL2G"_radio) == "1" ] && ubus call led.wifi set '{"state":"notice"}'
+	[ $(nvram get "$_WL5G"_radio) == "1" ] && ubus call led.wifi set '{"state":"notice"}'
+
 	if [ $_REPEATER -eq 1 ]; then
 		# open a tcp socket and wait for
 		# master AP to push new configuration
