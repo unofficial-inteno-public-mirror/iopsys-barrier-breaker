@@ -38,6 +38,10 @@ config service 'ipsec'
 	list file '/etc/ipsec.conf'
 	list file '/etc/ipsec.secrets'
 
+config service 'juci'
+	option desc 'WebGUI'
+	list file '/etc/config/juci'
+
 config service 'layer2'
 	option desc 'Layer2'
 	option detail 'Layer 2 Interfaces'
