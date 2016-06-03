@@ -142,7 +142,7 @@ handle_backup() {
 
 	for conf in $(ls /etc/config); do
 		case $conf in
-			backup|boardpanel|dmmap|fstab|hosts|juci|luci|rpcd|speedtest|voice_codecs) continue;
+			backup|boardpanel|dmmap|fstab|hosts|luci|rpcd|speedtest|voice_codecs) continue;
 		esac
 		config_foreach compare_with service "/etc/config/$conf"
 		if [ $ISTHERE -eq 0 ]; then
