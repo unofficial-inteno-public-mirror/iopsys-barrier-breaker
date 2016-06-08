@@ -48,6 +48,7 @@ iopsys_initialize_db() {
 		WPAKEY="`cat /proc/nvram/WpaKey`"
 		DSLANNEX="`cat /proc/nvram/dslAnnex`"
 		[ "$DSLANNEX" == "B" ] || DSLANNEX="A"
+		[ "$(uci get /lib/db/config/hw.board.hasAdsl)" == "1" ] && DSLANNEX=""
 		VBID="`cat /proc/nvram/VoiceBoardId`"
 		DESKEY="`cat /proc/nvram/DesKey`"
 		RFPI="`cat /proc/nvram/rfpi`"
