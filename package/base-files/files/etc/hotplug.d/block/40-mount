@@ -28,7 +28,7 @@ if [ `basename $blkdev` != "block" ]; then
 				mtdblock*) ;;
 				*)
 					mntdir="$mnthd$serial"
-					( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir -o umask=0 || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2
+					( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2
 					echo "/dev/$device /mnt/$mntdir" >> /var/usbmounts
 					[ -n "$mntdir" ] && ubus send usb "{\"action\":\"mount\",\"device\":\"$device\",\"mountpoint\":\"/mnt/$mntdir\"}" 2>/dev/null
 				;;
