@@ -29,7 +29,9 @@ config board 'board'
 	option sx9512_irq_pin 1
 	option sx9512_active_capsense_channels 0f
 	option sx9512_active_led_channels ff
-
+	option sx9512_threshold_bl1 3
+	option sx9512_threshold_bl2 3
+	option sx9512_threshold_bl3 3
 
 config pci_slot 'pci'
         option 43a0 AC
